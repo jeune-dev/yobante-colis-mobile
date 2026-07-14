@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-/// Skeleton shimmer animé pour les états de chargement des listes.
-/// Un seul [AnimationController] est partagé pour toutes les cartes.
+/// Skeleton shimmer animÃ© pour les Ã©tats de chargement des listes.
+/// Un seul [AnimationController] est partagÃ© pour toutes les cartes.
 class ShimmerList extends StatefulWidget {
   final int itemCount;
   final Color accentColor;
@@ -41,12 +41,12 @@ class _ShimmerListState extends State<ShimmerList>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _ctrl,
-      builder: (_, __) => ListView.separated(
+      builder: (_, _) => ListView.separated(
         physics: const NeverScrollableScrollPhysics(),
         padding: widget.padding ?? const EdgeInsets.fromLTRB(16, 12, 16, 100),
         itemCount: widget.itemCount,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (_, __) => _ShimmerCard(progress: _ctrl.value),
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        itemBuilder: (_, _) => _ShimmerCard(progress: _ctrl.value),
       ),
     );
   }
@@ -87,7 +87,7 @@ class _ShimmerCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // ── Ligne en-tête ─────────────────────────────────────────────
+          // â”€â”€ Ligne en-tÃªte â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -122,7 +122,7 @@ class _ShimmerCard extends StatelessWidget {
             ),
           ),
           Divider(color: Colors.grey[100], height: 1),
-          // ── Chips ─────────────────────────────────────────────────────
+          // â”€â”€ Chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
@@ -144,7 +144,7 @@ class _ShimmerCard extends StatelessWidget {
             ),
           ),
           Divider(color: Colors.grey[100], height: 1),
-          // ── Boutons ───────────────────────────────────────────────────
+          // â”€â”€ Boutons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
@@ -170,3 +170,4 @@ class _ShimmerCard extends StatelessWidget {
     );
   }
 }
+

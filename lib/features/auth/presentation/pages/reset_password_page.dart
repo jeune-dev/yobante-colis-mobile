@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:toastification/toastification.dart';
-import '../../../../core/widgets/toastNotif.dart';
+import '../../../../core/widgets/toast_notif.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -48,8 +48,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         if (state is ResetPasswordSuccess) {
           showToast(
             context,
-            'Succès',
-            'Mot de passe réinitialisé avec succès.',
+            'SuccÃ¨s',
+            'Mot de passe rÃ©initialisÃ© avec succÃ¨s.',
             ToastificationType.success,
           );
           Navigator.of(context)
@@ -108,7 +108,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Saisissez le code reçu par email à ${widget.email} et choisissez un nouveau mot de passe.',
+                    'Saisissez le code reÃ§u par email Ã  ${widget.email} et choisissez un nouveau mot de passe.',
                     style: const TextStyle(
                       fontSize: 15,
                       color: Color(0xFF64748B),
@@ -118,7 +118,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   const SizedBox(height: 40),
 
                   // OTP field
-                  _buildLabel('Code reçu par email'),
+                  _buildLabel('Code reÃ§u par email'),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _otpController,
@@ -130,7 +130,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     ),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
-                        return 'Veuillez entrer le code reçu par email';
+                        return 'Veuillez entrer le code reÃ§u par email';
                       }
                       return null;
                     },
@@ -145,7 +145,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     obscureText: _obscureNew,
                     textInputAction: TextInputAction.next,
                     decoration: _inputDecoration(
-                      hint: 'Minimum 8 caractères',
+                      hint: 'Minimum 8 caractÃ¨res',
                       icon: Icons.lock_outline_rounded,
                       suffix: IconButton(
                         icon: Icon(
@@ -164,7 +164,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         return 'Veuillez entrer un nouveau mot de passe';
                       }
                       if (v.length < 8) {
-                        return 'Le mot de passe doit contenir au moins 8 caractères';
+                        return 'Le mot de passe doit contenir au moins 8 caractÃ¨res';
                       }
                       return null;
                     },
@@ -180,7 +180,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _submit(),
                     decoration: _inputDecoration(
-                      hint: 'Répétez le nouveau mot de passe',
+                      hint: 'RÃ©pÃ©tez le nouveau mot de passe',
                       icon: Icons.lock_outline_rounded,
                       suffix: IconButton(
                         icon: Icon(
@@ -235,7 +235,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                   ),
                                 )
                               : const Text(
-                                  'Réinitialiser le mot de passe',
+                                  'RÃ©initialiser le mot de passe',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
@@ -303,3 +303,4 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     );
   }
 }
+

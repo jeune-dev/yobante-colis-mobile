@@ -1,5 +1,5 @@
-import 'package:dartz/dartz.dart';
-import 'package:sign_application/core/errors/failure.dart';
+﻿import 'package:dartz/dartz.dart';
+import 'package:yobnate_colis/core/errors/failure.dart';
 import '../entities/account_user.dart';
 import '../repositories/account_repository.dart';
 
@@ -9,3 +9,4 @@ class GetMe {
 
   Future<Either<Failure, AccountUser>> call() => repository.getMe();
 }
+

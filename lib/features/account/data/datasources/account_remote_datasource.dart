@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
-import 'package:sign_application/core/config/env.dart';
+import '../../../../core/config/env.dart';
+import '../../../../core/errors/exceptions.dart';
 import '../models/account_user_model.dart';
 
 abstract class AccountRemoteDataSource {
   Future<AccountUserModel> getMe();
-  Future<AccountUserModel> modifierInfoPersonnelles(Map<String, dynamic> fields, Map<String, String> filePaths);
+  Future<AccountUserModel> modifierInfo({String? nom, String? prenom, String? telephone});
+  Future<AccountUserModel> uploadAvatar(String filePath);
   Future<void> changePassword(String oldPassword, String newPassword);
 }
 
@@ -14,50 +16,45 @@ class AccountRemoteDataSourceImpl implements AccountRemoteDataSource {
 
   @override
   Future<AccountUserModel> getMe() async {
-    final response = await dio.get(Env.accountMe);
-    final json = Map<String, dynamic>.from(response.data['utilisateur']);
-    return AccountUserModel.fromJson(json);
+    try {
+      final res = await dio.get(Env.clientProfil);
+      return AccountUserModel.fromJson(res.data['data']['utilisateur'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ServerException(message: e.response?.data?['message'] as String? ?? 'Erreur');
+    }
   }
 
   @override
-  Future<AccountUserModel> modifierInfoPersonnelles(
-    Map<String, dynamic> fields,
-    Map<String, String> filePaths,
-  ) async {
-    // Construire le FormData (fichiers optionnels)
-    final formFields = <String, dynamic>{};
-    fields.forEach((key, value) {
-      if (value != null && value.toString().isNotEmpty) {
-        formFields[key] = value;
-      }
-    });
-
-    FormData? formData;
-    if (filePaths.isNotEmpty) {
-      final Map<String, dynamic> allFields = {...formFields};
-      for (final entry in filePaths.entries) {
-        allFields[entry.key] = await MultipartFile.fromFile(entry.value);
-      }
-      formData = FormData.fromMap(allFields);
+  Future<AccountUserModel> modifierInfo({String? nom, String? prenom, String? telephone}) async {
+    try {
+      final data = <String, dynamic>{};
+      if (nom != null) data['nom'] = nom;
+      if (prenom != null) data['prenom'] = prenom;
+      if (telephone != null) data['telephone'] = telephone;
+      final res = await dio.put(Env.clientProfil, data: data);
+      return AccountUserModel.fromJson(res.data['data']['utilisateur'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ServerException(message: e.response?.data?['message'] as String? ?? 'Erreur');
     }
+  }
 
-    final response = await dio.put(
-      Env.accountModifierInfo,
-      data: formData ?? formFields,
-      options: formData != null
-          ? Options(contentType: 'multipart/form-data')
-          : null,
-    );
-
-    final json = Map<String, dynamic>.from(response.data['utilisateur']);
-    return AccountUserModel.fromJson(json);
+  @override
+  Future<AccountUserModel> uploadAvatar(String filePath) async {
+    try {
+      final formData = FormData.fromMap({'avatar': await MultipartFile.fromFile(filePath)});
+      final res = await dio.patch(Env.clientProfilAvatar, data: formData);
+      return AccountUserModel.fromJson(res.data['data']['utilisateur'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ServerException(message: e.response?.data?['message'] as String? ?? 'Erreur');
+    }
   }
 
   @override
   Future<void> changePassword(String oldPassword, String newPassword) async {
-    await dio.put(
-      Env.accountChangePassword,
-      data: {'oldPassword': oldPassword, 'newPassword': newPassword},
-    );
+    try {
+      await dio.put(Env.authChangePass, data: {'oldPassword': oldPassword, 'newPassword': newPassword});
+    } on DioException catch (e) {
+      throw ServerException(message: e.response?.data?['message'] as String? ?? 'Erreur');
+    }
   }
 }

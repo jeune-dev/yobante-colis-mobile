@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-/// Widget état vide réutilisable pour toutes les pages liste.
+/// Widget Ã©tat vide rÃ©utilisable pour toutes les pages liste.
 ///
-/// [scrollable] = true  → enrobe dans un ListView (pour remplacer un ListView vide)
-/// [scrollable] = false → Centre le contenu directement (pour Sliver ou Expanded)
+/// [scrollable] = true  â†’ enrobe dans un ListView (pour remplacer un ListView vide)
+/// [scrollable] = false â†’ Centre le contenu directement (pour Sliver ou Expanded)
 class EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -107,3 +107,4 @@ class EmptyState extends StatelessWidget {
     );
   }
 }
+

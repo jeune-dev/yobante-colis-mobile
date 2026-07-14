@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/repositories/account_repository.dart';
 import '../../domain/usecases/get_me.dart';
 import '../../domain/usecases/modifier_info_personnelles.dart';
 import '../../domain/usecases/change_password.dart';
@@ -9,14 +10,17 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   final GetMe getMe;
   final ModifierInfoPersonnelles modifierInfoPersonnelles;
   final ChangePassword changePassword;
+  final AccountRepository accountRepository;
 
   AccountBloc({
     required this.getMe,
     required this.modifierInfoPersonnelles,
     required this.changePassword,
+    required this.accountRepository,
   }) : super(AccountInitial()) {
     on<LoadMe>(_onLoadMe);
     on<ModifierInfoPersonnellesEvent>(_onModifierInfo);
+    on<UploadAvatarEvent>(_onUploadAvatar);
     on<ChangePasswordEvent>(_onChangePassword);
     on<ResetAccountState>((_, emit) => emit(AccountInitial()));
   }
@@ -38,23 +42,23 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     final result = await modifierInfoPersonnelles(
       nom: event.nom,
       prenom: event.prenom,
-      email: event.email,
       telephone: event.telephone,
-      adresse: event.adresse,
-      carteIdentiteNationalNum: event.carteIdentiteNationalNum,
-      rc: event.rc,
-      ninea: event.ninea,
-      nomEntreprise: event.nomEntreprise,
-      adresseEntreprise: event.adresseEntreprise,
-      telephoneEntreprise: event.telephoneEntreprise,
-      emailEntreprise: event.emailEntreprise,
-      photoProfilPath: event.photoProfilPath,
-      logoPath: event.logoPath,
-      signaturePath: event.signaturePath,
     );
     result.fold(
       (failure) => emit(AccountError(failure.errorMessage)),
       (user) => emit(AccountSuccess(user: user, message: 'Profil mis à jour avec succès')),
+    );
+  }
+
+  Future<void> _onUploadAvatar(
+    UploadAvatarEvent event,
+    Emitter<AccountState> emit,
+  ) async {
+    emit(AccountLoading());
+    final result = await accountRepository.uploadAvatar(event.filePath);
+    result.fold(
+      (failure) => emit(AccountError(failure.errorMessage)),
+      (user) => emit(AccountSuccess(user: user, message: 'Photo de profil mise à jour')),
     );
   }
 

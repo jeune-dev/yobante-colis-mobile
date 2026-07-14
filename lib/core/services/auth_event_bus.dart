@@ -1,15 +1,15 @@
-import 'dart:async';
+﻿import 'dart:async';
 
-/// Bus d'événements d'authentification.
+/// Bus d'Ã©vÃ©nements d'authentification.
 ///
-/// Utilisé pour communiquer un logout forcé (401 non récupérable)
-/// depuis l'intercepteur Dio vers le widget tree, sans dépendre du BuildContext.
+/// UtilisÃ© pour communiquer un logout forcÃ© (401 non rÃ©cupÃ©rable)
+/// depuis l'intercepteur Dio vers le widget tree, sans dÃ©pendre du BuildContext.
 ///
 /// Usage :
-///   // Émettre (depuis l'intercepteur) :
+///   // Ã‰mettre (depuis l'intercepteur) :
 ///   AuthEventBus.instance.emitLogout();
 ///
-///   // Écouter (depuis main.dart ou un widget racine) :
+///   // Ã‰couter (depuis main.dart ou un widget racine) :
 ///   AuthEventBus.instance.onLogout.listen((_) { ... });
 class AuthEventBus {
   AuthEventBus._();
@@ -17,10 +17,10 @@ class AuthEventBus {
 
   final _logoutController = StreamController<void>.broadcast();
 
-  /// Stream écouté par le widget root pour déclencher le logout
+  /// Stream Ã©coutÃ© par le widget root pour dÃ©clencher le logout
   Stream<void> get onLogout => _logoutController.stream;
 
-  /// Appelé par l'intercepteur Dio quand le refresh échoue (401 définitif)
+  /// AppelÃ© par l'intercepteur Dio quand le refresh Ã©choue (401 dÃ©finitif)
   void emitLogout() {
     if (!_logoutController.isClosed) {
       _logoutController.add(null);
@@ -29,3 +29,4 @@ class AuthEventBus {
 
   void dispose() => _logoutController.close();
 }
+

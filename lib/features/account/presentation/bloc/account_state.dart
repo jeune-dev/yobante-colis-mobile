@@ -1,4 +1,4 @@
-import 'package:sign_application/features/account/domain/entities/account_user.dart';
+import 'package:yobnate_colis/features/account/domain/entities/account_user.dart';
 
 abstract class AccountState {}
 

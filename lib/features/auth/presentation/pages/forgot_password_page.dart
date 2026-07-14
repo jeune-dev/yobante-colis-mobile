@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:toastification/toastification.dart';
-import '../../../../core/widgets/toastNotif.dart';
+import '../../../../core/widgets/toast_notif.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -39,8 +39,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         if (state is ForgotPasswordSuccess) {
           showToast(
             context,
-            'Code envoyé',
-            'Un code a été envoyé à votre adresse email.',
+            'Code envoyÃ©',
+            'Un code a Ã©tÃ© envoyÃ© Ã  votre adresse email.',
             ToastificationType.success,
           );
           Navigator.of(context).pushNamed(
@@ -91,7 +91,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                   const SizedBox(height: 32),
                   const Text(
-                    'Mot de passe oublié ?',
+                    'Mot de passe oubliÃ© ?',
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.w800,
@@ -101,7 +101,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Entrez votre adresse email et nous vous enverrons un code de réinitialisation.',
+                    'Entrez votre adresse email et nous vous enverrons un code de rÃ©initialisation.',
                     style: TextStyle(
                       fontSize: 15,
                       color: Color(0xFF64748B),
@@ -211,7 +211,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     child: TextButton(
                       onPressed: () => Navigator.of(context).pop(),
                       child: const Text(
-                        'Retour à la connexion',
+                        'Retour Ã  la connexion',
                         style: TextStyle(
                           color: Color(0xFF1A73E8),
                           fontWeight: FontWeight.w600,
@@ -228,3 +228,4 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     );
   }
 }
+

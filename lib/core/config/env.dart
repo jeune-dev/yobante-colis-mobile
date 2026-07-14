@@ -1,226 +1,83 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-/// REST-C01 : Variables d'environnement lues depuis --dart-define (production)
-/// avec fallback sur flutter_dotenv (développement local).
-///
-/// En production :
-///   flutter build apk --dart-define=API_BASE_URL=https://sign-backend-ha5a.onrender.com/sign ...
-///
-/// En développement :
-///   Les valeurs sont lues depuis le fichier .env (non bundlé dans l'APK).
 class Env {
-  // ─── Résolution d'une variable ──────────────────────────────────────────────
-  // Priorité : 1) --dart-define   2) .env local   3) valeur par défaut
-  static String _get(String key, {required String fallback}) {
-    // 1. Valeur injectée à la compilation via --dart-define
-    // fromEnvironment est évalué à compile-time par clé littérale,
-    // donc on utilise un switch statique pour chaque clé connue.
-    final fromDefine = _fromDefine(key);
-    if (fromDefine.isNotEmpty) return fromDefine;
+  Env._();
 
-    // 2. Fallback sur .env chargé en mémoire (dev uniquement)
-    // Guard : dotenv.load() peut ne pas avoir été appelé (prod sans --dart-define)
-    try {
-      final fromDotenv = dotenv.maybeGet(key)?.trim();
-      if (fromDotenv != null && fromDotenv.isNotEmpty) return fromDotenv;
-    } catch (_) {
-      // dotenv non initialisé — on tombe sur le fallback codé en dur ci-dessous
-    }
-
-    // 3. Valeur par défaut codée en dur
-    return fallback;
+  static String get baseUrl {
+    const v = String.fromEnvironment('API_BASE_URL');
+    // 10.0.2.2 = localhost depuis l'émulateur Android
+    return v.isEmpty ? 'http://10.0.2.2:9000' : v;
   }
 
-  /// Résolution à la compilation via --dart-define (retourne '' si non définie)
-  static String _fromDefine(String key) {
-    switch (key) {
-      case 'API_BASE_URL':
-        return const String.fromEnvironment('API_BASE_URL');
-      case 'AUTH_LOGIN_PATH':
-        return const String.fromEnvironment('AUTH_LOGIN_PATH');
-      case 'AUTH_REGISTER_PATH':
-        return const String.fromEnvironment('AUTH_REGISTER_PATH');
-      case 'ACCOUNT_ME_PATH':
-        return const String.fromEnvironment('ACCOUNT_ME_PATH');
-      case 'ACCOUNT_MODIFIER_INFO_PATH':
-        return const String.fromEnvironment('ACCOUNT_MODIFIER_INFO_PATH');
-      case 'ACCOUNT_CHANGE_PASSWORD_PATH':
-        return const String.fromEnvironment('ACCOUNT_CHANGE_PASSWORD_PATH');
-      case 'ACCOUNT_FORGOT_PASSWORD_PATH':
-        return const String.fromEnvironment('ACCOUNT_FORGOT_PASSWORD_PATH');
-      case 'ACCOUNT_RESET_PASSWORD_PATH':
-        return const String.fromEnvironment('ACCOUNT_RESET_PASSWORD_PATH');
-      case 'ACCOUNT_DEVICE_TOKEN_PATH':
-        return const String.fromEnvironment('ACCOUNT_DEVICE_TOKEN_PATH');
-      case 'CLIENT_LISTE_PATH':
-        return const String.fromEnvironment('CLIENT_LISTE_PATH');
-      case 'CLIENT_AJOUT_PATH':
-        return const String.fromEnvironment('CLIENT_AJOUT_PATH');
-      case 'CLIENT_RECHERCHE_PATH':
-        return const String.fromEnvironment('CLIENT_RECHERCHE_PATH');
-      case 'DOCUMENT_MES_DOCUMENTS_PATH':
-        return const String.fromEnvironment('DOCUMENT_MES_DOCUMENTS_PATH');
-      case 'DOCUMENT_CREER_PATH':
-        return const String.fromEnvironment('DOCUMENT_CREER_PATH');
-      case 'DOCUMENT_OUVRIR_PATH':
-        return const String.fromEnvironment('DOCUMENT_OUVRIR_PATH');
-      case 'DOCUMENT_TELECHARGER_PATH':
-        return const String.fromEnvironment('DOCUMENT_TELECHARGER_PATH');
-      case 'CONTRAT_BAIL_LISTE_PATH':
-        return const String.fromEnvironment('CONTRAT_BAIL_LISTE_PATH');
-      case 'CONTRAT_BAIL_CREER_PATH':
-        return const String.fromEnvironment('CONTRAT_BAIL_CREER_PATH');
-      case 'CONTRAT_BAIL_TELECHARGER_PATH':
-        return const String.fromEnvironment('CONTRAT_BAIL_TELECHARGER_PATH');
-      case 'CONTRAT_BAIL_SIGNER_PATH':
-        return const String.fromEnvironment('CONTRAT_BAIL_SIGNER_PATH');
-      case 'DASHBOARD_STATS_PATH':
-        return const String.fromEnvironment('DASHBOARD_STATS_PATH');
-      case 'CONTRAT_TRAVAIL_CREER_PATH':
-        return const String.fromEnvironment('CONTRAT_TRAVAIL_CREER_PATH');
-      case 'CONTRAT_TRAVAIL_LISTE_PATH':
-        return const String.fromEnvironment('CONTRAT_TRAVAIL_LISTE_PATH');
-      case 'CONTRAT_TRAVAIL_DETAIL_PATH':
-        return const String.fromEnvironment('CONTRAT_TRAVAIL_DETAIL_PATH');
-      case 'CONTRAT_TRAVAIL_TELECHARGER_PATH':
-        return const String.fromEnvironment('CONTRAT_TRAVAIL_TELECHARGER_PATH');
-      case 'CONTRAT_TRAVAIL_SIGNER_PATH':
-        return const String.fromEnvironment('CONTRAT_TRAVAIL_SIGNER_PATH');
-      case 'QUITTANCE_CREER_PATH':
-        return const String.fromEnvironment('QUITTANCE_CREER_PATH');
-      case 'QUITTANCE_LISTE_PATH':
-        return const String.fromEnvironment('QUITTANCE_LISTE_PATH');
-      case 'QUITTANCE_DETAIL_PATH':
-        return const String.fromEnvironment('QUITTANCE_DETAIL_PATH');
-      case 'QUITTANCE_TELECHARGER_PATH':
-        return const String.fromEnvironment('QUITTANCE_TELECHARGER_PATH');
-      case 'FICHE_PAIE_CREER_PATH':
-        return const String.fromEnvironment('FICHE_PAIE_CREER_PATH');
-      case 'FICHE_PAIE_MES_FICHES_PATH':
-        return const String.fromEnvironment('FICHE_PAIE_MES_FICHES_PATH');
-      case 'FICHE_PAIE_DETAIL_PATH':
-        return const String.fromEnvironment('FICHE_PAIE_DETAIL_PATH');
-      case 'PARTICULIER_DASHBOARD_STATS_PATH':
-        return const String.fromEnvironment('PARTICULIER_DASHBOARD_STATS_PATH');
-      case 'PARTICULIER_FACTURES_PATH':
-        return const String.fromEnvironment('PARTICULIER_FACTURES_PATH');
-      case 'PARTICULIER_CONTRATS_PATH':
-        return const String.fromEnvironment('PARTICULIER_CONTRATS_PATH');
-      case 'AUTH_REFRESH_PATH':
-        return const String.fromEnvironment('AUTH_REFRESH_PATH');
-      case 'AUTH_LOGOUT_PATH':
-        return const String.fromEnvironment('AUTH_LOGOUT_PATH');
-      default:
-        return '';
-    }
-  }
+  // ── AUTH ──────────────────────────────────────────────────────────────────
+  static const String authRegister   = '/auth/register';
+  static const String authLogin      = '/auth/login';
+  static const String authLogout     = '/auth/logout';
+  static const String authRefresh    = '/auth/refresh-token';
+  static const String authForgot     = '/auth/forgot-password';
+  static const String authReset      = '/auth/reset-password';
+  static const String authChangePass = '/auth/change-password';
 
-  // ─── Base ────────────────────────────────────────────────────────────────────
-  static String get baseUrl => _get('API_BASE_URL',
-      fallback: 'https://sign-backend-ha5a.onrender.com/sign');
+  // ── CLIENT — COLIS ────────────────────────────────────────────────────────
+  static const String clientColis = '/client/colis';
+  static String clientColisId(String id)      => '/client/colis/$id';
+  static String clientColisSuivi(String id)   => '/client/colis/$id/suivi';
+  static String clientColisAnnuler(String id) => '/client/colis/$id/annuler';
 
-  // ─── Auth ────────────────────────────────────────────────────────────────────
-  static String get login =>
-      _get('AUTH_LOGIN_PATH', fallback: '/auth/login');
-  static String get register =>
-      _get('AUTH_REGISTER_PATH', fallback: '/auth/register');
+  // ── CLIENT — PROFIL ───────────────────────────────────────────────────────
+  static const String clientProfil        = '/client/profil';
+  static const String clientProfilAvatar  = '/client/profil/avatar';
+  static const String accountDeviceToken  = '/account/device-token';
 
-  // ─── Account ─────────────────────────────────────────────────────────────────
-  static String get accountMe =>
-      _get('ACCOUNT_ME_PATH', fallback: '/account/me');
-  static String get accountModifierInfo =>
-      _get('ACCOUNT_MODIFIER_INFO_PATH', fallback: '/account/modifier-info-personnelles');
-  static String get accountChangePassword =>
-      _get('ACCOUNT_CHANGE_PASSWORD_PATH', fallback: '/account/change-password');
-  static String get accountForgotPassword =>
-      _get('ACCOUNT_FORGOT_PASSWORD_PATH', fallback: '/account/forgot-password');
-  static String get accountResetPassword =>
-      _get('ACCOUNT_RESET_PASSWORD_PATH', fallback: '/account/reset-password');
-  static String get accountDeviceToken =>
-      _get('ACCOUNT_DEVICE_TOKEN_PATH', fallback: '/account/device-token');
+  // ── CLIENT — NOTIFICATIONS ────────────────────────────────────────────────
+  static const String clientNotifications   = '/client/notifications';
+  static const String clientNotifNonLues    = '/client/notifications/non-lues';
+  static const String clientNotifToutesLues = '/client/notifications/toutes-lues';
+  static String clientNotifLue(String id)  => '/client/notifications/$id/lue';
 
-  // ─── Client ──────────────────────────────────────────────────────────────────
-  static String get clientListe =>
-      _get('CLIENT_LISTE_PATH', fallback: '/professionnel/client/liste-clients');
-  static String get clientAjout =>
-      _get('CLIENT_AJOUT_PATH', fallback: '/professionnel/client/ajout-client');
-  static String get clientRecherche =>
-      _get('CLIENT_RECHERCHE_PATH', fallback: '/professionnel/client/recherche-client');
+  // ── CLIENT — PAIEMENTS / FACTURES ─────────────────────────────────────────
+  static const String clientFactures          = '/client/paiements/factures';
+  static String clientFactureId(String id)    => '/client/paiements/factures/$id';
 
-  // ─── Facture / Document ───────────────────────────────────────────────────────
-  static String get documentMesDocuments =>
-      _get('DOCUMENT_MES_DOCUMENTS_PATH', fallback: '/professionnel/document/mes-documents');
-  static String get documentCreer =>
-      _get('DOCUMENT_CREER_PATH', fallback: '/professionnel/document/creer-document');
-  static String get documentOuvrir =>
-      _get('DOCUMENT_OUVRIR_PATH', fallback: '/professionnel/document/ouvrir-document');
-  static String get documentTelecharger =>
-      _get('DOCUMENT_TELECHARGER_PATH', fallback: '/professionnel/document/telecharger-document');
-  static String documentMettreAJour(String id) => '/professionnel/document/$id/mettre-a-jour';
+  // ── ADMIN — DASHBOARD ─────────────────────────────────────────────────────
+  static const String adminDashStats         = '/admin/dashboard/stats';
+  static const String adminDashColisStatut   = '/admin/dashboard/colis-par-statut';
+  static const String adminDashDerniersColis = '/admin/dashboard/derniers-colis';
+  static const String adminDashDerniersUsers = '/admin/dashboard/derniers-utilisateurs';
 
-  // ─── Contrat Bail ─────────────────────────────────────────────────────────────
-  static String get contratBailListe =>
-      _get('CONTRAT_BAIL_LISTE_PATH', fallback: '/professionnel/contratBail/mes-contrat-immobilier');
-  static String get contratBailCreer =>
-      _get('CONTRAT_BAIL_CREER_PATH', fallback: '/professionnel/contratBail/creation-contrat-immobilier');
-  static String get contratBailTelecharger =>
-      _get('CONTRAT_BAIL_TELECHARGER_PATH', fallback: '/professionnel/contratBail/telecharger-contrat-immobilier');
-  static String get contratBailSigner =>
-      _get('CONTRAT_BAIL_SIGNER_PATH', fallback: '/professionnel/contratBail');
+  // ── ADMIN — COLIS ─────────────────────────────────────────────────────────
+  static const String adminColis              = '/admin/colis';
+  static const String adminColisStats         = '/admin/colis/statistiques';
+  static String adminColisId(String id)       => '/admin/colis/$id';
+  static String adminColisStatut(String id)   => '/admin/colis/$id/statut';
+  static String adminColisPhotos(String id)   => '/admin/colis/$id/photos';
 
-  // ─── Dashboard ────────────────────────────────────────────────────────────────
-  static String get dashboardStats =>
-      _get('DASHBOARD_STATS_PATH', fallback: '/professionnel/dashboard/stats');
+  // ── ADMIN — USERS ─────────────────────────────────────────────────────────
+  static const String adminUsers              = '/admin/users';
+  static String adminUserId(String id)        => '/admin/users/$id';
+  static String adminUserColis(String id)     => '/admin/users/$id/colis';
+  static String adminUserActiver(String id)   => '/admin/users/$id/activer';
+  static String adminUserDesact(String id)    => '/admin/users/$id/desactiver';
 
-  // ─── Contrat Travail ──────────────────────────────────────────────────────────
-  static String get contratTravailCreer =>
-      _get('CONTRAT_TRAVAIL_CREER_PATH', fallback: '/professionnel/contratTravail/creation-contrat-travail');
-  static String get contratTravailListe =>
-      _get('CONTRAT_TRAVAIL_LISTE_PATH', fallback: '/professionnel/contratTravail');
-  static String get contratTravailDetail =>
-      _get('CONTRAT_TRAVAIL_DETAIL_PATH', fallback: '/professionnel/contratTravail');
-  static String get contratTravailTelecharger =>
-      _get('CONTRAT_TRAVAIL_TELECHARGER_PATH', fallback: '/professionnel/contratTravail');
-  static String get contratTravailSigner =>
-      _get('CONTRAT_TRAVAIL_SIGNER_PATH', fallback: '/professionnel/contratTravail');
+  // ── ADMIN — ADMINS ────────────────────────────────────────────────────────
+  static const String adminAdmins         = '/admin/admins';
+  static String adminAdminId(String id)   => '/admin/admins/$id';
 
-  // ─── Quittance de loyer ───────────────────────────────────────────────────────
-  static String get quittanceCreer =>
-      _get('QUITTANCE_CREER_PATH', fallback: '/professionnel/creation-quittance-loyer');
-  static String get quittanceListe =>
-      _get('QUITTANCE_LISTE_PATH', fallback: '/professionnel');
-  static String get quittanceDetail =>
-      _get('QUITTANCE_DETAIL_PATH', fallback: '/professionnel');
-  static String get quittanceTelecharger =>
-      _get('QUITTANCE_TELECHARGER_PATH', fallback: '/professionnel');
+  // ── ADMIN — VILLES ────────────────────────────────────────────────────────
+  static const String adminVilles         = '/admin/villes';
+  static String adminVilleId(String id)   => '/admin/villes/$id';
 
-  // ─── Fiche de paie ────────────────────────────────────────────────────────────
-  static String get fichePaieCreer =>
-      _get('FICHE_PAIE_CREER_PATH', fallback: '/professionnel/cree-fiches-paie');
-  static String get fichePaieMesFiches =>
-      _get('FICHE_PAIE_MES_FICHES_PATH', fallback: '/professionnel/mes-fiches-paie');
-  static String get fichePaieDetail =>
-      _get('FICHE_PAIE_DETAIL_PATH', fallback: '/professionnel/fiche-paie');
+  // ── ADMIN — TARIFS ────────────────────────────────────────────────────────
+  static const String adminTarifs           = '/admin/tarifs';
+  static const String adminTarifsCalculer   = '/admin/tarifs/calculer-prix';
+  static String adminTarifId(String id)     => '/admin/tarifs/$id';
 
-  // ─── Particulier ─────────────────────────────────────────────────────────────
-  static String get particulierDashboardStats =>
-      _get('PARTICULIER_DASHBOARD_STATS_PATH', fallback: '/particulier/dashboard/stats');
-  static String get particulierFactures =>
-      _get('PARTICULIER_FACTURES_PATH', fallback: '/particulier/factures');
-  static String get particulierContrats =>
-      _get('PARTICULIER_CONTRATS_PATH', fallback: '/particulier/contrats');
+  // ── ADMIN — FACTURES ──────────────────────────────────────────────────────
+  static const String adminFactures               = '/admin/factures';
+  static String adminFactureId(String id)         => '/admin/factures/$id';
+  static String adminFactureAnnuler(String id)    => '/admin/factures/$id/annuler';
 
-  // ─── Stats endpoints ──────────────────────────────────────────────────────────
-  static String get contratBailStats    => '/professionnel/contratBail/stats';
-  static String get contratTravailStats => '/professionnel/contratTravail/stats';
-  static String autresContratsStats(String type) => '${autresContratsBase(type)}/stats';
-
-  // Le type est directement le segment de chemin API — pas de mapping nécessaire.
-  static String autresContratsBase(String type) => '/professionnel/$type';
-
-  // ─── Auth (endpoints supplémentaires) ────────────────────────────────────────
-  static String get authRefresh =>
-      _get('AUTH_REFRESH_PATH', fallback: '/auth/refresh');
-  static String get authLogout =>
-      _get('AUTH_LOGOUT_PATH', fallback: '/auth/logout');
+  // ── ADMIN — PAIEMENTS ─────────────────────────────────────────────────────
+  static const String adminPaiements                  = '/admin/paiements';
+  static String adminPaiementId(String id)            => '/admin/paiements/$id';
+  static String adminPaiementFacture(String fId)      => '/admin/paiements/factures/$fId';
+  static String adminPaiementRembourser(String id)    => '/admin/paiements/$id/rembourser';
 }

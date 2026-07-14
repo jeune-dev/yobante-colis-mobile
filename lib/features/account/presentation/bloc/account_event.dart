@@ -5,37 +5,13 @@ class LoadMe extends AccountEvent {}
 class ModifierInfoPersonnellesEvent extends AccountEvent {
   final String? nom;
   final String? prenom;
-  final String? email;
   final String? telephone;
-  final String? adresse;
-  final String? carteIdentiteNationalNum;
-  final String? rc;
-  final String? ninea;
-  final String? nomEntreprise;
-  final String? adresseEntreprise;
-  final String? telephoneEntreprise;
-  final String? emailEntreprise;
-  final String? photoProfilPath;
-  final String? logoPath;
-  final String? signaturePath;
+  ModifierInfoPersonnellesEvent({this.nom, this.prenom, this.telephone});
+}
 
-  ModifierInfoPersonnellesEvent({
-    this.nom,
-    this.prenom,
-    this.email,
-    this.telephone,
-    this.adresse,
-    this.carteIdentiteNationalNum,
-    this.rc,
-    this.ninea,
-    this.nomEntreprise,
-    this.adresseEntreprise,
-    this.telephoneEntreprise,
-    this.emailEntreprise,
-    this.photoProfilPath,
-    this.logoPath,
-    this.signaturePath,
-  });
+class UploadAvatarEvent extends AccountEvent {
+  final String filePath;
+  UploadAvatarEvent(this.filePath);
 }
 
 class ChangePasswordEvent extends AccountEvent {

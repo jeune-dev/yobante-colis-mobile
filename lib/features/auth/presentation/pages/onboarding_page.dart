@@ -1,240 +1,124 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:sign_application/core/theme/app_color.dart';
-import 'package:sign_application/features/auth/presentation/pages/login_page.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/routes/app_router.dart';
+import '../../../../core/theme/app_color.dart';
+import '../../../../core/widgets/primary_button.dart';
+import '../../../../core/widgets/secondary_button.dart';
 
-// Première page d'onboarding (logo 1)
-class OnboardingPage1 extends StatefulWidget {
-  const OnboardingPage1({super.key});
-
-  @override
-  State<OnboardingPage1> createState() => _OnboardingPage1State();
-}
-
-class _OnboardingPage1State extends State<OnboardingPage1>
-    with SingleTickerProviderStateMixin {
-  late Timer _timer;
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Animation de pulsation continue pour l'image
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-
-    // Timer pour passer à la page suivante
-    _timer = Timer(const Duration(seconds: 4), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-            const OnboardingPage2(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 800),
-          ),
-        );
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    _pulseController.dispose();
-    super.dispose();
-  }
+class OnboardingPage extends StatelessWidget {
+  const OnboardingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // Éléments décoratifs en arrière-plan
-          ..._buildBackgroundCircles(),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Image avec animation de pulsation
-                AnimatedBuilder(
-                  animation: _pulseAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _pulseAnimation.value,
-                      child: Hero(
-                        tag: 'onboarding-logo-1',
-                        child: Image.asset(
-                          'assets/images/onboarding1.jpeg',
-                          width: 200, // Ajustez selon vos besoins
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    );
-                  },
+      backgroundColor: AppColor.kBackground,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              const Spacer(flex: 2),
+              // Illustration
+              Container(
+                width: 180,
+                height: 180,
+                decoration: BoxDecoration(
+                  color: AppColor.kPrimary.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Cercles décoratifs flottants
-  List<Widget> _buildBackgroundCircles() {
-    return [
-      Positioned(
-        top: -50,
-        right: -50,
-        child: Container(
-          width: 200,
-          height: 200,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColor.kPrimary.withOpacity(0.03),
+                child: const Icon(
+                  Icons.local_shipping_rounded,
+                  color: AppColor.kPrimary,
+                  size: 90,
+                ),
+              ),
+              const SizedBox(height: 40),
+              Text(
+                'Yobante Colis',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  color: AppColor.kGrayscaleDark100,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Envoyez et suivez vos colis\npartout au SÃ©nÃ©gal, simplement.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  color: AppColor.kGrayscale40,
+                  height: 1.6,
+                ),
+              ),
+              const Spacer(flex: 3),
+              // Features rapides
+              _FeatureRow(
+                icon: Icons.track_changes_rounded,
+                text: 'Suivi en temps rÃ©el de vos envois',
+              ),
+              const SizedBox(height: 14),
+              _FeatureRow(
+                icon: Icons.receipt_long_rounded,
+                text: 'Factures et paiements en un clic',
+              ),
+              const SizedBox(height: 14),
+              _FeatureRow(
+                icon: Icons.notifications_active_rounded,
+                text: 'Notifications Ã  chaque Ã©tape',
+              ),
+              const Spacer(flex: 2),
+              PrimaryButton(
+                text: 'CrÃ©er un compte',
+                onTap: () => Navigator.of(context)
+                    .pushNamed(AppRouter.registerRoute),
+              ),
+              const SizedBox(height: 12),
+              SecondaryButton(
+                text: 'Se connecter',
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRouter.loginRoute),
+              ),
+              const SizedBox(height: 32),
+            ],
           ),
         ),
       ),
-      Positioned(
-        bottom: -80,
-        left: -40,
-        child: Container(
-          width: 250,
-          height: 250,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColor.kPrimary.withOpacity(0.02),
-          ),
-        ),
-      ),
-    ];
-  }
-}
-
-// Deuxième page d'onboarding (logo 2)
-class OnboardingPage2 extends StatefulWidget {
-  const OnboardingPage2({super.key});
-
-  @override
-  State<OnboardingPage2> createState() => _OnboardingPage2State();
-}
-
-class _OnboardingPage2State extends State<OnboardingPage2>
-    with SingleTickerProviderStateMixin {
-  late Timer _timer;
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-
-    _timer = Timer(const Duration(seconds: 4), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-            const LoginPage(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 800),
-          ),
-        );
-      }
-    });
   }
+}
 
-  @override
-  void dispose() {
-    _timer.cancel();
-    _pulseController.dispose();
-    super.dispose();
-  }
+class _FeatureRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _FeatureRow({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // Même type de cercles décoratifs (légèrement différents)
-          ..._buildBackgroundCircles(),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedBuilder(
-                  animation: _pulseAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _pulseAnimation.value,
-                      child: Hero(
-                        tag: 'onboarding-logo-2',
-                        child: Image.asset(
-                          'assets/images/onboarding2.jpeg',
-                          width: 200,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColor.kPrimary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: AppColor.kPrimary, size: 20),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColor.kGrayscaleDark100,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
-
-  List<Widget> _buildBackgroundCircles() {
-    return [
-      Positioned(
-        top: -30,
-        left: -30,
-        child: Container(
-          width: 180,
-          height: 180,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColor.kPrimary.withOpacity(0.02),
-          ),
-        ),
-      ),
-      Positioned(
-        bottom: -60,
-        right: -20,
-        child: Container(
-          width: 220,
-          height: 220,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColor.kPrimary.withOpacity(0.03),
-          ),
-        ),
-      ),
-    ];
-  }
 }
+

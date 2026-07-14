@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class AppColor {
   AppColor._();
@@ -11,3 +11,4 @@ class AppColor {
   static const Color kBackground =  Color(0XFFFAFAFA);
   static const Color kBackground2 =  Color(0XFFF6F6F6);
 }
+

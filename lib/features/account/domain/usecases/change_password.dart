@@ -1,5 +1,5 @@
-import 'package:dartz/dartz.dart';
-import 'package:sign_application/core/errors/failure.dart';
+﻿import 'package:dartz/dartz.dart';
+import 'package:yobnate_colis/core/errors/failure.dart';
 import '../repositories/account_repository.dart';
 
 class ChangePassword {
@@ -15,3 +15,4 @@ class ChangePassword {
         newPassword: newPassword,
       );
 }
+

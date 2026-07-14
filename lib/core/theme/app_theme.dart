@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_color.dart';
 
@@ -11,7 +11,7 @@ class AppTheme {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColor.kPrimary,
       primary: AppColor.kPrimary,
-      background: AppColor.kWhite,
+      surface: AppColor.kWhite,
       brightness: Brightness.light,
     );
 
@@ -20,7 +20,7 @@ class AppTheme {
       primaryColor: AppColor.kPrimary,
       scaffoldBackgroundColor: AppColor.kWhite,
 
-      // 🌤️ AppBar minimaliste
+      // ðŸŒ¤ï¸ AppBar minimaliste
       appBarTheme: AppBarTheme(
         backgroundColor: AppColor.kWhite,
         foregroundColor: AppColor.kGrayscaleDark100,
@@ -32,7 +32,7 @@ class AppTheme {
         ),
       ),
 
-      // 🧭 Boutons
+      // ðŸ§­ Boutons
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColor.kPrimary,
@@ -74,7 +74,7 @@ class AppTheme {
         ),
       ),
 
-      // ✏️ TextField & FormField
+      // âœï¸ TextField & FormField
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColor.kBackground,
@@ -101,7 +101,7 @@ class AppTheme {
         ),
       ),
 
-      // 💬 SnackBar stylé
+      // ðŸ’¬ SnackBar stylÃ©
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColor.kGrayscaleDark100,
         contentTextStyle: GoogleFonts.plusJakartaSans(
@@ -112,7 +112,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
 
-      // 📄 Typographie générale
+      // ðŸ“„ Typographie gÃ©nÃ©rale
       textTheme: GoogleFonts.plusJakartaSansTextTheme(base.textTheme).apply(
         bodyColor: AppColor.kGrayscaleDark100,
         displayColor: AppColor.kGrayscaleDark100,
@@ -120,3 +120,4 @@ class AppTheme {
     );
   }
 }
+

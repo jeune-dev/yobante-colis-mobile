@@ -10,14 +10,13 @@ if (keystorePropertiesFile.exists()) {
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
     // Firebase — Google Services plugin
     id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.signapp.sign_application"
+    namespace = "com.yobnate.yobnate_colis"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -31,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.signapp.sign_application"
+        applicationId = "com.yobnate.yobnate_colis"
         minSdk = flutter.minSdkVersion   // Android 6.0 — couvre 99%+ des appareils actifs en 2026
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -40,18 +39,21 @@ android {
 
     // ✅ D'ABORD signingConfigs
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"]?.toString()
-            keyPassword = keystoreProperties["keyPassword"]?.toString()
-            storeFile = file(keystoreProperties["storeFile"]?.toString())
-            storePassword = keystoreProperties["storePassword"]?.toString()
+        val storeFilePath = keystoreProperties["storeFile"]?.toString()
+        if (storeFilePath != null && file(storeFilePath).exists()) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"]?.toString()
+                keyPassword = keystoreProperties["keyPassword"]?.toString()
+                storeFile = file(storeFilePath)
+                storePassword = keystoreProperties["storePassword"]?.toString()
+            }
         }
     }
 
     // ✅ ENSUITE buildTypes
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
             // VULN-C02 : Obfuscation activée en production
             isMinifyEnabled = true
             isShrinkResources = true

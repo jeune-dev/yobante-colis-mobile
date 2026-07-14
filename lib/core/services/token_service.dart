@@ -1,9 +1,9 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 
 /// Service de gestion du JWT.
-/// VULN-M05 : Vérifie l'expiration du token côté client.
+/// VULN-M05 : VÃ©rifie l'expiration du token cÃ´tÃ© client.
 /// VULN-C03 : Ne stocke jamais le mot de passe.
 class TokenService {
   final FlutterSecureStorage secureStorage;
@@ -14,7 +14,7 @@ class TokenService {
 
   Stream<bool> get authChanges => _authController.stream;
 
-  /// Vérifie qu'un token existe ET qu'il n'est pas expiré.
+  /// VÃ©rifie qu'un token existe ET qu'il n'est pas expirÃ©.
   Future<bool> get isAuthenticated async {
     final token = await getToken();
     if (token == null || token.isEmpty) return false;
@@ -25,12 +25,12 @@ class TokenService {
     return await secureStorage.read(key: 'jwt_token');
   }
 
-  /// Retourne le token uniquement s'il est valide (non expiré).
+  /// Retourne le token uniquement s'il est valide (non expirÃ©).
   Future<String?> getValidToken() async {
     final token = await getToken();
     if (token == null || token.isEmpty) return null;
     if (_isTokenExpired(token)) {
-      // Token expiré : on le supprime automatiquement
+      // Token expirÃ© : on le supprime automatiquement
       await clearToken();
       return null;
     }
@@ -64,17 +64,17 @@ class TokenService {
     }
   }
 
-  /// VULN-M05 : Vérifie l'expiration du JWT côté client.
+  /// VULN-M05 : VÃ©rifie l'expiration du JWT cÃ´tÃ© client.
   bool _isTokenExpired(String token) {
     try {
       final payload = Jwt.parseJwt(token);
       final exp = payload['exp'];
       if (exp == null) return false; // Pas d'expiry = on fait confiance au backend
       final expiryDate = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
-      // Considère le token expiré 30 secondes avant l'expiration réelle (marge réseau)
+      // ConsidÃ¨re le token expirÃ© 30 secondes avant l'expiration rÃ©elle (marge rÃ©seau)
       return DateTime.now().isAfter(expiryDate.subtract(const Duration(seconds: 30)));
     } catch (_) {
-      // Si on ne peut pas parser le token, on le considère invalide
+      // Si on ne peut pas parser le token, on le considÃ¨re invalide
       return true;
     }
   }
@@ -83,3 +83,4 @@ class TokenService {
     _authController.close();
   }
 }
+

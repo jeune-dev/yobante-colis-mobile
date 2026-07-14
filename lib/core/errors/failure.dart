@@ -1,9 +1,9 @@
 abstract class Failure {
   final String errorMessage;
-  const Failure({required this.errorMessage});
+  const Failure(this.errorMessage);
 
   @override
-  String toString() => '$runtimeType(errorMessage: $errorMessage)';
+  String toString() => '$runtimeType($errorMessage)';
 
   @override
   int get hashCode => Object.hash(runtimeType, errorMessage);
@@ -17,11 +17,9 @@ abstract class Failure {
 }
 
 class ServerFailure extends Failure {
-  ServerFailure({required String errorMessage})
-      : super(errorMessage: errorMessage);
+  const ServerFailure(super.errorMessage);
 }
 
 class CacheFailure extends Failure {
-  CacheFailure({required String errorMessage})
-      : super(errorMessage: errorMessage);
+  const CacheFailure(super.errorMessage);
 }

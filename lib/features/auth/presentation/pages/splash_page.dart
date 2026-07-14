@@ -5,9 +5,6 @@ import '../../../../core/config/user_role.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/services/token_service.dart';
 
-/// VULN-M06 : Logique d'auth corrigée — reprend la session si token valide,
-///            redirige vers login si expiré ou absent.
-/// VULN-H01 : Suppression du log du JWT en clair.
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -24,31 +21,26 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _checkAuthStatus() async {
     await Future.delayed(const Duration(seconds: 1));
-
     if (!mounted) return;
 
     try {
       final tokenService = sl<TokenService>();
       final storage = sl<FlutterSecureStorage>();
 
-      // VULN-M05 : Vérifie validité ET expiration du token
       final isAuth = await tokenService.isAuthenticated;
-
       if (!mounted) return;
 
       if (isAuth) {
-        // Token valide : on récupère le rôle pour rediriger vers la bonne page
         final role = await storage.read(key: 'user_role');
         if (!mounted) return;
 
         final userRole = UserRoleX.fromString(role);
-        if (userRole.isClient) {
-          Navigator.of(context).pushReplacementNamed(AppRouter.clientRoute);
+        if (userRole.isAdmin) {
+          Navigator.of(context).pushReplacementNamed(AppRouter.adminRoute);
         } else {
-          Navigator.of(context).pushReplacementNamed(AppRouter.professionnelRoute);
+          Navigator.of(context).pushReplacementNamed(AppRouter.clientRoute);
         }
       } else {
-        // Pas de token ou expiré → onboarding/login
         Navigator.of(context).pushReplacementNamed(AppRouter.onboardingRoute);
       }
     } catch (e) {

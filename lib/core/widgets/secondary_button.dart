@@ -1,30 +1,31 @@
-import 'package:sign_application/core/theme/app_color.dart';
+﻿import 'package:yobnate_colis/core/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SecondaryButton extends StatefulWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final String text;
-  final String? iconPath; 
-  final Widget? iconWidget; 
+  final String? iconPath;
+  final Widget? iconWidget;
   final double width;
   final double height;
   final double borderRadius;
   final double? fontSize;
-  final Color textColor, bgColor;
+  final Color textColor;
+  final Color bgColor;
 
   const SecondaryButton({
     super.key,
-    required this.onTap,
+    this.onTap,
     required this.text,
-    required this.width,
-    required this.height,
+    this.width = double.maxFinite,
+    this.height = 55,
     this.iconPath,
     this.iconWidget,
-    required this.borderRadius,
+    this.borderRadius = 12.0,
     this.fontSize,
-    required this.textColor,
-    required this.bgColor,
+    this.textColor = AppColor.kGrayscaleDark100,
+    this.bgColor = AppColor.kWhite,
   });
 
   @override
@@ -68,12 +69,12 @@ class _SecondaryButtonState extends State<SecondaryButton>
     final icon = _buildIcon();
 
     return GestureDetector(
-      onTap: () {
-        _controller.forward().then((_) {
-          _controller.reverse();
-        });
-        widget.onTap();
-      },
+      onTap: widget.onTap == null
+          ? null
+          : () {
+              _controller.forward().then((_) => _controller.reverse());
+              widget.onTap!();
+            },
       child: ScaleTransition(
         scale: _tween.animate(
           CurvedAnimation(
@@ -114,3 +115,4 @@ class _SecondaryButtonState extends State<SecondaryButton>
     );
   }
 }
+

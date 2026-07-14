@@ -1,122 +1,96 @@
 import 'package:flutter/material.dart';
-import 'package:sign_application/core/services/token_service.dart';
-import 'package:sign_application/features/auth/presentation/pages/login_page.dart';
-import 'package:sign_application/features/auth/presentation/pages/register_page.dart';
-import 'package:sign_application/features/home/presentation/pages/client/clientpage.dart';
-import 'package:sign_application/features/home/presentation/pages/professionnel/professionnelpage.dart';
-import 'package:sign_application/features/auth/presentation/widgets/ContiditionUtilisation.dart';
-import 'package:sign_application/features/auth/presentation/widgets/PolitiqueConfidentialite.dart';
-import 'package:sign_application/features/auth/domain/entities/user.dart';
-import 'package:sign_application/core/services/fcm_service.dart';
-import 'package:sign_application/features/fiche_paie/presentation/page/creation_fiche_paie.dart';
-import 'package:sign_application/features/auth/presentation/pages/forgot_password_page.dart';
-import 'package:sign_application/features/auth/presentation/pages/reset_password_page.dart';
-import 'package:sign_application/features/auth/presentation/pages/onboarding_page.dart';
-import 'package:sign_application/injection_container.dart';
+import '../../core/services/token_service.dart';
+import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/auth/presentation/pages/forgot_password_page.dart';
+import '../../features/auth/presentation/pages/reset_password_page.dart';
+import '../../features/auth/presentation/pages/onboarding_page.dart';
+import '../../features/auth/presentation/pages/splash_page.dart';
+import '../../features/home/presentation/pages/client_home_page.dart';
+import '../../features/home/presentation/pages/admin_home_page.dart';
+import '../../features/colis/presentation/pages/creation_colis_page.dart';
+import '../../features/colis/presentation/pages/detail_colis_page.dart';
+import '../../features/colis/presentation/pages/suivi_colis_page.dart';
+import '../../injection_container.dart';
 
 class AppRouter {
-  static const String loginRoute = '/login';
-  static const String registerRoute = '/register';
-  static const String homeRoute = '/home';
-  static const String clientRoute = '/client';
-  static const String professionnelRoute = '/professionnel';
-
-  static const String politiqueConfRoute = '/politique-confidentialite';
-  static const String contiditionUtilisationRoute = '/condition-utilisation';
-
-  static const String onboardingRoute = '/onboarding';
-  static const String fichePaieRoute = '/fiche-paie';
+  static const String splashRoute         = '/';
+  static const String onboardingRoute     = '/onboarding';
+  static const String loginRoute          = '/login';
+  static const String registerRoute       = '/register';
   static const String forgotPasswordRoute = '/forgot-password';
-  static const String resetPasswordRoute = '/reset-password';
+  static const String resetPasswordRoute  = '/reset-password';
+  static const String clientRoute         = '/client';
+  static const String adminRoute          = '/admin';
+  static const String creationColisRoute  = '/colis/nouveau';
+  static const String detailColisRoute    = '/colis/detail';
+  static const String suiviColisRoute     = '/colis/suivi';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case loginRoute:
-        return MaterialPageRoute(builder: (_) => LoginPage());
-
-      case registerRoute:
-        return MaterialPageRoute(builder: (_) => const RegisterPage());
-
-      case clientRoute:
-        final args = settings.arguments;
-        final User? clientUser = args is User ? args : null;
-        final int clientTab = args is NotificationNavArgs ? args.initialTabIndex : 0;
-        return MaterialPageRoute(
-          builder: (_) => _AuthGuard(
-            child: ClientPage(user: clientUser, initialTabIndex: clientTab),
-          ),
-        );
-
-      case professionnelRoute:
-        final args = settings.arguments;
-        final User? profUser = args is User ? args : null;
-        final int profTab = args is NotificationNavArgs ? args.initialTabIndex : 0;
-        return MaterialPageRoute(
-          builder: (_) => _AuthGuard(
-            child: ProfessionnelPage(user: profUser, initialTabIndex: profTab),
-          ),
-        );
-
-      case fichePaieRoute:
-        final user = settings.arguments as User?;
-        return MaterialPageRoute(
-          builder: (_) => _AuthGuard(
-            child: FichePaieFormPage(user: user),
-          ),
-        );
-
-      case politiqueConfRoute:
-        return MaterialPageRoute(builder: (_) => PolitiqueConfidentialite());
-
-      case contiditionUtilisationRoute:
-        return MaterialPageRoute(builder: (_) => const ConditionUtilisation());
-
+      case splashRoute:
+        return _page(const SplashPage(), settings);
       case onboardingRoute:
-        return MaterialPageRoute(builder: (_) => const OnboardingPage1());
-
+        return _page(const OnboardingPage(), settings);
+      case loginRoute:
+        return _page(const LoginPage(), settings);
+      case registerRoute:
+        return _page(const RegisterPage(), settings);
       case forgotPasswordRoute:
-        return MaterialPageRoute(builder: (_) => const ForgotPasswordPage());
-
+        return _page(const ForgotPasswordPage(), settings);
       case resetPasswordRoute:
-        final email = settings.arguments as String? ?? '';
-        return MaterialPageRoute(
-            builder: (_) => ResetPasswordPage(email: email));
-
+        return _page(ResetPasswordPage(email: settings.arguments as String? ?? ''), settings);
+      case clientRoute:
+        return _guarded(const ClientHomePage(), settings);
+      case adminRoute:
+        return _guarded(const AdminHomePage(), settings);
+      case creationColisRoute:
+        return _guarded(const CreationColisPage(), settings);
+      case detailColisRoute:
+        return _guarded(DetailColisPage(colisId: settings.arguments as String), settings);
+      case suiviColisRoute:
+        return _guarded(SuiviColisPage(colisId: settings.arguments as String), settings);
       default:
-        return MaterialPageRoute(builder: (_) => const LoginPage());
+        return _page(const LoginPage(), settings);
     }
   }
+
+  static MaterialPageRoute<dynamic> _page(Widget w, RouteSettings s) =>
+      MaterialPageRoute(builder: (_) => w, settings: s);
+
+  static MaterialPageRoute<dynamic> _guarded(Widget w, RouteSettings s) =>
+      MaterialPageRoute(builder: (_) => _AuthGuard(child: w), settings: s);
 }
 
-/// Vérifie le token avant d'afficher une page protégée.
-/// Si le token est absent ou expiré, redirige vers /onboarding.
-class _AuthGuard extends StatelessWidget {
+class _AuthGuard extends StatefulWidget {
   final Widget child;
   const _AuthGuard({required this.child});
+  @override
+  State<_AuthGuard> createState() => _AuthGuardState();
+}
+
+class _AuthGuardState extends State<_AuthGuard> {
+  late Future<bool> _check;
+
+  @override
+  void initState() {
+    super.initState();
+    _check = sl<TokenService>().isAuthenticated;
+  }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<bool>(
-      future: sl<TokenService>().isAuthenticated,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+      future: _check,
+      builder: (ctx, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        if (snapshot.data == true) {
-          return child;
-        }
-        // Token manquant ou expiré — rediriger hors du widget tree courant
+        if (snap.data == true) return widget.child;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            AppRouter.onboardingRoute,
-            (route) => false,
-          );
+          Navigator.of(ctx).pushNamedAndRemoveUntil(AppRouter.onboardingRoute, (_) => false);
         });
-        return const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        );
+        return const Scaffold(body: SizedBox.shrink());
       },
     );
   }
