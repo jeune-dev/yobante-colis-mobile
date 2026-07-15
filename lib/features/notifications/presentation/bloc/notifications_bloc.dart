@@ -48,8 +48,10 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
 
   Future<void> _onLoad(LoadNotifications _, Emitter<NotificationsState> emit) async {
     emit(NotificationsLoading());
-    final result = await repo.getNotifications();
-    final countResult = await repo.getNonLuesCount();
+    final listFuture = repo.getNotifications();
+    final countFuture = repo.getNonLuesCount();
+    final result = await listFuture;
+    final countResult = await countFuture;
     result.fold(
       (f) => emit(NotificationsFailure(f.errorMessage)),
       (list) => emit(NotificationsLoaded(

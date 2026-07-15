@@ -8,8 +8,6 @@ import '../../../../core/widgets/toast_notif.dart';
 import '../../../../injection_container.dart';
 import '../../../villes/domain/entities/ville.dart';
 import '../../../villes/presentation/bloc/villes_bloc.dart';
-import '../../../villes/presentation/bloc/villes_event.dart';
-import '../../../villes/presentation/bloc/villes_state.dart';
 import '../bloc/colis_bloc.dart';
 import '../bloc/colis_event.dart';
 import '../bloc/colis_state.dart';
@@ -130,7 +128,7 @@ class _CreationColisPageState extends State<CreationColisPage> {
                     _sectionTitle('Détails du colis'),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: _typeColis,
+                      initialValue: _typeColis,
                       decoration: InputDecoration(
                         labelText: 'Type de colis',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -225,7 +223,7 @@ class _VilleDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<Ville>(
-      value: value,
+      initialValue: value,
       isExpanded: true,
       decoration: InputDecoration(
         labelText: label,

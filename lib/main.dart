@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -16,14 +17,12 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/auth/presentation/pages/splash_page.dart';
 import 'features/colis/presentation/bloc/colis_bloc.dart';
-import 'core/services/fcm_service.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'injection_container.dart' as di;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  // Le handler background FCM est enregistré dans FcmService.init() — pas ici.
   GoogleFonts.config.allowRuntimeFetching = false;
 
   try {
@@ -57,16 +56,23 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _navigatorKey = GlobalKey<NavigatorState>();
+  late final StreamSubscription<void> _logoutSub;
 
   @override
   void initState() {
     super.initState();
-    AuthEventBus.instance.onLogout.listen((_) {
+    _logoutSub = AuthEventBus.instance.onLogout.listen((_) {
       if (mounted) {
         di.sl<AuthBloc>().add(LogoutRequested());
         _navigatorKey.currentState?.pushNamedAndRemoveUntil(AppRouter.loginRoute, (_) => false);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _logoutSub.cancel();
+    super.dispose();
   }
 
   @override

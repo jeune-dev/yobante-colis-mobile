@@ -15,10 +15,14 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
+  static final _fmt = DateFormat('dd MMM, HH:mm', 'fr_FR');
+
   @override
   void initState() {
     super.initState();
-    context.read<NotificationsBloc>().add(const LoadNotifications());
+    if (context.read<NotificationsBloc>().state is! NotificationsLoaded) {
+      context.read<NotificationsBloc>().add(const LoadNotifications());
+    }
   }
 
   @override
@@ -47,10 +51,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
               child: ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: state.notifications.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
+                separatorBuilder: (_, _) => const Divider(height: 1),
                 itemBuilder: (_, i) {
                   final n = state.notifications[i];
-                  final fmt = DateFormat('dd MMM, HH:mm', 'fr_FR');
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundColor: n.isRead ? AppColor.kLine : AppColor.kPrimary.withValues(alpha: 0.1),
@@ -64,7 +67,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(n.message, style: GoogleFonts.plusJakartaSans(fontSize: 12)),
-                        Text(fmt.format(n.createdAt),
+                        Text(_fmt.format(n.createdAt),
                             style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40)),
                       ],
                     ),

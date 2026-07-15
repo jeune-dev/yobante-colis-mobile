@@ -29,14 +29,18 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     setState(() { _loading = true; _error = null; });
     try {
       final dio = sl<Dio>();
-      final statsRes = await dio.get(Env.adminDashStats);
-      final colisRes = await dio.get(Env.adminDashDerniersColis, queryParameters: {'limit': 5});
+      final statsFuture = dio.get(Env.adminDashStats);
+      final colisFuture = dio.get(Env.adminDashDerniersColis, queryParameters: {'limit': 5});
+      final statsRes = await statsFuture;
+      final colisRes = await colisFuture;
+      if (!mounted) return;
       setState(() {
         _stats = statsRes.data['data'] as Map<String, dynamic>?;
         _derniersColis = colisRes.data['data']['colis'] as List? ?? [];
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() { _error = e.toString(); _loading = false; });
     }
   }
@@ -59,7 +63,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (_stats != null) ...[
-                          _SectionTitle('Vue d\'ensemble'),
+                          const _SectionTitle('Vue d\'ensemble'),
                           const SizedBox(height: 12),
                           GridView.count(
                             crossAxisCount: 2,
@@ -77,7 +81,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                           ),
                         ],
                         const SizedBox(height: 24),
-                        _SectionTitle('Derniers colis'),
+                        const _SectionTitle('Derniers colis'),
                         const SizedBox(height: 12),
                         ..._derniersColis.map((c) {
                           final m = c as Map<String, dynamic>;

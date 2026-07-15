@@ -38,10 +38,14 @@ class Env {
   static String clientFactureId(String id)    => '/client/paiements/factures/$id';
 
   // ── ADMIN — DASHBOARD ─────────────────────────────────────────────────────
-  static const String adminDashStats         = '/admin/dashboard/stats';
-  static const String adminDashColisStatut   = '/admin/dashboard/colis-par-statut';
-  static const String adminDashDerniersColis = '/admin/dashboard/derniers-colis';
-  static const String adminDashDerniersUsers = '/admin/dashboard/derniers-utilisateurs';
+  static const String adminDashStats              = '/admin/dashboard/stats';
+  static const String adminDashColisStatut        = '/admin/dashboard/colis-par-statut';
+  static const String adminDashDerniersColis      = '/admin/dashboard/derniers-colis';
+  static const String adminDashDerniersUsers      = '/admin/dashboard/derniers-utilisateurs';
+  static const String adminDashUtilisateursActifs = '/admin/dashboard/utilisateurs-actifs';
+  static const String adminDashVillesFrequentes   = '/admin/dashboard/villes-frequentes';
+  static const String adminDashDestinations       = '/admin/dashboard/destinations-frequentes';
+  static const String adminDashActivitesRecentes  = '/admin/dashboard/activites-recentes';
 
   // ── ADMIN — COLIS ─────────────────────────────────────────────────────────
   static const String adminColis              = '/admin/colis';
@@ -74,6 +78,9 @@ class Env {
   static const String adminFactures               = '/admin/factures';
   static String adminFactureId(String id)         => '/admin/factures/$id';
   static String adminFactureAnnuler(String id)    => '/admin/factures/$id/annuler';
+
+  // ── ADMIN — LOGS D'ACTIVITÉ ───────────────────────────────────────────────
+  static const String adminActivityLogs = '/admin/activity-logs';
 
   // ── ADMIN — PAIEMENTS ─────────────────────────────────────────────────────
   static const String adminPaiements                  = '/admin/paiements';

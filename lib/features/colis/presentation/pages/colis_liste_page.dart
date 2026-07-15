@@ -83,7 +83,7 @@ class _ColisListePageState extends State<ColisListePage> {
               child: ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: state.colis.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (context, i) => _ColisCard(
                   colis: state.colis[i],
                   onTap: () => Navigator.of(context).pushNamed(
@@ -129,13 +129,14 @@ class _ColisListePageState extends State<ColisListePage> {
 }
 
 class _ColisCard extends StatelessWidget {
+  static final _fmt = DateFormat('dd MMM yyyy', 'fr_FR');
+
   final Colis colis;
   final VoidCallback onTap;
   const _ColisCard({required this.colis, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final fmt = DateFormat('dd MMM yyyy', 'fr_FR');
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -174,7 +175,7 @@ class _ColisCard extends StatelessWidget {
             ],
             const SizedBox(height: 8),
             Text(
-              'Créé le ${fmt.format(colis.createdAt)}',
+              'Créé le ${_fmt.format(colis.createdAt)}',
               style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40),
             ),
           ],

@@ -14,8 +14,9 @@ class AdminHomePage extends StatefulWidget {
 
 class _AdminHomePageState extends State<AdminHomePage> {
   int _currentIndex = 0;
+  final _visited = <int>{0};
 
-  final _pages = const [
+  static const _pages = [
     AdminDashboardPage(),
     AdminColisPage(),
     AdminUsersPage(),
@@ -25,10 +26,19 @@ class _AdminHomePageState extends State<AdminHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: List.generate(
+          _pages.length,
+          (i) => _visited.contains(i) ? _pages[i] : const SizedBox.shrink(),
+        ),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: (i) => setState(() => _currentIndex = i),
+        onDestinationSelected: (i) => setState(() {
+          _visited.add(i);
+          _currentIndex = i;
+        }),
         backgroundColor: AppColor.kWhite,
         destinations: const [
           NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Dashboard'),

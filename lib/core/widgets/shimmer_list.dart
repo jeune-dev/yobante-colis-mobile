@@ -39,14 +39,16 @@ class _ShimmerListState extends State<ShimmerList>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (_, _) => ListView.separated(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: widget.padding ?? const EdgeInsets.fromLTRB(16, 12, 16, 100),
-        itemCount: widget.itemCount,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
-        itemBuilder: (_, _) => _ShimmerCard(progress: _ctrl.value),
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (_, _) => ListView.separated(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: widget.padding ?? const EdgeInsets.fromLTRB(16, 12, 16, 100),
+          itemCount: widget.itemCount,
+          separatorBuilder: (_, _) => const SizedBox(height: 12),
+          itemBuilder: (_, _) => _ShimmerCard(progress: _ctrl.value),
+        ),
       ),
     );
   }

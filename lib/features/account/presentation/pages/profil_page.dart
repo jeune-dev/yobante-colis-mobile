@@ -203,8 +203,10 @@ class _ProfilPageState extends State<ProfilPage> {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        placeholder: (_, __) => _defaultAvatar(initials, size),
-        errorWidget: (_, __, ___) => _defaultAvatar(initials, size),
+        memCacheWidth: size.toInt(),
+        memCacheHeight: size.toInt(),
+        placeholder: (_, _) => _defaultAvatar(initials, size),
+        errorWidget: (_, _, _) => _defaultAvatar(initials, size),
       );
     } else {
       inner = _defaultAvatar(initials, size);

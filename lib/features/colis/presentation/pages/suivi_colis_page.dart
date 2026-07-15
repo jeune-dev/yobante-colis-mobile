@@ -18,6 +18,8 @@ class SuiviColisPage extends StatefulWidget {
 }
 
 class _SuiviColisPageState extends State<SuiviColisPage> {
+  static final _fmt = DateFormat('dd MMM yyyy HH:mm', 'fr_FR');
+
   @override
   void initState() {
     super.initState();
@@ -42,48 +44,45 @@ class _SuiviColisPageState extends State<SuiviColisPage> {
               itemBuilder: (_, i) {
                 final s = state.historique[i];
                 final isLast = i == state.historique.length - 1;
-                final fmt = DateFormat('dd MMM yyyy HH:mm', 'fr_FR');
-                return IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        children: [
-                          Container(
-                            width: 12, height: 12,
-                            decoration: BoxDecoration(
-                              color: i == 0 ? AppColor.kPrimary : AppColor.kGrayscale40,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          if (!isLast)
-                            Expanded(child: Container(width: 2, color: AppColor.kLine)),
-                        ],
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              StatutBadge(statut: s.statut),
-                              const SizedBox(height: 6),
-                              if (s.localisation != null)
-                                Text(s.localisation!,
-                                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 13)),
-                              if (s.commentaire != null)
-                                Text(s.commentaire!,
-                                    style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40)),
-                              const SizedBox(height: 4),
-                              Text(fmt.format(s.createdAt),
-                                  style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40)),
-                            ],
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      children: [
+                        Container(
+                          width: 12, height: 12,
+                          decoration: BoxDecoration(
+                            color: i == 0 ? AppColor.kPrimary : AppColor.kGrayscale40,
+                            shape: BoxShape.circle,
                           ),
                         ),
+                        if (!isLast)
+                          Container(width: 2, height: 80, color: AppColor.kLine),
+                      ],
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            StatutBadge(statut: s.statut),
+                            const SizedBox(height: 6),
+                            if (s.localisation != null)
+                              Text(s.localisation!,
+                                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 13)),
+                            if (s.commentaire != null)
+                              Text(s.commentaire!,
+                                  style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40)),
+                            const SizedBox(height: 4),
+                            Text(_fmt.format(s.createdAt),
+                                style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40)),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 );
               },
             );

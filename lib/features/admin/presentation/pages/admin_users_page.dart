@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,12 +22,17 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
   bool _loading = true;
   String? _error;
   final _searchCtrl = TextEditingController();
+  Timer? _debounce;
 
   @override
   void initState() { super.initState(); _load(); }
 
   @override
-  void dispose() { _searchCtrl.dispose(); super.dispose(); }
+  void dispose() {
+    _debounce?.cancel();
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _load({String? search}) async {
     setState(() { _loading = true; _error = null; });
@@ -33,8 +40,10 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
       final params = <String, dynamic>{'limit': 50};
       if (search != null && search.isNotEmpty) params['search'] = search;
       final res = await sl<Dio>().get(Env.adminUsers, queryParameters: params);
+      if (!mounted) return;
       setState(() { _users = res.data['data']['utilisateurs'] as List? ?? []; _loading = false; });
     } catch (e) {
+      if (!mounted) return;
       setState(() { _error = e.toString(); _loading = false; });
     }
   }
@@ -58,7 +67,10 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                   onPressed: () { _searchCtrl.clear(); _load(); },
                 ),
               ),
-              onChanged: (v) => _load(search: v),
+              onChanged: (v) {
+                _debounce?.cancel();
+                _debounce = Timer(const Duration(milliseconds: 400), () => _load(search: v));
+              },
             ),
           ),
           Expanded(
@@ -71,7 +83,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                         child: ListView.separated(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           itemCount: _users.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
                           itemBuilder: (_, i) {
                             final u = _users[i] as Map<String, dynamic>;
                             final isActive = u['isActive'] as bool? ?? true;
@@ -84,7 +96,9 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                               ),
                               child: Row(children: [
                                 CircleAvatar(
-                                  backgroundImage: u['avatarUrl'] != null ? NetworkImage(u['avatarUrl'] as String) : null,
+                                  backgroundImage: u['avatarUrl'] != null
+                                      ? CachedNetworkImageProvider(u['avatarUrl'] as String)
+                                      : null,
                                   child: u['avatarUrl'] == null ? Text(((u['prenom'] as String? ?? 'U')[0]).toUpperCase()) : null,
                                 ),
                                 const SizedBox(width: 12),

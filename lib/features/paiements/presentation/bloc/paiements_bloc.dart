@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/config/env.dart';
-import '../../../../core/errors/failure.dart';
 import '../../../paiements/domain/entities/facture_colis.dart';
 
 // ── Model ──────────────────────────────────────────────────────────────────

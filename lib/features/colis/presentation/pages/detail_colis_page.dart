@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -45,7 +46,7 @@ class _DetailColisPageState extends State<DetailColisPage> {
         }
         if (state is ColisDetailLoaded) {
           final c = state.colis;
-          final fmt = DateFormat('dd MMM yyyy', 'fr_FR');
+          final fmt = DateFormat('dd MMM yyyy', 'fr_FR'); // local: formatage unique par build
           return Scaffold(
             backgroundColor: AppColor.kBackground,
             appBar: AppBar(
@@ -106,10 +107,10 @@ class _DetailColisPageState extends State<DetailColisPage> {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: c.photos.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        separatorBuilder: (_, _) => const SizedBox(width: 8),
                         itemBuilder: (_, i) => ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.network(c.photos[i], width: 100, height: 100, fit: BoxFit.cover),
+                          child: CachedNetworkImage(imageUrl: c.photos[i], width: 100, height: 100, fit: BoxFit.cover),
                         ),
                       ),
                     ),

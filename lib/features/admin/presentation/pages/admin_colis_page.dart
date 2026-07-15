@@ -31,8 +31,10 @@ class _AdminColisPageState extends State<AdminColisPage> {
       final params = <String, dynamic>{'limit': 50};
       if (_filtreStatut != null) params['statut'] = _filtreStatut;
       final res = await sl<Dio>().get(Env.adminColis, queryParameters: params);
+      if (!mounted) return;
       setState(() { _colis = res.data['data']['colis'] as List? ?? []; _loading = false; });
     } catch (e) {
+      if (!mounted) return;
       setState(() { _error = e.toString(); _loading = false; });
     }
   }
@@ -56,7 +58,7 @@ class _AdminColisPageState extends State<AdminColisPage> {
                   child: ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: _colis.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (_, i) {
                       final c = _colis[i] as Map<String, dynamic>;
                       return _AdminColisCard(colis: c, onStatutChange: () => _load());

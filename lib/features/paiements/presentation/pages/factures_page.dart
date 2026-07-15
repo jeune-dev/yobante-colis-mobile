@@ -38,7 +38,7 @@ class _FacturesPageState extends State<FacturesPage> {
               child: ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: state.factures.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (_, i) {
                   final f = state.factures[i];
                   final (label, color) = _statutInfo(f.statut);

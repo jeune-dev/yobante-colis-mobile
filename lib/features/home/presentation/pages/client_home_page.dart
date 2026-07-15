@@ -18,8 +18,9 @@ class ClientHomePage extends StatefulWidget {
 
 class _ClientHomePageState extends State<ClientHomePage> {
   int _currentIndex = 0;
+  final _visited = <int>{0};
 
-  final _pages = const [
+  static const _pages = [
     ColisListePage(),
     FacturesPage(),
     NotificationsPage(),
@@ -30,17 +31,31 @@ class _ClientHomePageState extends State<ClientHomePage> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => NotificationsBloc(repo: sl())..add(const LoadNotifications())),
-        BlocProvider(create: (_) => PaiementsBloc(dio: sl())),
+        BlocProvider(create: (_) => sl<NotificationsBloc>()..add(const LoadNotifications())),
+        BlocProvider(create: (_) => sl<PaiementsBloc>()),
       ],
-      child: BlocBuilder<NotificationsBloc, NotificationsState>(
-        builder: (context, notifState) {
-          final nonLues = notifState is NotificationsLoaded ? notifState.nonLues : 0;
-          return Scaffold(
-            body: IndexedStack(index: _currentIndex, children: _pages),
-            bottomNavigationBar: NavigationBar(
+      child: Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          children: List.generate(
+            _pages.length,
+            (i) => _visited.contains(i) ? _pages[i] : const SizedBox.shrink(),
+          ),
+        ),
+        bottomNavigationBar: BlocBuilder<NotificationsBloc, NotificationsState>(
+          buildWhen: (p, c) {
+            final pCount = p is NotificationsLoaded ? p.nonLues : 0;
+            final cCount = c is NotificationsLoaded ? c.nonLues : 0;
+            return pCount != cCount;
+          },
+          builder: (context, notifState) {
+            final nonLues = notifState is NotificationsLoaded ? notifState.nonLues : 0;
+            return NavigationBar(
               selectedIndex: _currentIndex,
-              onDestinationSelected: (i) => setState(() => _currentIndex = i),
+              onDestinationSelected: (i) => setState(() {
+                _visited.add(i);
+                _currentIndex = i;
+              }),
               backgroundColor: AppColor.kWhite,
               destinations: [
                 const NavigationDestination(icon: Icon(Icons.inventory_2_outlined), selectedIcon: Icon(Icons.inventory_2), label: 'Colis'),
@@ -52,9 +67,9 @@ class _ClientHomePageState extends State<ClientHomePage> {
                 ),
                 const NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
               ],
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

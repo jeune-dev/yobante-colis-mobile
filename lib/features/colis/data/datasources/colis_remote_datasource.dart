@@ -80,7 +80,7 @@ class ColisRemoteDataSourceImpl implements ColisRemoteDataSource {
         'adresseLivraison': adresseLivraison,
         'poids': poids.toString(),
         'typeColis': typeColis,
-        if (description != null) 'description': description,
+        'description': ?description,
         if (valeurDeclaree != null) 'valeurDeclaree': valeurDeclaree.toString(),
         if (photosPaths.isNotEmpty)
           'photos': photosPaths.map((p) => MultipartFile.fromFileSync(p)).toList(),

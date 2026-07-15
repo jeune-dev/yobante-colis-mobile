@@ -151,7 +151,7 @@ Future<void> init() async {
   // ── AUTH ──────────────────────────────────────────────────────────────────
   sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(dio: sl()));
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(remoteDataSource: sl()));
-  sl.registerFactory(() => AuthBloc(authRepository: sl()));
+  sl.registerLazySingleton(() => AuthBloc(authRepository: sl()));
 
   // ── ACCOUNT ───────────────────────────────────────────────────────────────
   sl.registerLazySingleton<AccountRemoteDataSource>(() => AccountRemoteDataSourceImpl(dio: sl()));
@@ -159,7 +159,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetMe(sl()));
   sl.registerLazySingleton(() => ModifierInfoPersonnelles(sl()));
   sl.registerLazySingleton(() => ChangePassword(sl()));
-  sl.registerFactory(() => AccountBloc(getMe: sl(), modifierInfoPersonnelles: sl(), changePassword: sl(), accountRepository: sl()));
+  sl.registerLazySingleton(() => AccountBloc(getMe: sl(), modifierInfoPersonnelles: sl(), changePassword: sl(), accountRepository: sl()));
 
   // ── COLIS ─────────────────────────────────────────────────────────────────
   sl.registerLazySingleton<ColisRemoteDataSource>(() => ColisRemoteDataSourceImpl(dio: sl()));
@@ -169,7 +169,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => CreerColis(sl()));
   sl.registerLazySingleton(() => GetSuiviColis(sl()));
   sl.registerLazySingleton(() => AnnulerColis(sl()));
-  sl.registerFactory(() => ColisBloc(
+  sl.registerLazySingleton(() => ColisBloc(
     getColis: sl(), getColisDetail: sl(), creerColis: sl(),
     getSuiviColis: sl(), annulerColis: sl(),
   ));
