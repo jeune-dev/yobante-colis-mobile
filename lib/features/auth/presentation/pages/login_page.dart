@@ -1,7 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/config/user_role.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -53,14 +52,8 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
         if (state is AuthSuccess) {
-          final role = UserRoleX.fromString(state.user.role);
-          if (role.isAdmin) {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRouter.adminRoute, (r) => false);
-          } else {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRouter.clientRoute, (r) => false);
-          }
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              AppRouter.clientRoute, (r) => false);
         }
       },
       builder: (context, state) {

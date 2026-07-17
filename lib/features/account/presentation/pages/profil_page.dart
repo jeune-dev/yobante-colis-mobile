@@ -7,28 +7,200 @@ import 'package:toastification/toastification.dart';
 
 import '../../../../core/config/user_role.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../domain/entities/account_user.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../../../features/auth/presentation/bloc/auth_event.dart';
+import '../../../../injection_container.dart';
 import '../bloc/account_bloc.dart';
 import '../bloc/account_event.dart';
 import '../bloc/account_state.dart';
 
-class ProfilPage extends StatefulWidget {
+class ProfilPage extends StatelessWidget {
   const ProfilPage({super.key});
 
   @override
-  State<ProfilPage> createState() => _ProfilPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<AccountBloc>()..add(LoadMe()),
+      child: const _ProfilView(),
+    );
+  }
 }
 
-class _ProfilPageState extends State<ProfilPage> {
+class _ProfilView extends StatefulWidget {
+  const _ProfilView();
+
   @override
-  void initState() {
-    super.initState();
-    final state = context.read<AccountBloc>().state;
-    if (state is AccountInitial) {
-      context.read<AccountBloc>().add(LoadMe());
-    }
+  State<_ProfilView> createState() => _ProfilViewState();
+}
+
+class _ProfilViewState extends State<_ProfilView> {
+  void _showEditProfilSheet(BuildContext ctx, AccountUser user) {
+    final nomCtrl      = TextEditingController(text: user.nom);
+    final prenomCtrl   = TextEditingController(text: user.prenom);
+    final telCtrl      = TextEditingController(text: user.telephone);
+    final formKey      = GlobalKey<FormState>();
+
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (sheetCtx) => Padding(
+        padding: EdgeInsets.only(
+          left: 20, right: 20, top: 20,
+          bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 20,
+        ),
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Modifier le profil',
+                  style: GoogleFonts.plusJakartaSans(fontSize: 17, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: prenomCtrl,
+                decoration: const InputDecoration(labelText: 'Prénom'),
+                validator: (v) => v == null || v.trim().length < 2 ? 'Requis (min 2 car.)' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: nomCtrl,
+                decoration: const InputDecoration(labelText: 'Nom'),
+                validator: (v) => v == null || v.trim().length < 2 ? 'Requis (min 2 car.)' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: telCtrl,
+                decoration: const InputDecoration(labelText: 'Téléphone'),
+                keyboardType: TextInputType.phone,
+                validator: (v) => v == null || v.trim().isEmpty ? 'Requis' : null,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (formKey.currentState?.validate() != true) return;
+                    Navigator.pop(sheetCtx);
+                    ctx.read<AccountBloc>().add(ModifierInfoPersonnellesEvent(
+                      nom: nomCtrl.text.trim(),
+                      prenom: prenomCtrl.text.trim(),
+                      telephone: telCtrl.text.trim(),
+                    ));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.kPrimary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text('Enregistrer', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).whenComplete(() {
+      nomCtrl.dispose();
+      prenomCtrl.dispose();
+      telCtrl.dispose();
+    });
+  }
+
+  void _showChangePasswordSheet(BuildContext ctx) {
+    final oldCtrl    = TextEditingController();
+    final newCtrl    = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    final formKey    = GlobalKey<FormState>();
+    var obscureOld   = true;
+    var obscureNew   = true;
+
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (_, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            left: 20, right: 20, top: 20,
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 20,
+          ),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Changer le mot de passe',
+                    style: GoogleFonts.plusJakartaSans(fontSize: 17, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: oldCtrl,
+                  obscureText: obscureOld,
+                  decoration: InputDecoration(
+                    labelText: 'Ancien mot de passe',
+                    suffixIcon: IconButton(
+                      icon: Icon(obscureOld ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () => setSheetState(() => obscureOld = !obscureOld),
+                    ),
+                  ),
+                  validator: (v) => v == null || v.isEmpty ? 'Requis' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: newCtrl,
+                  obscureText: obscureNew,
+                  decoration: InputDecoration(
+                    labelText: 'Nouveau mot de passe',
+                    suffixIcon: IconButton(
+                      icon: Icon(obscureNew ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () => setSheetState(() => obscureNew = !obscureNew),
+                    ),
+                  ),
+                  validator: (v) => v == null || v.length < 6 ? 'Min 6 caractères' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: confirmCtrl,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Confirmer le nouveau mot de passe'),
+                  validator: (v) => v != newCtrl.text ? 'Les mots de passe ne correspondent pas' : null,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (formKey.currentState?.validate() != true) return;
+                      Navigator.pop(sheetCtx);
+                      ctx.read<AccountBloc>().add(ChangePasswordEvent(
+                        oldPassword: oldCtrl.text,
+                        newPassword: newCtrl.text,
+                      ));
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor.kPrimary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text('Confirmer', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ).whenComplete(() {
+      oldCtrl.dispose();
+      newCtrl.dispose();
+      confirmCtrl.dispose();
+    });
   }
 
   Future<void> _pickAndUploadAvatar() async {
@@ -67,6 +239,9 @@ class _ProfilPageState extends State<ProfilPage> {
       listener: (context, state) {
         if (state is AccountSuccess) {
           showToast(context, 'Succès', state.message, ToastificationType.success);
+        } else if (state is PasswordChanged) {
+          showToast(context, 'Succès', state.message, ToastificationType.success);
+          context.read<AccountBloc>().add(LoadMe());
         } else if (state is AccountError) {
           showToast(context, 'Erreur', state.message, ToastificationType.error);
         }
@@ -158,18 +333,37 @@ class _ProfilPageState extends State<ProfilPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionCard('Informations personnelles', Icons.person_outline, [
-                      _infoRow(Icons.badge_outlined, 'Prénom', user.prenom),
-                      _infoRow(Icons.badge_outlined, 'Nom', user.nom),
-                      _infoRow(Icons.email_outlined, 'Email', user.email),
-                      _infoRow(Icons.phone_outlined, 'Téléphone', user.telephone),
-                    ]),
+                    _sectionCard(
+                      'Informations personnelles',
+                      Icons.person_outline,
+                      [
+                        _infoRow(Icons.badge_outlined, 'Prénom', user.prenom),
+                        _infoRow(Icons.badge_outlined, 'Nom', user.nom),
+                        _infoRow(Icons.email_outlined, 'Email', user.email),
+                        _infoRow(Icons.phone_outlined, 'Téléphone', user.telephone),
+                      ],
+                      onEdit: () => _showEditProfilSheet(context, user),
+                    ),
                     const SizedBox(height: 16),
                     _sectionCard('Compte', Icons.security_outlined, [
                       _infoRow(Icons.manage_accounts_outlined, 'Rôle', role.label),
                       _statusRow(user.isActive),
                     ]),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _showChangePasswordSheet(context),
+                        icon: const Icon(Icons.lock_outline),
+                        label: Text('Changer le mot de passe',
+                            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -243,7 +437,7 @@ class _ProfilPageState extends State<ProfilPage> {
     );
   }
 
-  Widget _sectionCard(String title, IconData icon, List<Widget> children) {
+  Widget _sectionCard(String title, IconData icon, List<Widget> children, {VoidCallback? onEdit}) {
     final valid = children.where((w) => w is! SizedBox).toList();
     if (valid.isEmpty) return const SizedBox.shrink();
     return Container(
@@ -259,7 +453,17 @@ class _ProfilPageState extends State<ProfilPage> {
           Row(children: [
             Icon(icon, size: 18, color: AppColor.kPrimary),
             const SizedBox(width: 8),
-            Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700, color: AppColor.kGrayscaleDark100)),
+            Expanded(child: Text(title,
+                style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700, color: AppColor.kGrayscaleDark100))),
+            if (onEdit != null)
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                color: AppColor.kPrimary,
+                tooltip: 'Modifier',
+                onPressed: onEdit,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
           ]),
           const Divider(height: 20),
           ...valid,

@@ -69,4 +69,12 @@ class AnnulerColisRequested extends ColisEvent {
   List<Object?> get props => [id];
 }
 
+class LoadMoreColis extends ColisEvent {
+  final String? statut;
+  final int page;
+  const LoadMoreColis({this.statut, required this.page});
+  @override
+  List<Object?> get props => [statut, page];
+}
+
 class ResetColisState extends ColisEvent {}

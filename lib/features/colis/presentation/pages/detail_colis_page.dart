@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../injection_container.dart';
 import '../bloc/colis_bloc.dart';
 import '../bloc/colis_event.dart';
 import '../bloc/colis_state.dart';
@@ -13,20 +14,24 @@ import '../widgets/statut_badge.dart';
 import 'package:toastification/toastification.dart';
 import '../../../../core/widgets/toast_notif.dart';
 
-class DetailColisPage extends StatefulWidget {
+class DetailColisPage extends StatelessWidget {
   final String colisId;
   const DetailColisPage({super.key, required this.colisId});
 
   @override
-  State<DetailColisPage> createState() => _DetailColisPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<ColisBloc>()..add(LoadColisDetail(colisId)),
+      child: _DetailColisView(colisId: colisId),
+    );
+  }
 }
 
-class _DetailColisPageState extends State<DetailColisPage> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<ColisBloc>().add(LoadColisDetail(widget.colisId));
-  }
+class _DetailColisView extends StatelessWidget {
+  static final _fmt = DateFormat('dd MMM yyyy', 'fr_FR');
+
+  final String colisId;
+  const _DetailColisView({required this.colisId});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +39,7 @@ class _DetailColisPageState extends State<DetailColisPage> {
       listener: (ctx, state) {
         if (state is ColisAnnule) {
           showToast(ctx, 'Succès', 'Colis annulé avec succès.', ToastificationType.success);
-          Navigator.of(ctx).pop();
+          Navigator.of(ctx).pop(true);
         }
         if (state is ColisFailure) {
           showToast(ctx, 'Erreur', state.message, ToastificationType.error);
@@ -46,7 +51,6 @@ class _DetailColisPageState extends State<DetailColisPage> {
         }
         if (state is ColisDetailLoaded) {
           final c = state.colis;
-          final fmt = DateFormat('dd MMM yyyy', 'fr_FR'); // local: formatage unique par build
           return Scaffold(
             backgroundColor: AppColor.kBackground,
             appBar: AppBar(
@@ -54,7 +58,7 @@ class _DetailColisPageState extends State<DetailColisPage> {
               actions: [
                 if (c.statut == 'en_attente')
                   TextButton(
-                    onPressed: () => _confirmerAnnulation(c.id),
+                    onPressed: () => _confirmerAnnulation(context, c.id),
                     child: const Text('Annuler', style: TextStyle(color: Colors.red)),
                   ),
                 IconButton(
@@ -93,7 +97,7 @@ class _DetailColisPageState extends State<DetailColisPage> {
                   ]),
                   const SizedBox(height: 16),
                   _Section(title: 'Dates', children: [
-                    _Row('Créé le', fmt.format(c.createdAt)),
+                    _Row('Créé le', _fmt.format(c.createdAt)),
                     if (c.dateLivraisonEstimee != null) _Row('Livraison estimée', c.dateLivraisonEstimee!),
                     if (c.dateLivraisonEffective != null) _Row('Livraison effective', c.dateLivraisonEffective!),
                     if (c.annuleMotif != null) _Row('Motif annulation', c.annuleMotif!),
@@ -128,7 +132,7 @@ class _DetailColisPageState extends State<DetailColisPage> {
     );
   }
 
-  void _confirmerAnnulation(String id) {
+  void _confirmerAnnulation(BuildContext context, String id) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

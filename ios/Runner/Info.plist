@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>SIGN</string>
+	<string>Yobante Colis</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>SIGN</string>
+	<string>Yobante Colis</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -49,10 +49,10 @@
 
 	<!-- BLK-03/AS-02 : Permissions galerie et caméra — obligatoires pour image_picker -->
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>SIGN utilise votre bibliothèque photo pour ajouter une photo de profil et un logo d'entreprise.</string>
+	<string>Yobante Colis utilise votre bibliothèque photo pour ajouter une photo de profil et un logo d'entreprise.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>SIGN peut utiliser l'appareil photo pour prendre une photo de profil.</string>
+	<string>Yobante Colis peut utiliser l'appareil photo pour prendre une photo de profil.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>SIGN enregistre vos documents signés dans votre bibliothèque photo.</string>
+	<string>Yobante Colis enregistre vos documents signés dans votre bibliothèque photo.</string>
 </dict>
 </plist>

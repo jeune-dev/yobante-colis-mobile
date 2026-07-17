@@ -6,27 +6,34 @@ import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../injection_container.dart';
 import '../../domain/entities/colis.dart';
 import '../bloc/colis_bloc.dart';
 import '../bloc/colis_event.dart';
 import '../bloc/colis_state.dart';
 import '../widgets/statut_badge.dart';
 
-class ColisListePage extends StatefulWidget {
+class ColisListePage extends StatelessWidget {
   const ColisListePage({super.key});
 
   @override
-  State<ColisListePage> createState() => _ColisListePageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<ColisBloc>()..add(const LoadColis()),
+      child: const _ColisListeView(),
+    );
+  }
 }
 
-class _ColisListePageState extends State<ColisListePage> {
-  String? _filtreStatut;
+class _ColisListeView extends StatefulWidget {
+  const _ColisListeView();
 
   @override
-  void initState() {
-    super.initState();
-    context.read<ColisBloc>().add(const LoadColis());
-  }
+  State<_ColisListeView> createState() => _ColisListeViewState();
+}
+
+class _ColisListeViewState extends State<_ColisListeView> {
+  String? _filtreStatut;
 
   void _recharger() {
     context.read<ColisBloc>().add(LoadColis(statut: _filtreStatut));
@@ -46,17 +53,15 @@ class _ColisListePageState extends State<ColisListePage> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.of(context).pushNamed(AppRouter.creationColisRoute),
+        onPressed: () => Navigator.of(context)
+            .pushNamed(AppRouter.creationColisRoute)
+            .then((created) { if (created == true) _recharger(); }),
         backgroundColor: AppColor.kPrimary,
         foregroundColor: AppColor.kWhite,
         icon: const Icon(Icons.add),
         label: const Text('Nouveau colis'),
       ),
-      body: BlocConsumer<ColisBloc, ColisState>(
-        listener: (context, state) {
-          if (state is ColisCreated) _recharger();
-          if (state is ColisAnnule) _recharger();
-        },
+      body: BlocBuilder<ColisBloc, ColisState>(
         builder: (context, state) {
           if (state is ColisLoading) return const ShimmerList();
           if (state is ColisFailure) {
@@ -75,22 +80,43 @@ class _ColisListePageState extends State<ColisListePage> {
                 title: 'Aucun colis',
                 subtitle: 'Vous n\'avez pas encore de colis enregistré.',
                 actionLabel: 'Envoyer un colis',
-                onAction: () => Navigator.of(context).pushNamed(AppRouter.creationColisRoute),
+                onAction: () => Navigator.of(context)
+                    .pushNamed(AppRouter.creationColisRoute)
+                    .then((created) { if (created == true) _recharger(); }),
               );
             }
+            final hasMore = state.hasMore;
+            final nextPage = state.currentPage + 1;
             return RefreshIndicator(
               onRefresh: () async => _recharger(),
               child: ListView.separated(
                 padding: const EdgeInsets.all(16),
-                itemCount: state.colis.length,
+                itemCount: state.colis.length + (hasMore ? 1 : 0),
                 separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (context, i) => _ColisCard(
-                  colis: state.colis[i],
-                  onTap: () => Navigator.of(context).pushNamed(
-                    AppRouter.detailColisRoute,
-                    arguments: state.colis[i].id,
-                  ),
-                ),
+                itemBuilder: (context, i) {
+                  if (i == state.colis.length) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Center(
+                        child: OutlinedButton(
+                          onPressed: () => context.read<ColisBloc>().add(
+                            LoadMoreColis(statut: _filtreStatut, page: nextPage),
+                          ),
+                          child: const Text('Charger plus'),
+                        ),
+                      ),
+                    );
+                  }
+                  return RepaintBoundary(
+                    child: _ColisCard(
+                      colis: state.colis[i],
+                      onTap: () => Navigator.of(context).pushNamed(
+                        AppRouter.detailColisRoute,
+                        arguments: state.colis[i].id,
+                      ).then((annule) { if (annule == true) _recharger(); }),
+                    ),
+                  );
+                },
               ),
             );
           }

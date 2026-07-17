@@ -7,7 +7,6 @@ import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/home/presentation/pages/client_home_page.dart';
-import '../../features/home/presentation/pages/admin_home_page.dart';
 import '../../features/colis/presentation/pages/creation_colis_page.dart';
 import '../../features/colis/presentation/pages/detail_colis_page.dart';
 import '../../features/colis/presentation/pages/suivi_colis_page.dart';
@@ -21,7 +20,6 @@ class AppRouter {
   static const String forgotPasswordRoute = '/forgot-password';
   static const String resetPasswordRoute  = '/reset-password';
   static const String clientRoute         = '/client';
-  static const String adminRoute          = '/admin';
   static const String creationColisRoute  = '/colis/nouveau';
   static const String detailColisRoute    = '/colis/detail';
   static const String suiviColisRoute     = '/colis/suivi';
@@ -42,14 +40,12 @@ class AppRouter {
         return _page(ResetPasswordPage(email: settings.arguments as String? ?? ''), settings);
       case clientRoute:
         return _guarded(const ClientHomePage(), settings);
-      case adminRoute:
-        return _guarded(const AdminHomePage(), settings);
       case creationColisRoute:
         return _guarded(const CreationColisPage(), settings);
       case detailColisRoute:
-        return _guarded(DetailColisPage(colisId: settings.arguments as String), settings);
+        return _guarded(DetailColisPage(colisId: settings.arguments as String? ?? ''), settings);
       case suiviColisRoute:
-        return _guarded(SuiviColisPage(colisId: settings.arguments as String), settings);
+        return _guarded(SuiviColisPage(colisId: settings.arguments as String? ?? ''), settings);
       default:
         return _page(const LoginPage(), settings);
     }

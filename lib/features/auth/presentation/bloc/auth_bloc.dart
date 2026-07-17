@@ -1,8 +1,5 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/fcm_service.dart';
-import '../../../../core/services/token_service.dart';
-import '../../../../injection_container.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -64,10 +61,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onLogout(LogoutRequested _, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      await revokeRefreshToken(sl());
-      await sl<TokenService>().clearToken();
-      await sl<FlutterSecureStorage>().delete(key: 'user_id');
-      await sl<FlutterSecureStorage>().delete(key: 'user_role');
+      await authRepository.logout();
       emit(AuthInitial());
     } catch (e) {
       emit(AuthFailure(message: 'Erreur lors de la déconnexion : $e'));

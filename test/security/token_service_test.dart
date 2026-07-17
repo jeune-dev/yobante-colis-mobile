@@ -57,8 +57,6 @@ void main() {
     tokenService = TokenService(secureStorage: fakeStorage);
   });
 
-  tearDown(() => tokenService.dispose());
-
   group('TokenService — Sécurité', () {
     // JWT valide : exp = 9999999999 (an 2286)
     const validToken =
@@ -98,16 +96,14 @@ void main() {
       expect(await fakeStorage.read(key: 'jwt_token'), isNull);
     });
 
-    test('clearToken supprime le token et émet false sur le stream', () async {
+    test('clearToken supprime le token JWT et le refresh token', () async {
       await fakeStorage.write(key: 'jwt_token', value: validToken);
-      final events = <bool>[];
-      tokenService.authChanges.listen(events.add);
+      await fakeStorage.write(key: 'refresh_token', value: 'some_refresh');
 
       await tokenService.clearToken();
-      await Future.delayed(Duration.zero);
 
-      expect(events, contains(false));
       expect(await fakeStorage.read(key: 'jwt_token'), isNull);
+      expect(await fakeStorage.read(key: 'refresh_token'), isNull);
     });
 
     test('setToken null supprime le token (VULN-C03)', () async {

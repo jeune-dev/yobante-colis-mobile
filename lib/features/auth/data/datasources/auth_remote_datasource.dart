@@ -11,6 +11,7 @@ abstract class AuthRemoteDataSource {
   });
   Future<void> forgotPassword(String email);
   Future<void> resetPassword(String email, String code, String newPassword);
+  Future<void> logout(String refreshToken);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -65,6 +66,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           options: Options(extra: {'skipAuthInterceptor': true}));
     } on DioException catch (e) {
       throw ServerException(message: e.response?.data?['message'] as String? ?? 'Erreur');
+    }
+  }
+
+  @override
+  Future<void> logout(String refreshToken) async {
+    try {
+      await dio.post(
+        Env.authLogout,
+        data: {'refreshToken': refreshToken},
+        options: Options(extra: {'skipAuthInterceptor': true}),
+      );
+    } on DioException {
+      // Best-effort — ne pas bloquer la déconnexion locale si le backend est down
     }
   }
 }

@@ -12,11 +12,9 @@ import 'package:toastification/toastification.dart';
 import 'core/routes/app_router.dart';
 import 'core/services/auth_event_bus.dart';
 import 'core/theme/app_theme.dart';
-import 'features/account/presentation/bloc/account_bloc.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/auth/presentation/pages/splash_page.dart';
-import 'features/colis/presentation/bloc/colis_bloc.dart';
 import 'injection_container.dart' as di;
 
 void main() async {
@@ -80,8 +78,6 @@ class _MyAppState extends State<MyApp> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => di.sl<AuthBloc>()),
-        BlocProvider(create: (_) => di.sl<AccountBloc>()),
-        BlocProvider(create: (_) => di.sl<ColisBloc>()),
       ],
       child: ToastificationWrapper(
         child: MaterialApp(

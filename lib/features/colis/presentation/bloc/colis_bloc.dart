@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/usecases/colis_usecases.dart';
 import 'colis_event.dart';
@@ -18,6 +19,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
     required this.annulerColis,
   }) : super(ColisInitial()) {
     on<LoadColis>(_onLoadColis);
+    on<LoadMoreColis>(_onLoadMoreColis);
     on<LoadColisDetail>(_onLoadColisDetail);
     on<LoadSuiviColis>(_onLoadSuiviColis);
     on<CreerColisRequested>(_onCreerColis);
@@ -27,14 +29,45 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
 
   Future<void> _onLoadColis(LoadColis event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
+    final result = await getColis(statut: event.statut, page: 1);
+    result.fold(
+      (f) => emit(ColisFailure(f.errorMessage)),
+      (data) {
+        final pagination = data['pagination'] as Map<String, dynamic>?;
+        emit(ColisListLoaded(
+          colis: List.from(data['colis'] as List),
+          pagination: pagination,
+          currentPage: 1,
+          hasMore: _hasNextPage(pagination),
+        ));
+      },
+    );
+  }
+
+  Future<void> _onLoadMoreColis(LoadMoreColis event, Emitter<ColisState> emit) async {
+    final current = state;
+    if (current is! ColisListLoaded) return;
     final result = await getColis(statut: event.statut, page: event.page);
     result.fold(
       (f) => emit(ColisFailure(f.errorMessage)),
-      (data) => emit(ColisListLoaded(
-        colis: List.from(data['colis'] as List),
-        pagination: data['pagination'] as Map<String, dynamic>?,
-      )),
+      (data) {
+        final pagination = data['pagination'] as Map<String, dynamic>?;
+        emit(ColisListLoaded(
+          colis: [...current.colis, ...List<dynamic>.from(data['colis'] as List).cast()],
+          pagination: pagination,
+          currentPage: event.page,
+          hasMore: _hasNextPage(pagination),
+        ));
+      },
     );
+  }
+
+  static bool _hasNextPage(Map<String, dynamic>? p) {
+    if (p == null) return false;
+    if (p['hasNextPage'] == true) return true;
+    final page = p['page'] as int?;
+    final total = p['totalPages'] as int?;
+    return page != null && total != null && page < total;
   }
 
   Future<void> _onLoadColisDetail(LoadColisDetail event, Emitter<ColisState> emit) async {
@@ -51,7 +84,11 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
 
   Future<void> _onCreerColis(CreerColisRequested event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
-    final result = await creerColis(
+
+    final progressCtrl = StreamController<double>();
+
+    // Lance l'upload ; ferme le stream de progression quand terminé (succès ou erreur)
+    final uploadFuture = creerColis(
       expediteurNom: event.expediteurNom,
       expediteurTelephone: event.expediteurTelephone,
       villeDepartId: event.villeDepartId,
@@ -65,9 +102,17 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
       valeurDeclaree: event.valeurDeclaree,
       photosPaths: event.photosPaths,
       onSendProgress: (sent, total) {
-        if (total > 0) emit(ColisUploadProgress(sent / total));
+        if (total > 0 && !progressCtrl.isClosed) progressCtrl.add(sent / total);
       },
+    ).whenComplete(progressCtrl.close);
+
+    // Consomme les événements de progression via emit.forEach (pattern BLoC recommandé)
+    await emit.forEach<double>(
+      progressCtrl.stream,
+      onData: (p) => ColisUploadProgress(p),
     );
+
+    final result = await uploadFuture;
     result.fold(
       (f) => emit(ColisFailure(f.errorMessage)),
       (data) => emit(ColisCreated(

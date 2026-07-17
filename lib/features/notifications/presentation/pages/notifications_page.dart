@@ -86,7 +86,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  IconData _typeIcon(String type) {
+  static IconData _typeIcon(String type) {
     switch (type) {
       case 'colis':    return Icons.inventory_2_outlined;
       case 'paiement': return Icons.payments_outlined;

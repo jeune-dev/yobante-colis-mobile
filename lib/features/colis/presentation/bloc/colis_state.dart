@@ -21,9 +21,18 @@ class ColisUploadProgress extends ColisState {
 class ColisListLoaded extends ColisState {
   final List<Colis> colis;
   final Map<String, dynamic>? pagination;
-  const ColisListLoaded({required this.colis, this.pagination});
+  final int currentPage;
+  final bool hasMore;
+
+  const ColisListLoaded({
+    required this.colis,
+    this.pagination,
+    this.currentPage = 1,
+    this.hasMore = false,
+  });
+
   @override
-  List<Object?> get props => [colis];
+  List<Object?> get props => [colis, currentPage];
 }
 
 class ColisDetailLoaded extends ColisState {

@@ -1,14 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- VULN-H03 : Restreint les connexions réseau au domaine backend uniquement en HTTPS -->
 <network-security-config>
-    <!-- Domaine de production — HTTPS uniquement, pas de cleartext -->
-    <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="false">sign-backend-ha5a.onrender.com</domain>
-        <trust-anchors>
-            <certificates src="system" />
-        </trust-anchors>
-    </domain-config>
-
     <!-- Sécurité par défaut : pas de trafic HTTP en clair -->
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>

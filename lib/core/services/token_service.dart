@@ -1,20 +1,15 @@
-﻿import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 
 /// Service de gestion du JWT.
-/// VULN-M05 : VÃ©rifie l'expiration du token cÃ´tÃ© client.
-/// VULN-C03 : Ne stocke jamais le mot de passe.
+/// Vérifie l'expiration du token côté client avant chaque requête.
+/// Ne stocke jamais le mot de passe.
 class TokenService {
   final FlutterSecureStorage secureStorage;
-  final StreamController<bool> _authController =
-      StreamController<bool>.broadcast();
 
   TokenService({required this.secureStorage});
 
-  Stream<bool> get authChanges => _authController.stream;
-
-  /// VÃ©rifie qu'un token existe ET qu'il n'est pas expirÃ©.
+  /// Vérifie qu'un token existe ET qu'il n'est pas expiré.
   Future<bool> get isAuthenticated async {
     final token = await getToken();
     if (token == null || token.isEmpty) return false;
@@ -25,12 +20,12 @@ class TokenService {
     return await secureStorage.read(key: 'jwt_token');
   }
 
-  /// Retourne le token uniquement s'il est valide (non expirÃ©).
+  /// Retourne le token uniquement s'il est valide (non expiré).
+  /// Supprime automatiquement le token si expiré.
   Future<String?> getValidToken() async {
     final token = await getToken();
     if (token == null || token.isEmpty) return null;
     if (_isTokenExpired(token)) {
-      // Token expirÃ© : on le supprime automatiquement
       await clearToken();
       return null;
     }
@@ -43,14 +38,11 @@ class TokenService {
     } else {
       await secureStorage.write(key: 'jwt_token', value: token);
     }
-    final auth = await isAuthenticated;
-    _authController.add(auth);
   }
 
   Future<void> clearToken() async {
     await secureStorage.delete(key: 'jwt_token');
     await secureStorage.delete(key: 'refresh_token');
-    _authController.add(false);
   }
 
   Future<String?> getRefreshToken() async =>
@@ -64,23 +56,18 @@ class TokenService {
     }
   }
 
-  /// VULN-M05 : VÃ©rifie l'expiration du JWT cÃ´tÃ© client.
+  /// Vérifie l'expiration du JWT côté client.
+  /// Considère le token expiré 30 secondes avant l'expiration réelle (marge réseau).
   bool _isTokenExpired(String token) {
     try {
       final payload = Jwt.parseJwt(token);
       final exp = payload['exp'];
-      if (exp == null) return false; // Pas d'expiry = on fait confiance au backend
+      if (exp == null) return false;
       final expiryDate = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
-      // ConsidÃ¨re le token expirÃ© 30 secondes avant l'expiration rÃ©elle (marge rÃ©seau)
-      return DateTime.now().isAfter(expiryDate.subtract(const Duration(seconds: 30)));
+      return DateTime.now()
+          .isAfter(expiryDate.subtract(const Duration(seconds: 30)));
     } catch (_) {
-      // Si on ne peut pas parser le token, on le considÃ¨re invalide
       return true;
     }
   }
-
-  void dispose() {
-    _authController.close();
-  }
 }
-

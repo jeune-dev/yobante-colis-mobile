@@ -4,34 +4,26 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/shimmer_list.dart';
+import '../../../../injection_container.dart';
 import '../bloc/colis_bloc.dart';
 import '../bloc/colis_event.dart';
 import '../bloc/colis_state.dart';
 import '../widgets/statut_badge.dart';
 
-class SuiviColisPage extends StatefulWidget {
+class SuiviColisPage extends StatelessWidget {
   final String colisId;
   const SuiviColisPage({super.key, required this.colisId});
 
-  @override
-  State<SuiviColisPage> createState() => _SuiviColisPageState();
-}
-
-class _SuiviColisPageState extends State<SuiviColisPage> {
   static final _fmt = DateFormat('dd MMM yyyy HH:mm', 'fr_FR');
 
   @override
-  void initState() {
-    super.initState();
-    context.read<ColisBloc>().add(LoadSuiviColis(widget.colisId));
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColor.kBackground,
-      appBar: AppBar(title: const Text('Suivi du colis')),
-      body: BlocBuilder<ColisBloc, ColisState>(
+    return BlocProvider(
+      create: (_) => sl<ColisBloc>()..add(LoadSuiviColis(colisId)),
+      child: Scaffold(
+        backgroundColor: AppColor.kBackground,
+        appBar: AppBar(title: const Text('Suivi du colis')),
+        body: BlocBuilder<ColisBloc, ColisState>(
         builder: (context, state) {
           if (state is ColisLoading) return const ShimmerList();
           if (state is SuiviColisLoaded) {
@@ -90,6 +82,7 @@ class _SuiviColisPageState extends State<SuiviColisPage> {
           if (state is ColisFailure) return Center(child: Text(state.message));
           return const SizedBox.shrink();
         },
+      ),
       ),
     );
   }

@@ -1,10 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/env.dart';
-import '../config/user_role.dart';
 import '../routes/app_router.dart';
 import '../../injection_container.dart';
 import 'token_service.dart';
@@ -56,11 +55,11 @@ class FcmService {
     }
 
     // 6. Envoyer le token au backend
-    await _uploadToken();
+    await uploadToken();
 
     // 7. Écouter les refreshs de token
     _tokenRefreshSub?.cancel();
-    _tokenRefreshSub = _messaging.onTokenRefresh.listen((_) => _uploadToken());
+    _tokenRefreshSub = _messaging.onTokenRefresh.listen((_) => uploadToken());
   }
 
   /// Envoie le token FCM au backend (best-effort).
@@ -78,35 +77,16 @@ class FcmService {
       // Le Dio injecté a déjà l'intercepteur Authorization
       await sl<Dio>().post(
         Env.accountDeviceToken,
-        data: {'token': token, 'platform': 'android'},
+        data: {'token': token, 'platform': Platform.isIOS ? 'ios' : 'android'},
       );
     } catch (_) {
       // Best-effort — ne pas bloquer si le backend est down
     }
   }
 
-  // Alias privé pour l'usage interne (init + onTokenRefresh)
-  static Future<void> _uploadToken() => uploadToken();
-
   /// Navigation lors d'un tap sur notification
-  static Future<void> _handleNotificationTap(BuildContext context, Map<String, dynamic> data) async {
+  static void _handleNotificationTap(BuildContext context, Map<String, dynamic> data) {
     if (!context.mounted) return;
-    final role = await _getUserRole();
-    if (!context.mounted) return;
-
-    final userRole = UserRoleX.fromString(role);
-    if (userRole.isAdmin) {
-      Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.adminRoute, (route) => false);
-    } else {
-      Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.clientRoute, (route) => false);
-    }
-  }
-
-  static Future<String?> _getUserRole() async {
-    try {
-      return await sl<FlutterSecureStorage>().read(key: 'user_role');
-    } catch (_) {
-      return null;
-    }
+    Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.clientRoute, (route) => false);
   }
 }

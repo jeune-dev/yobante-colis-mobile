@@ -44,6 +44,9 @@ import 'features/notifications/domain/repositories/notifications_repository.dart
 import 'features/notifications/presentation/bloc/notifications_bloc.dart';
 
 // Paiements
+import 'features/paiements/data/datasources/paiements_remote_datasource.dart';
+import 'features/paiements/data/repositories/paiements_repository_impl.dart';
+import 'features/paiements/domain/repositories/paiements_repository.dart';
 import 'features/paiements/presentation/bloc/paiements_bloc.dart';
 
 final sl = GetIt.instance;
@@ -67,15 +70,6 @@ Future<bool> _tryRefresh(Dio dio) async {
   } catch (_) {
     return false;
   }
-}
-
-Future<void> revokeRefreshToken(Dio dio) async {
-  try {
-    final rt = await sl<TokenService>().getRefreshToken();
-    if (rt == null || rt.isEmpty) return;
-    await dio.post(Env.authLogout, data: {'refreshToken': rt},
-        options: Options(extra: {'skipAuthInterceptor': true}));
-  } catch (_) {}
 }
 
 Future<void> init() async {
@@ -119,7 +113,7 @@ Future<void> init() async {
         if (e.response?.statusCode == 401 && e.requestOptions.extra['skipAuthInterceptor'] != true) {
           final refreshed = await _tryRefresh(dio);
           if (refreshed) {
-            final token = await sl<TokenService>().getToken();
+            final token = await sl<TokenService>().getValidToken();
             e.requestOptions.headers['Authorization'] = 'Bearer $token';
             try {
               final retry = await dio.fetch(e.requestOptions);
@@ -150,7 +144,11 @@ Future<void> init() async {
 
   // ── AUTH ──────────────────────────────────────────────────────────────────
   sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(dio: sl()));
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
+    remoteDataSource: sl(),
+    tokenService: sl(),
+    secureStorage: sl(),
+  ));
   sl.registerLazySingleton(() => AuthBloc(authRepository: sl()));
 
   // ── ACCOUNT ───────────────────────────────────────────────────────────────
@@ -159,7 +157,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetMe(sl()));
   sl.registerLazySingleton(() => ModifierInfoPersonnelles(sl()));
   sl.registerLazySingleton(() => ChangePassword(sl()));
-  sl.registerLazySingleton(() => AccountBloc(getMe: sl(), modifierInfoPersonnelles: sl(), changePassword: sl(), accountRepository: sl()));
+  sl.registerFactory(() => AccountBloc(getMe: sl(), modifierInfoPersonnelles: sl(), changePassword: sl(), accountRepository: sl()));
 
   // ── COLIS ─────────────────────────────────────────────────────────────────
   sl.registerLazySingleton<ColisRemoteDataSource>(() => ColisRemoteDataSourceImpl(dio: sl()));
@@ -169,7 +167,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => CreerColis(sl()));
   sl.registerLazySingleton(() => GetSuiviColis(sl()));
   sl.registerLazySingleton(() => AnnulerColis(sl()));
-  sl.registerLazySingleton(() => ColisBloc(
+  sl.registerFactory(() => ColisBloc(
     getColis: sl(), getColisDetail: sl(), creerColis: sl(),
     getSuiviColis: sl(), annulerColis: sl(),
   ));
@@ -186,5 +184,7 @@ Future<void> init() async {
   sl.registerFactory(() => NotificationsBloc(repo: sl()));
 
   // ── PAIEMENTS ─────────────────────────────────────────────────────────────
-  sl.registerFactory(() => PaiementsBloc(dio: sl()));
+  sl.registerLazySingleton<PaiementsRemoteDataSource>(() => PaiementsRemoteDataSourceImpl(dio: sl()));
+  sl.registerLazySingleton<PaiementsRepository>(() => PaiementsRepositoryImpl(remoteDataSource: sl()));
+  sl.registerFactory(() => PaiementsBloc(paiementsRepository: sl()));
 }

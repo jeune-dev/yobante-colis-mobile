@@ -45,13 +45,16 @@ class _CreationColisPageState extends State<CreationColisPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => VillesBloc(getVilles: sl())..add(const LoadVilles()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<ColisBloc>()),
+        BlocProvider(create: (_) => sl<VillesBloc>()..add(const LoadVilles())),
+      ],
       child: BlocConsumer<ColisBloc, ColisState>(
         listener: (ctx, state) {
           if (state is ColisCreated) {
             showToast(ctx, 'Succès', 'Colis créé ! Réf : ${state.colis.reference}', ToastificationType.success);
-            Navigator.of(ctx).pop();
+            Navigator.of(ctx).pop(true);
           }
           if (state is ColisFailure) {
             showToast(ctx, 'Erreur', state.message, ToastificationType.error);
