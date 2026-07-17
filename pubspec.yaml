@@ -59,6 +59,6 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo_sign.jpeg"
-  adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/logo_sign.jpeg"
+  image_path: "assets/images/logo_yobante.png"
+  adaptive_icon_background: "#F5C518"
+  adaptive_icon_foreground: "assets/images/logo_yobante.png"
