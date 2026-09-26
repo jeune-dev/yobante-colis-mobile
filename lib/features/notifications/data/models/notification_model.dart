@@ -4,6 +4,7 @@ class NotificationModel extends NotificationApp {
   const NotificationModel({
     required super.id, required super.titre, required super.message,
     required super.type, required super.isRead, super.lienCible, required super.createdAt,
+    super.entite, super.entiteId,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) => NotificationModel(
@@ -14,5 +15,7 @@ class NotificationModel extends NotificationApp {
         isRead: json['isRead'] as bool? ?? false,
         lienCible: json['lienCible'] as String?,
         createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+        entite: json['entite'] as String?,
+        entiteId: json['entiteId'] as String?,
       );
 }

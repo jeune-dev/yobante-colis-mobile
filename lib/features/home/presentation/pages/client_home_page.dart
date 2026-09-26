@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../colis/presentation/pages/colis_liste_page.dart';
-import '../../../notifications/presentation/bloc/notifications_bloc.dart';
-import '../../../notifications/presentation/pages/notifications_page.dart';
-import '../../../paiements/presentation/bloc/paiements_bloc.dart';
-import '../../../paiements/presentation/pages/factures_page.dart';
-import '../../../../features/account/presentation/pages/profil_page.dart';
-import '../../../../core/theme/app_color.dart';
-import '../../../../injection_container.dart';
+import 'accueil_page.dart';
+import 'envois_page.dart';
+import '../../../account/presentation/pages/compte_page.dart';
+import '../../../expedition/presentation/pages/expedier_page.dart';
+import '../../../points_collecte/presentation/pages/point_de_service_page.dart';
+import '../../../../core/demo/demo_config.dart';
+import '../../../../core/routes/app_shell_key.dart';
+import '../../../../core/services/auth_status.dart';
+import '../../../../core/services/fcm_service.dart';
+import '../../../../core/widgets/app_drawer.dart';
+import '../../../../core/i18n/langue.dart';
 
+/// Coquille de navigation principale, façon DHL Express : tiroir latéral et
+/// cinq onglets (Accueil, Mes envois, Expédier, Points de service, Compte).
 class ClientHomePage extends StatefulWidget {
   const ClientHomePage({super.key});
 
@@ -17,59 +21,62 @@ class ClientHomePage extends StatefulWidget {
 }
 
 class _ClientHomePageState extends State<ClientHomePage> {
+  static const _ongletExpedier = 2;
   int _currentIndex = 0;
   final _visited = <int>{0};
+  bool? _isAuth;
 
-  static const _pages = [
-    ColisListePage(),
-    FacturesPage(),
-    NotificationsPage(),
-    ProfilPage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    isUserAuthenticated().then((auth) {
+      if (!mounted) return;
+      setState(() => _isAuth = auth);
+      // Notifications push : permissions, jeton d'appareil et ouverture sur tap
+      if (auth && !kDemoMode) FcmService.init(context).catchError((_) {});
+    });
+  }
+
+  void _selectionner(int i) => setState(() {
+        _visited.add(i);
+        _currentIndex = i;
+      });
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => sl<NotificationsBloc>()..add(const LoadNotifications())),
-        BlocProvider(create: (_) => sl<PaiementsBloc>()),
-      ],
-      child: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: List.generate(
-            _pages.length,
-            (i) => _visited.contains(i) ? _pages[i] : const SizedBox.shrink(),
-          ),
+    if (_isAuth == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final pages = [
+      AccueilPage(onExpedier: () => _selectionner(_ongletExpedier)),
+      const EnvoisPage(),
+      const ExpedierPage(),
+      const PointDeServicePage(),
+      const ComptePage(),
+    ];
+
+    return Scaffold(
+      key: appShellScaffoldKey,
+      drawer: const AppDrawer(),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: List.generate(
+          pages.length,
+          (i) => _visited.contains(i) ? pages[i] : const SizedBox.shrink(),
         ),
-        bottomNavigationBar: BlocBuilder<NotificationsBloc, NotificationsState>(
-          buildWhen: (p, c) {
-            final pCount = p is NotificationsLoaded ? p.nonLues : 0;
-            final cCount = c is NotificationsLoaded ? c.nonLues : 0;
-            return pCount != cCount;
-          },
-          builder: (context, notifState) {
-            final nonLues = notifState is NotificationsLoaded ? notifState.nonLues : 0;
-            return NavigationBar(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (i) => setState(() {
-                _visited.add(i);
-                _currentIndex = i;
-              }),
-              backgroundColor: AppColor.kWhite,
-              destinations: [
-                const NavigationDestination(icon: Icon(Icons.inventory_2_outlined), selectedIcon: Icon(Icons.inventory_2), label: 'Colis'),
-                const NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Factures'),
-                NavigationDestination(
-                  icon: Badge(isLabelVisible: nonLues > 0, label: Text('$nonLues'), child: const Icon(Icons.notifications_outlined)),
-                  selectedIcon: Badge(isLabelVisible: nonLues > 0, label: Text('$nonLues'), child: const Icon(Icons.notifications)),
-                  label: 'Alertes',
-                ),
-                const NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
-              ],
-            );
-          },
-        ),
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: _selectionner,
+        destinations: [
+          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: tr('Accueil')),
+          NavigationDestination(
+              icon: Icon(Icons.inventory_2_outlined), selectedIcon: Icon(Icons.inventory_2), label: tr('Mes envois')),
+          NavigationDestination(icon: Icon(Icons.send_outlined), selectedIcon: Icon(Icons.send), label: tr('Expédier')),
+          NavigationDestination(icon: Icon(Icons.storefront_outlined), selectedIcon: Icon(Icons.storefront), label: tr('Points')),
+          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: tr('Compte')),
+        ],
       ),
     );
   }

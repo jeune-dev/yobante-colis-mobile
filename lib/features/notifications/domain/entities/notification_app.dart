@@ -9,6 +9,10 @@ class NotificationApp extends Equatable {
   final String? lienCible;
   final DateTime createdAt;
 
+  /// Ressource concernée (`Colis`, `Facture`, `Reclamation`…) et son identifiant.
+  final String? entite;
+  final String? entiteId;
+
   const NotificationApp({
     required this.id,
     required this.titre,
@@ -17,6 +21,8 @@ class NotificationApp extends Equatable {
     required this.isRead,
     this.lienCible,
     required this.createdAt,
+    this.entite,
+    this.entiteId,
   });
 
   @override

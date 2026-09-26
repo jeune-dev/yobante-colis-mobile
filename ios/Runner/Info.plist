@@ -50,6 +50,8 @@
 	<!-- BLK-03/AS-02 : Permissions galerie et caméra — obligatoires pour image_picker -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Yobante Colis utilise votre bibliothèque photo pour ajouter une photo de profil et un logo d'entreprise.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Yobante Colis utilise le micro pour enregistrer un message vocal décrivant votre colis.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Yobante Colis peut utiliser l'appareil photo pour prendre une photo de profil.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

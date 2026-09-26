@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../domain/entities/demande_expedition.dart';
 
 abstract class ColisEvent extends Equatable {
   const ColisEvent();
@@ -10,6 +11,14 @@ class LoadColis extends ColisEvent {
   final String? statut;
   final int page;
   const LoadColis({this.statut, this.page = 1});
+  @override
+  List<Object?> get props => [statut, page];
+}
+
+class LoadColisRecus extends ColisEvent {
+  final String? statut;
+  final int page;
+  const LoadColisRecus({this.statut, this.page = 1});
   @override
   List<Object?> get props => [statut, page];
 }
@@ -29,36 +38,35 @@ class LoadSuiviColis extends ColisEvent {
 }
 
 class CreerColisRequested extends ColisEvent {
-  final String expediteurNom;
-  final String expediteurTelephone;
-  final String villeDepartId;
-  final String destinataireNom;
-  final String destinataireTelephone;
-  final String villeArriveeId;
-  final String adresseLivraison;
-  final double poids;
-  final String? description;
-  final String typeColis;
-  final double? valeurDeclaree;
+  final DemandeExpedition demande;
   final List<String> photosPaths;
-
-  const CreerColisRequested({
-    required this.expediteurNom,
-    required this.expediteurTelephone,
-    required this.villeDepartId,
-    required this.destinataireNom,
-    required this.destinataireTelephone,
-    required this.villeArriveeId,
-    required this.adresseLivraison,
-    required this.poids,
-    this.description,
-    this.typeColis = 'standard',
-    this.valeurDeclaree,
-    this.photosPaths = const [],
-  });
+  const CreerColisRequested(this.demande, {this.photosPaths = const []});
 
   @override
-  List<Object?> get props => [expediteurNom, destinataireNom, poids];
+  List<Object?> get props => [demande, photosPaths];
+}
+
+class AccepterPropositionRequested extends ColisEvent {
+  final String id;
+  const AccepterPropositionRequested(this.id);
+  @override
+  List<Object?> get props => [id];
+}
+
+class RefuserPropositionRequested extends ColisEvent {
+  final String id;
+  final String? motif;
+  const RefuserPropositionRequested(this.id, {this.motif});
+  @override
+  List<Object?> get props => [id, motif];
+}
+
+class ModifierColisRequested extends ColisEvent {
+  final String id;
+  final Map<String, dynamic> champs;
+  const ModifierColisRequested(this.id, this.champs);
+  @override
+  List<Object?> get props => [id, champs];
 }
 
 class AnnulerColisRequested extends ColisEvent {
@@ -73,6 +81,14 @@ class LoadMoreColis extends ColisEvent {
   final String? statut;
   final int page;
   const LoadMoreColis({this.statut, required this.page});
+  @override
+  List<Object?> get props => [statut, page];
+}
+
+class LoadMoreColisRecus extends ColisEvent {
+  final String? statut;
+  final int page;
+  const LoadMoreColisRecus({this.statut, required this.page});
   @override
   List<Object?> get props => [statut, page];
 }

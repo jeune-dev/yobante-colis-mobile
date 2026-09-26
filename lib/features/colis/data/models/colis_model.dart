@@ -4,79 +4,184 @@ class ColisModel extends Colis {
   const ColisModel({
     required super.id,
     required super.reference,
-    required super.expediteurNom,
-    required super.expediteurTelephone,
-    required super.villeDepartId,
-    super.villeDepartNom,
-    required super.destinataireNom,
-    required super.destinataireTelephone,
-    required super.villeArriveeId,
-    super.villeArriveeNom,
-    required super.adresseLivraison,
+    super.serviceId,
+    super.service,
+    super.typeContenu,
     super.description,
-    required super.typeColis,
-    required super.poids,
+    super.fragile,
+    super.marchandiseDangereuse,
+    required super.expediteurNom,
+    super.expediteurEntreprise,
+    required super.expediteurTelephone,
+    super.expediteurEmail,
+    super.paysDepart,
+    required super.villeDepartId,
+    super.villeDepart,
+    super.adresseDepart,
+    super.codePostalDepart,
+    required super.destinataireNom,
+    super.destinataireEntreprise,
+    required super.destinataireTelephone,
+    super.destinataireEmail,
+    super.paysArrivee,
+    required super.villeArriveeId,
+    super.villeArrivee,
+    super.adresseLivraison,
+    super.codePostalArrivee,
+    super.instructionsLivraison,
+    super.modeDepot,
+    super.pointCollecteDepartId,
+    super.pointCollecteDepart,
+    super.modeLivraison,
+    super.pointRetraitId,
+    super.pointRetrait,
+    super.nbPieces,
+    super.poidsReelKg,
+    super.poidsFactureKg,
+    super.pieces,
     super.valeurDeclaree,
-    super.montant,
+    super.deviseValeur,
+    super.assuranceSouscrite,
+    super.incoterm,
+    super.payeur,
+    super.devise,
+    super.montantTotal,
     required super.statut,
-    required super.photos,
     super.dateLivraisonEstimee,
     super.dateLivraisonEffective,
+    super.dateLimiteRetrait,
+    super.codeRetrait,
+    required super.photos,
     super.annuleMotif,
+    super.motifIncident,
+    super.enRetard,
     required super.createdAt,
+    super.categorie,
+    super.typeDocument,
+    super.etatMarchandise,
+    super.destinataireQuartier,
+    super.destinataireArrondissement,
+    super.destinataireDepartement,
+    super.destinatairePointRepere,
+    super.lignesForfait,
+    super.infosCollecte,
+    super.optionColissimo,
+    super.montantPropose,
+    super.propositionCommentaire,
+    super.propositionExpireAt,
+    super.motifRefus,
+    super.dateLimiteEtude,
+    super.modifiable,
+    super.lienPaiement,
+    super.factureReference,
+    super.factureStatut,
+    super.adresseReception,
+    super.tourneeTitre,
+    super.dateCollecte,
   });
+
+  static double? _num(dynamic v) => versDouble(v);
 
   factory ColisModel.fromJson(Map<String, dynamic> json) {
-    final depart = json['villeDepart'] as Map<String, dynamic>?;
-    final arrivee = json['villeArrivee'] as Map<String, dynamic>?;
+    final villeDepart = json['villeDepart'] as Map<String, dynamic>?;
+    final villeArrivee = json['villeArrivee'] as Map<String, dynamic>?;
+    final service = json['service'] as Map<String, dynamic>?;
+    final pointCollecteDepart = json['pointCollecteDepart'] as Map<String, dynamic>?;
+    final pointRetrait = json['pointRetrait'] as Map<String, dynamic>?;
+    final rawPieces = json['pieces'];
     final rawPhotos = json['photos'];
-    List<String> photos = [];
-    if (rawPhotos is List) {
-      photos = rawPhotos.map((e) => e.toString()).toList();
-    }
+    final facture = json['facture'] as Map<String, dynamic>?;
+    final tournee = json['tourneeCollecte'] as Map<String, dynamic>?;
+    final enlevement = json['enlevement'] as Map<String, dynamic>?;
+    final infosCollecte = json['infosCollecte'] is Map
+        ? Map<String, dynamic>.from(json['infosCollecte'] as Map)
+        : <String, dynamic>{};
+
     return ColisModel(
-      id: json['id'] as String,
+      id: json['id'] as String? ?? '',
       reference: json['reference'] as String? ?? '',
-      expediteurNom: json['expediteurNom'] as String? ?? '',
-      expediteurTelephone: json['expediteurTelephone'] as String? ?? '',
-      villeDepartId: json['villeDepartId'] as String? ?? depart?['id'] as String? ?? '',
-      villeDepartNom: depart?['nom'] as String?,
-      destinataireNom: json['destinataireNom'] as String? ?? '',
-      destinataireTelephone: json['destinataireTelephone'] as String? ?? '',
-      villeArriveeId: json['villeArriveeId'] as String? ?? arrivee?['id'] as String? ?? '',
-      villeArriveeNom: arrivee?['nom'] as String?,
-      adresseLivraison: json['adresseLivraison'] as String? ?? '',
+      serviceId: json['serviceId'] as String?,
+      service: service != null ? ServiceRef.fromJson(service) : null,
+      typeContenu: json['typeContenu'] as String? ?? 'marchandise',
       description: json['description'] as String?,
-      typeColis: json['typeColis'] as String? ?? 'standard',
-      poids: (json['poids'] as num?)?.toDouble() ?? 0,
-      valeurDeclaree: (json['valeurDeclaree'] as num?)?.toDouble(),
-      montant: (json['montant'] as num?)?.toDouble(),
+      fragile: json['fragile'] as bool? ?? false,
+      marchandiseDangereuse: json['marchandiseDangereuse'] as bool? ?? false,
+      expediteurNom: json['expediteurNom'] as String? ?? '',
+      expediteurEntreprise: json['expediteurEntreprise'] as String?,
+      expediteurTelephone: json['expediteurTelephone'] as String? ?? '',
+      expediteurEmail: json['expediteurEmail'] as String?,
+      paysDepart: json['paysDepart'] as String?,
+      villeDepartId: json['villeDepartId'] as String? ?? villeDepart?['id'] as String? ?? '',
+      villeDepart: villeDepart != null ? VilleRef.fromJson(villeDepart) : null,
+      adresseDepart: json['adresseDepart'] as String?,
+      codePostalDepart: json['codePostalDepart'] as String?,
+      destinataireNom: json['destinataireNom'] as String? ?? '',
+      destinataireEntreprise: json['destinataireEntreprise'] as String?,
+      destinataireTelephone: json['destinataireTelephone'] as String? ?? '',
+      destinataireEmail: json['destinataireEmail'] as String?,
+      paysArrivee: json['paysArrivee'] as String?,
+      villeArriveeId: json['villeArriveeId'] as String? ?? villeArrivee?['id'] as String? ?? '',
+      villeArrivee: villeArrivee != null ? VilleRef.fromJson(villeArrivee) : null,
+      adresseLivraison: json['adresseLivraison'] as String?,
+      codePostalArrivee: json['codePostalArrivee'] as String?,
+      instructionsLivraison: json['instructionsLivraison'] as String?,
+      modeDepot: json['modeDepot'] as String? ?? 'point_collecte',
+      pointCollecteDepartId: json['pointCollecteDepartId'] as String?,
+      pointCollecteDepart: pointCollecteDepart != null ? PointRef.fromJson(pointCollecteDepart) : null,
+      modeLivraison: json['modeLivraison'] as String? ?? 'point_retrait',
+      pointRetraitId: json['pointRetraitId'] as String?,
+      pointRetrait: pointRetrait != null ? PointRef.fromJson(pointRetrait) : null,
+      nbPieces: json['nbPieces'] as int? ?? 1,
+      poidsReelKg: _num(json['poidsReelKg']) ?? 0,
+      poidsFactureKg: _num(json['poidsFactureKg']) ?? 0,
+      pieces: rawPieces is List
+          ? rawPieces.map((e) => ColisPiece.fromJson(e as Map<String, dynamic>)).toList()
+          : const [],
+      valeurDeclaree: _num(json['valeurDeclaree']) ?? 0,
+      deviseValeur: json['deviseValeur'] as String? ?? 'XOF',
+      assuranceSouscrite: json['assuranceSouscrite'] as bool? ?? false,
+      incoterm: json['incoterm'] as String? ?? 'DAP',
+      payeur: json['payeur'] as String? ?? 'expediteur',
+      devise: json['devise'] as String? ?? 'XOF',
+      montantTotal: _num(json['montantTotal']) ?? 0,
       statut: json['statut'] as String? ?? 'en_attente',
-      photos: photos,
       dateLivraisonEstimee: json['dateLivraisonEstimee'] as String?,
       dateLivraisonEffective: json['dateLivraisonEffective'] as String?,
+      dateLimiteRetrait: json['dateLimiteRetrait'] as String?,
+      codeRetrait: json['codeRetrait'] as String?,
+      // Le backend stocke { url, publicId } ; les anciennes données pouvaient être de simples URL
+      photos: rawPhotos is List
+          ? rawPhotos.map((e) => e is Map ? '${e['url']}' : e.toString()).toList()
+          : const [],
       annuleMotif: json['annuleMotif'] as String?,
+      motifIncident: json['motifIncident'] as String?,
+      enRetard: json['enRetard'] as bool? ?? false,
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      categorie: json['categorie'] as String? ?? 'colis_moyen',
+      typeDocument: json['typeDocument'] as String?,
+      etatMarchandise: json['etatMarchandise'] as String?,
+      destinataireQuartier: json['destinataireQuartier'] as String?,
+      destinataireArrondissement: json['destinataireArrondissement'] as String?,
+      destinataireDepartement: json['destinataireDepartement'] as String?,
+      destinatairePointRepere: json['destinatairePointRepere'] as String?,
+      lignesForfait: (json['lignesForfait'] as List? ?? [])
+          .map((l) => LigneForfaitColis.fromJson(l as Map<String, dynamic>))
+          .toList(),
+      infosCollecte: infosCollecte,
+      optionColissimo: json['optionColissimo'] as bool? ?? false,
+      montantPropose: _num(json['montantPropose']),
+      propositionCommentaire: json['propositionCommentaire'] as String?,
+      propositionExpireAt: json['propositionExpireAt'] as String?,
+      motifRefus: json['motifRefus'] as String?,
+      dateLimiteEtude: json['dateLimiteEtude'] as String?,
+      modifiable: json['modifiable'] as bool? ?? false,
+      lienPaiement: json['lienPaiement'] as String?,
+      factureReference: facture?['reference'] as String?,
+      factureStatut: facture?['statut'] as String?,
+      adresseReception: json['adresseReception'] as Map<String, dynamic>?,
+      tourneeTitre: tournee?['titre'] as String?,
+      dateCollecte: (infosCollecte['datePrevue'] ?? enlevement?['dateSouhaitee'] ?? tournee?['dateCollecte'])
+          as String?,
     );
   }
-}
-
-class SuiviColisModel extends SuiviColis {
-  const SuiviColisModel({
-    required super.id,
-    required super.colisId,
-    required super.statut,
-    super.localisation,
-    super.commentaire,
-    required super.createdAt,
-  });
-
-  factory SuiviColisModel.fromJson(Map<String, dynamic> json) => SuiviColisModel(
-        id: json['id'] as String,
-        colisId: json['colisId'] as String? ?? '',
-        statut: json['statut'] as String? ?? '',
-        localisation: json['localisation'] as String?,
-        commentaire: json['commentaire'] as String?,
-        createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
-      );
 }

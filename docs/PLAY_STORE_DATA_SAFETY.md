@@ -1,4 +1,4 @@
-# 📋 Data Safety — Google Play Store
+# Data Safety — Google Play Store
 ## Application SIGN | com.signapp.sign_application
 
 > Ce document est à remplir dans la console Google Play :
@@ -9,10 +9,10 @@
 ## 1. Collecte et partage de données
 
 ### L'app collecte-t-elle des données utilisateur ?
-✅ **OUI**
+**OUI**
 
 ### L'app partage-t-elle des données avec des tiers ?
-⚠️ **OUI** — Firebase Crashlytics (diagnostics de crash uniquement, anonymisés)
+**OUI** — Firebase Crashlytics (diagnostics de crash uniquement, anonymisés)
 
 ---
 
@@ -20,17 +20,17 @@
 
 | Catégorie | Données | Collecté ? | Partagé ? | Finalité |
 |---|---|---|---|---|
-| **Informations personnelles** | Nom, prénom | ✅ Oui | ❌ Non | Fonctionnalité de l'app |
-| **Informations personnelles** | Adresse email | ✅ Oui | ❌ Non | Authentification |
-| **Informations personnelles** | Numéro de téléphone | ✅ Oui | ❌ Non | Profil utilisateur |
-| **Informations personnelles** | Numéro CNI / document | ✅ Oui | ❌ Non | Création de contrats |
-| **Informations personnelles** | Adresse postale | ✅ Oui | ❌ Non | Contrats immobiliers |
-| **Finances** | Données salariales | ✅ Oui | ❌ Non | Fiches de paie |
-| **Photos et vidéos** | Photo de profil | ✅ Oui | ❌ Non | Profil utilisateur |
-| **Photos et vidéos** | Image de signature | ✅ Oui | ❌ Non | Signature électronique |
-| **Fichiers et documents** | Contrats PDF | ✅ Oui | ❌ Non | Téléchargement documents |
-| **Identifiants d'app** | Token JWT (sécurisé) | ✅ Oui | ❌ Non | Authentification session |
-| **Diagnostics** | Logs de crash | ✅ Oui | ✅ Oui (Firebase) | Stabilité app |
+| **Informations personnelles** | Nom, prénom | Oui | Non | Fonctionnalité de l'app |
+| **Informations personnelles** | Adresse email | Oui | Non | Authentification |
+| **Informations personnelles** | Numéro de téléphone | Oui | Non | Profil utilisateur |
+| **Informations personnelles** | Numéro CNI / document | Oui | Non | Création de contrats |
+| **Informations personnelles** | Adresse postale | Oui | Non | Contrats immobiliers |
+| **Finances** | Données salariales | Oui | Non | Fiches de paie |
+| **Photos et vidéos** | Photo de profil | Oui | Non | Profil utilisateur |
+| **Photos et vidéos** | Image de signature | Oui | Non | Signature électronique |
+| **Fichiers et documents** | Contrats PDF | Oui | Non | Téléchargement documents |
+| **Identifiants d'app** | Token JWT (sécurisé) | Oui | Non | Authentification session |
+| **Diagnostics** | Logs de crash | Oui | Oui (Firebase) | Stabilité app |
 
 ---
 
@@ -38,10 +38,10 @@
 
 | Pratique | Statut |
 |---|---|
-| Les données sont chiffrées en transit | ✅ Oui (HTTPS/TLS uniquement) |
-| Les données peuvent être supprimées sur demande | ✅ Oui (suppression de compte) |
-| L'app respecte la politique famille Google Play | ✅ Oui |
-| L'app collecte des données d'enfants (<13 ans) | ❌ Non |
+| Les données sont chiffrées en transit | Oui (HTTPS/TLS uniquement) |
+| Les données peuvent être supprimées sur demande | Oui (suppression de compte) |
+| L'app respecte la politique famille Google Play | Oui |
+| L'app collecte des données d'enfants (<13 ans) | Non |
 
 ---
 
@@ -68,7 +68,7 @@
 
 ## 5. Compte de test pour les reviewers Google
 
-> ⚠️ Google exige un compte fonctionnel pour reviewer l'app.
+> Attention : Google exige un compte fonctionnel pour reviewer l'app.
 > Créer un compte de démonstration AVANT la soumission :
 
 ```

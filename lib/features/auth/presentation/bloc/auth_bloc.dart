@@ -3,6 +3,7 @@ import '../../../../core/services/fcm_service.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
+import '../../../../core/i18n/langue.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
@@ -33,6 +34,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await authRepository.register(
       nom: event.nom, prenom: event.prenom, email: event.email,
       motDePasse: event.motDePasse, telephone: event.telephone,
+      pays: event.pays,
+      villeId: event.villeId,
+      adresse: event.adresse,
+      typeCompte: event.typeCompte,
+      raisonSociale: event.raisonSociale,
+      numeroIdentificationFiscale: event.numeroIdentificationFiscale,
+      numeroTvaIntracom: event.numeroTvaIntracom,
+      codePostal: event.codePostal,
+      codeParrainage: event.codeParrainage,
     );
     result.fold(
       (f) => emit(AuthFailure(message: f.errorMessage)),
@@ -45,7 +55,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await authRepository.forgotPassword(event.email);
     result.fold(
       (f) => emit(AuthFailure(message: f.errorMessage)),
-      (_) => emit(const ForgotPasswordSuccess(message: 'Un code a été envoyé à votre email.')),
+      (_) => emit(ForgotPasswordSuccess(message: tr('Un code a été envoyé à votre email.'))),
     );
   }
 
@@ -64,7 +74,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await authRepository.logout();
       emit(AuthInitial());
     } catch (e) {
-      emit(AuthFailure(message: 'Erreur lors de la déconnexion : $e'));
+      emit(AuthFailure(message: tr('Erreur lors de la déconnexion : $e')));
     }
   }
 }

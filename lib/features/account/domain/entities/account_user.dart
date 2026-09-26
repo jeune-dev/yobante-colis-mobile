@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/i18n/langue.dart';
 
 class AccountUser extends Equatable {
   final String id;
@@ -19,7 +20,7 @@ class AccountUser extends Equatable {
     final p = prenom?.trim() ?? '';
     final n = nom?.trim() ?? '';
     if (p.isNotEmpty && n.isNotEmpty) return '$p $n';
-    return p.isNotEmpty ? p : (n.isNotEmpty ? n : 'Utilisateur');
+    return p.isNotEmpty ? p : (n.isNotEmpty ? n : tr('Utilisateur'));
   }
 
   @override

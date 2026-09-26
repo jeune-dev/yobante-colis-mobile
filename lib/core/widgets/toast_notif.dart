@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
 void showToast(
@@ -128,7 +128,7 @@ class _ToastCard extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // IcÃ´ne
+                      // Icône
                       Container(
                         width: 38,
                         height: 38,

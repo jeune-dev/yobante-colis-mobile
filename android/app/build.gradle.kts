@@ -37,7 +37,7 @@ android {
         versionName = flutter.versionName
     }
 
-    // ✅ D'ABORD signingConfigs
+    // D'ABORD signingConfigs
     signingConfigs {
         val storeFilePath = keystoreProperties["storeFile"]?.toString()
         if (storeFilePath != null && file(storeFilePath).exists()) {
@@ -50,7 +50,7 @@ android {
         }
     }
 
-    // ✅ ENSUITE buildTypes
+    // ENSUITE buildTypes
     buildTypes {
         release {
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")

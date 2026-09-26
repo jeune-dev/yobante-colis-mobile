@@ -27,6 +27,15 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
     required String email,
     required String motDePasse,
     required String telephone,
+    String pays = 'SN',
+    String? villeId,
+    String? adresse,
+    String typeCompte = 'particulier',
+    String? raisonSociale,
+    String? numeroIdentificationFiscale,
+    String? numeroTvaIntracom,
+    String? codePostal,
+    String? codeParrainage,
   }) async =>
       registerResult!;
 

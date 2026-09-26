@@ -1,10 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:toastification/toastification.dart';
+import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../../../../core/i18n/langue.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   final String email;
@@ -48,14 +50,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         if (state is ResetPasswordSuccess) {
           showToast(
             context,
-            'SuccÃ¨s',
-            'Mot de passe rÃ©initialisÃ© avec succÃ¨s.',
+            tr('Succès'),
+            tr('Mot de passe réinitialisé avec succès.'),
             ToastificationType.success,
           );
           Navigator.of(context)
               .pushNamedAndRemoveUntil('/login', (route) => false);
         } else if (state is AuthFailure) {
-          showToast(context, 'Erreur', state.message, ToastificationType.error);
+          showToast(context, tr('Erreur'), state.message, ToastificationType.error);
         }
       },
       child: Scaffold(
@@ -86,29 +88,29 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       width: 96,
                       height: 96,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
+                        color: AppColor.kPrimary.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: const Icon(
                         Icons.verified_user_rounded,
                         size: 48,
-                        color: Color(0xFF1A73E8),
+                        color: AppColor.kPrimary,
                       ),
                     ),
                   ),
                   const SizedBox(height: 32),
-                  const Text(
-                    'Nouveau mot de passe',
+                  Text(
+                    tr('Nouveau mot de passe'),
                     style: TextStyle(
                       fontSize: 26,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: Color(0xFF1E293B),
                       letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Saisissez le code reÃ§u par email Ã  ${widget.email} et choisissez un nouveau mot de passe.',
+                    tr('Saisissez le code reçu par email à ${widget.email} et choisissez un nouveau mot de passe.'),
                     style: const TextStyle(
                       fontSize: 15,
                       color: Color(0xFF64748B),
@@ -118,19 +120,19 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   const SizedBox(height: 40),
 
                   // OTP field
-                  _buildLabel('Code reÃ§u par email'),
+                  _buildLabel(tr('Code reçu par email')),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _otpController,
                     textCapitalization: TextCapitalization.characters,
                     textInputAction: TextInputAction.next,
                     decoration: _inputDecoration(
-                      hint: 'Ex: AB12CD34',
+                      hint: tr('Ex: AB12CD34'),
                       icon: Icons.vpn_key_outlined,
                     ),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
-                        return 'Veuillez entrer le code reÃ§u par email';
+                        return tr('Veuillez entrer le code reçu par email');
                       }
                       return null;
                     },
@@ -138,14 +140,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   const SizedBox(height: 20),
 
                   // New password field
-                  _buildLabel('Nouveau mot de passe'),
+                  _buildLabel(tr('Nouveau mot de passe')),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _newPasswordController,
                     obscureText: _obscureNew,
                     textInputAction: TextInputAction.next,
                     decoration: _inputDecoration(
-                      hint: 'Minimum 8 caractÃ¨res',
+                      hint: tr('Minimum 8 caractères'),
                       icon: Icons.lock_outline_rounded,
                       suffix: IconButton(
                         icon: Icon(
@@ -161,10 +163,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     ),
                     validator: (v) {
                       if (v == null || v.isEmpty) {
-                        return 'Veuillez entrer un nouveau mot de passe';
+                        return tr('Veuillez entrer un nouveau mot de passe');
                       }
                       if (v.length < 8) {
-                        return 'Le mot de passe doit contenir au moins 8 caractÃ¨res';
+                        return tr('Le mot de passe doit contenir au moins 8 caractères');
                       }
                       return null;
                     },
@@ -172,7 +174,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   const SizedBox(height: 20),
 
                   // Confirm password field
-                  _buildLabel('Confirmer le mot de passe'),
+                  _buildLabel(tr('Confirmer le mot de passe')),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _confirmController,
@@ -180,7 +182,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _submit(),
                     decoration: _inputDecoration(
-                      hint: 'RÃ©pÃ©tez le nouveau mot de passe',
+                      hint: tr('Répétez le nouveau mot de passe'),
                       icon: Icons.lock_outline_rounded,
                       suffix: IconButton(
                         icon: Icon(
@@ -196,10 +198,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     ),
                     validator: (v) {
                       if (v == null || v.isEmpty) {
-                        return 'Veuillez confirmer le mot de passe';
+                        return tr('Veuillez confirmer le mot de passe');
                       }
                       if (v != _newPasswordController.text) {
-                        return 'Les mots de passe ne correspondent pas';
+                        return tr('Les mots de passe ne correspondent pas');
                       }
                       return null;
                     },
@@ -216,9 +218,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         child: ElevatedButton(
                           onPressed: isLoading ? null : _submit,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1A73E8),
+                            backgroundColor: AppColor.kPrimary,
                             disabledBackgroundColor:
-                                const Color(0xFF1A73E8).withAlpha(128),
+                                AppColor.kPrimary.withAlpha(128),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -234,8 +236,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Text(
-                                  'RÃ©initialiser le mot de passe',
+                              : Text(
+                                  tr('Réinitialiser le mot de passe'),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
@@ -290,7 +292,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF1A73E8), width: 2),
+        borderSide: const BorderSide(color: AppColor.kPrimary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

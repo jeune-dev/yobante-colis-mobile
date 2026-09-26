@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Message vocal décrivant le colis (POST /client/colis/:id/vocal) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
     <!-- Stockage pour Android ≤ 9 (API 28) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
@@ -76,6 +78,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
         </intent>
     </queries>
 

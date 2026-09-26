@@ -7,4 +7,5 @@ abstract class NotificationsRepository {
   Future<Either<Failure, int>> getNonLuesCount();
   Future<Either<Failure, void>> marquerLue(String id);
   Future<Either<Failure, void>> marquerToutesLues();
+  Future<Either<Failure, void>> supprimer(String id);
 }

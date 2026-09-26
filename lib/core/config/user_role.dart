@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../theme/app_color.dart';
+import '../i18n/langue.dart';
 
 enum UserRole { client, admin, superAdmin, unknown }
 
@@ -22,18 +24,18 @@ extension UserRoleX on UserRole {
 
   String get label {
     switch (this) {
-      case UserRole.client:     return 'Client';
-      case UserRole.admin:      return 'Administrateur';
-      case UserRole.superAdmin: return 'Super Admin';
-      case UserRole.unknown:    return 'Inconnu';
+      case UserRole.client:     return tr('Client');
+      case UserRole.admin:      return tr('Administrateur');
+      case UserRole.superAdmin: return tr('Super Admin');
+      case UserRole.unknown:    return tr('Inconnu');
     }
   }
 
   Color get badgeColor {
     switch (this) {
-      case UserRole.client:     return Colors.green.withValues(alpha: 0.2);
-      case UserRole.admin:      return Colors.blue.withValues(alpha: 0.2);
-      case UserRole.superAdmin: return Colors.purple.withValues(alpha: 0.2);
+      case UserRole.client:     return AppColor.kSucces.withValues(alpha: 0.2);
+      case UserRole.admin:      return AppColor.kInfo.withValues(alpha: 0.2);
+      case UserRole.superAdmin: return AppColor.kInfo.withValues(alpha: 0.2);
       default:                  return Colors.grey.withValues(alpha: 0.15);
     }
   }

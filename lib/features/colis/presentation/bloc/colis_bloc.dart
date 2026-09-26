@@ -6,24 +6,35 @@ import 'colis_state.dart';
 
 class ColisBloc extends Bloc<ColisEvent, ColisState> {
   final GetColis getColis;
+  final GetColisRecus getColisRecus;
   final GetColisDetail getColisDetail;
   final CreerColis creerColis;
   final GetSuiviColis getSuiviColis;
   final AnnulerColis annulerColis;
+  final RepondreProposition repondreProposition;
+  final ModifierColis modifierColis;
 
   ColisBloc({
     required this.getColis,
+    required this.getColisRecus,
     required this.getColisDetail,
     required this.creerColis,
     required this.getSuiviColis,
     required this.annulerColis,
+    required this.repondreProposition,
+    required this.modifierColis,
   }) : super(ColisInitial()) {
     on<LoadColis>(_onLoadColis);
     on<LoadMoreColis>(_onLoadMoreColis);
+    on<LoadColisRecus>(_onLoadColisRecus);
+    on<LoadMoreColisRecus>(_onLoadMoreColisRecus);
     on<LoadColisDetail>(_onLoadColisDetail);
     on<LoadSuiviColis>(_onLoadSuiviColis);
     on<CreerColisRequested>(_onCreerColis);
     on<AnnulerColisRequested>(_onAnnulerColis);
+    on<AccepterPropositionRequested>(_onAccepterProposition);
+    on<RefuserPropositionRequested>(_onRefuserProposition);
+    on<ModifierColisRequested>(_onModifierColis);
     on<ResetColisState>((_, emit) => emit(ColisInitial()));
   }
 
@@ -62,6 +73,41 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
     );
   }
 
+  Future<void> _onLoadColisRecus(LoadColisRecus event, Emitter<ColisState> emit) async {
+    emit(ColisLoading());
+    final result = await getColisRecus(statut: event.statut, page: 1);
+    result.fold(
+      (f) => emit(ColisFailure(f.errorMessage)),
+      (data) {
+        final pagination = data['pagination'] as Map<String, dynamic>?;
+        emit(ColisRecusLoaded(
+          colis: List.from(data['colis'] as List),
+          pagination: pagination,
+          currentPage: 1,
+          hasMore: _hasNextPage(pagination),
+        ));
+      },
+    );
+  }
+
+  Future<void> _onLoadMoreColisRecus(LoadMoreColisRecus event, Emitter<ColisState> emit) async {
+    final current = state;
+    if (current is! ColisRecusLoaded) return;
+    final result = await getColisRecus(statut: event.statut, page: event.page);
+    result.fold(
+      (f) => emit(ColisFailure(f.errorMessage)),
+      (data) {
+        final pagination = data['pagination'] as Map<String, dynamic>?;
+        emit(ColisRecusLoaded(
+          colis: [...current.colis, ...List<dynamic>.from(data['colis'] as List).cast()],
+          pagination: pagination,
+          currentPage: event.page,
+          hasMore: _hasNextPage(pagination),
+        ));
+      },
+    );
+  }
+
   static bool _hasNextPage(Map<String, dynamic>? p) {
     if (p == null) return false;
     if (p['hasNextPage'] == true) return true;
@@ -89,17 +135,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
 
     // Lance l'upload ; ferme le stream de progression quand terminé (succès ou erreur)
     final uploadFuture = creerColis(
-      expediteurNom: event.expediteurNom,
-      expediteurTelephone: event.expediteurTelephone,
-      villeDepartId: event.villeDepartId,
-      destinataireNom: event.destinataireNom,
-      destinataireTelephone: event.destinataireTelephone,
-      villeArriveeId: event.villeArriveeId,
-      adresseLivraison: event.adresseLivraison,
-      poids: event.poids,
-      description: event.description,
-      typeColis: event.typeColis,
-      valeurDeclaree: event.valeurDeclaree,
+      event.demande,
       photosPaths: event.photosPaths,
       onSendProgress: (sent, total) {
         if (total > 0 && !progressCtrl.isClosed) progressCtrl.add(sent / total);
@@ -115,10 +151,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
     final result = await uploadFuture;
     result.fold(
       (f) => emit(ColisFailure(f.errorMessage)),
-      (data) => emit(ColisCreated(
-        colis: data['colis'],
-        facture: data['facture'] as Map<String, dynamic>?,
-      )),
+      (resultat) => emit(ColisCreated(resultat)),
     );
   }
 
@@ -126,5 +159,23 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
     emit(ColisLoading());
     final result = await annulerColis(event.id, motif: event.motif);
     result.fold((f) => emit(ColisFailure(f.errorMessage)), (c) => emit(ColisAnnule(c)));
+  }
+
+  Future<void> _onAccepterProposition(AccepterPropositionRequested event, Emitter<ColisState> emit) async {
+    emit(ColisLoading());
+    final result = await repondreProposition.accepter(event.id);
+    result.fold((f) => emit(ColisFailure(f.errorMessage)), (r) => emit(PropositionAcceptee(r)));
+  }
+
+  Future<void> _onRefuserProposition(RefuserPropositionRequested event, Emitter<ColisState> emit) async {
+    emit(ColisLoading());
+    final result = await repondreProposition.refuser(event.id, motif: event.motif);
+    result.fold((f) => emit(ColisFailure(f.errorMessage)), (c) => emit(PropositionRefusee(c)));
+  }
+
+  Future<void> _onModifierColis(ModifierColisRequested event, Emitter<ColisState> emit) async {
+    emit(ColisLoading());
+    final result = await modifierColis(event.id, event.champs);
+    result.fold((f) => emit(ColisFailure(f.errorMessage)), (c) => emit(ColisModifie(c)));
   }
 }

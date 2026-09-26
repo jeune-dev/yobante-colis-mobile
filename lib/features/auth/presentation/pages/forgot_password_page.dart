@@ -1,10 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:toastification/toastification.dart';
+import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../../../../core/i18n/langue.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -39,8 +41,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         if (state is ForgotPasswordSuccess) {
           showToast(
             context,
-            'Code envoyÃ©',
-            'Un code a Ã©tÃ© envoyÃ© Ã  votre adresse email.',
+            tr('Code envoyé'),
+            tr('Un code a été envoyé à votre adresse email.'),
             ToastificationType.success,
           );
           Navigator.of(context).pushNamed(
@@ -48,7 +50,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             arguments: _emailController.text.trim(),
           );
         } else if (state is AuthFailure) {
-          showToast(context, 'Erreur', state.message, ToastificationType.error);
+          showToast(context, tr('Erreur'), state.message, ToastificationType.error);
         }
       },
       child: Scaffold(
@@ -79,29 +81,29 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       width: 96,
                       height: 96,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
+                        color: AppColor.kPrimary.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: const Icon(
                         Icons.lock_reset_rounded,
                         size: 48,
-                        color: Color(0xFF1A73E8),
+                        color: AppColor.kPrimary,
                       ),
                     ),
                   ),
                   const SizedBox(height: 32),
-                  const Text(
-                    'Mot de passe oubliÃ© ?',
+                  Text(
+                    tr('Mot de passe oublié ?'),
                     style: TextStyle(
                       fontSize: 26,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: Color(0xFF1E293B),
                       letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Entrez votre adresse email et nous vous enverrons un code de rÃ©initialisation.',
+                  Text(
+                    tr('Entrez votre adresse email et nous vous enverrons un code de réinitialisation.'),
                     style: TextStyle(
                       fontSize: 15,
                       color: Color(0xFF64748B),
@@ -110,8 +112,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                   const SizedBox(height: 40),
                   // Email field
-                  const Text(
-                    'Adresse email',
+                  Text(
+                    tr('Adresse email'),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -143,7 +145,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                            color: Color(0xFF1A73E8), width: 2),
+                            color: AppColor.kPrimary, width: 2),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -157,11 +159,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Veuillez entrer votre email';
+                        return tr('Veuillez entrer votre email');
                       }
                       final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                       if (!emailRegex.hasMatch(value.trim())) {
-                        return 'Format d\'email invalide';
+                        return tr('Format d\'email invalide');
                       }
                       return null;
                     },
@@ -177,9 +179,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         child: ElevatedButton(
                           onPressed: isLoading ? null : _submit,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1A73E8),
+                            backgroundColor: AppColor.kPrimary,
                             disabledBackgroundColor:
-                                const Color(0xFF1A73E8).withAlpha(128),
+                                AppColor.kPrimary.withAlpha(128),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -195,8 +197,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Text(
-                                  'Envoyer le code',
+                              : Text(
+                                  tr('Envoyer le code'),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
@@ -210,10 +212,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   Center(
                     child: TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text(
-                        'Retour Ã  la connexion',
+                      child: Text(
+                        tr('Retour à la connexion'),
                         style: TextStyle(
-                          color: Color(0xFF1A73E8),
+                          color: AppColor.kPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/services/token_service.dart';
+import '../services/auth_status.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
@@ -7,10 +7,9 @@ import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/home/presentation/pages/client_home_page.dart';
-import '../../features/colis/presentation/pages/creation_colis_page.dart';
+import '../../features/expedition/presentation/pages/assistant_expedition_page.dart';
 import '../../features/colis/presentation/pages/detail_colis_page.dart';
 import '../../features/colis/presentation/pages/suivi_colis_page.dart';
-import '../../injection_container.dart';
 
 class AppRouter {
   static const String splashRoute         = '/';
@@ -39,9 +38,14 @@ class AppRouter {
       case resetPasswordRoute:
         return _page(ResetPasswordPage(email: settings.arguments as String? ?? ''), settings);
       case clientRoute:
-        return _guarded(const ClientHomePage(), settings);
+        return _page(const ClientHomePage(), settings);
       case creationColisRoute:
-        return _guarded(const CreationColisPage(), settings);
+        return _guarded(
+          AssistantExpeditionPage(
+            preremplissage: settings.arguments as PreremplissageExpedition? ?? const PreremplissageExpedition(),
+          ),
+          settings,
+        );
       case detailColisRoute:
         return _guarded(DetailColisPage(colisId: settings.arguments as String? ?? ''), settings);
       case suiviColisRoute:
@@ -71,7 +75,7 @@ class _AuthGuardState extends State<_AuthGuard> {
   @override
   void initState() {
     super.initState();
-    _check = sl<TokenService>().isAuthenticated;
+    _check = isUserAuthenticated();
   }
 
   @override
@@ -84,7 +88,7 @@ class _AuthGuardState extends State<_AuthGuard> {
         }
         if (snap.data == true) return widget.child;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(ctx).pushNamedAndRemoveUntil(AppRouter.onboardingRoute, (_) => false);
+          Navigator.of(ctx).pushNamedAndRemoveUntil(AppRouter.loginRoute, (_) => false);
         });
         return const Scaffold(body: SizedBox.shrink());
       },

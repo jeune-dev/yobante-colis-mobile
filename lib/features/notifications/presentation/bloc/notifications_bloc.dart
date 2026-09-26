@@ -16,6 +16,11 @@ class MarquerLue extends NotificationsEvent {
   @override List<Object?> get props => [id];
 }
 class MarquerToutesLues extends NotificationsEvent { const MarquerToutesLues(); }
+class SupprimerNotification extends NotificationsEvent {
+  final String id;
+  const SupprimerNotification(this.id);
+  @override List<Object?> get props => [id];
+}
 
 // States
 abstract class NotificationsState extends Equatable {
@@ -44,6 +49,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     on<LoadNonLuesCount>(_onCount);
     on<MarquerLue>(_onMarquerLue);
     on<MarquerToutesLues>(_onMarquerToutesLues);
+    on<SupprimerNotification>(_onSupprimer);
   }
 
   Future<void> _onLoad(LoadNotifications _, Emitter<NotificationsState> emit) async {
@@ -77,5 +83,20 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   Future<void> _onMarquerToutesLues(MarquerToutesLues _, Emitter<NotificationsState> emit) async {
     await repo.marquerToutesLues();
     add(const LoadNotifications());
+  }
+
+  /// Retrait immédiat de la liste (le Dismissible l'a déjà masquée), puis
+  /// rechargement si le backend refuse la suppression.
+  Future<void> _onSupprimer(SupprimerNotification event, Emitter<NotificationsState> emit) async {
+    final courant = state;
+    if (courant is NotificationsLoaded) {
+      final supprimee = courant.notifications.where((n) => n.id == event.id);
+      emit(NotificationsLoaded(
+        notifications: courant.notifications.where((n) => n.id != event.id).toList(),
+        nonLues: courant.nonLues - supprimee.where((n) => !n.isRead).length,
+      ));
+    }
+    final result = await repo.supprimer(event.id);
+    if (result.isLeft()) add(const LoadNotifications());
   }
 }

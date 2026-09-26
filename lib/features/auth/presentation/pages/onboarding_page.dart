@@ -1,12 +1,20 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/widgets/secondary_button.dart';
+import '../../../../injection_container.dart';
+import 'splash_page.dart' show kHasSeenOnboardingKey;
+import '../../../../core/i18n/langue.dart';
 
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({super.key});
+
+  static void _markSeen() {
+    sl<SharedPreferences>().setBool(kHasSeenOnboardingKey, true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,32 +26,20 @@ class OnboardingPage extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(flex: 2),
-              // Illustration
-              Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  color: AppColor.kPrimary.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.local_shipping_rounded,
-                  color: AppColor.kPrimary,
-                  size: 90,
-                ),
-              ),
+              // Logo
+              Image.asset('assets/images/logo_yobante_icon.png', width: 160),
               const SizedBox(height: 40),
               Text(
-                'Yobante Colis',
+                tr('Yobante Colis'),
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 30,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColor.kGrayscaleDark100,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
-                'Envoyez et suivez vos colis\npartout au SÃ©nÃ©gal, simplement.',
+                tr('Envoyez et suivez vos colis\npartout au Sénégal, simplement.'),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 16,
@@ -55,31 +51,50 @@ class OnboardingPage extends StatelessWidget {
               // Features rapides
               _FeatureRow(
                 icon: Icons.track_changes_rounded,
-                text: 'Suivi en temps rÃ©el de vos envois',
+                text: tr('Suivi en temps réel de vos envois'),
               ),
               const SizedBox(height: 14),
               _FeatureRow(
                 icon: Icons.receipt_long_rounded,
-                text: 'Factures et paiements en un clic',
+                text: tr('Factures et paiements en un clic'),
               ),
               const SizedBox(height: 14),
               _FeatureRow(
                 icon: Icons.notifications_active_rounded,
-                text: 'Notifications Ã  chaque Ã©tape',
+                text: tr('Notifications à chaque étape'),
               ),
               const Spacer(flex: 2),
               PrimaryButton(
-                text: 'CrÃ©er un compte',
-                onTap: () => Navigator.of(context)
-                    .pushNamed(AppRouter.registerRoute),
+                text: tr('Créer un compte'),
+                onTap: () {
+                  _markSeen();
+                  Navigator.of(context).pushNamed(AppRouter.registerRoute);
+                },
               ),
               const SizedBox(height: 12),
               SecondaryButton(
-                text: 'Se connecter',
-                onTap: () =>
-                    Navigator.of(context).pushNamed(AppRouter.loginRoute),
+                text: tr('Se connecter'),
+                onTap: () {
+                  _markSeen();
+                  Navigator.of(context).pushNamed(AppRouter.loginRoute);
+                },
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  _markSeen();
+                  Navigator.of(context).pushReplacementNamed(AppRouter.clientRoute);
+                },
+                child: Text(
+                  tr('Continuer sans compte'),
+                  style: GoogleFonts.plusJakartaSans(
+                    color: AppColor.kGrayscale40,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

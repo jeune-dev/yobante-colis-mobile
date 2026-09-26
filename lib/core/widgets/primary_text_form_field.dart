@@ -1,4 +1,4 @@
-﻿import 'package:yobnate_colis/core/theme/app_color.dart';
+import 'package:yobnate_colis/core/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -32,7 +32,7 @@ class PrimaryTextFormField extends StatelessWidget {
   final Color? hintTextColor, prefixIconColor;
   final TextInputType? keyboardType;
   final int? maxLines;
-  final FormFieldValidator<String>? validator; // DÃ©claration du validateur
+  final FormFieldValidator<String>? validator; // Déclaration du validateur
 
   @override
   Widget build(BuildContext context) {
@@ -54,11 +54,11 @@ class PrimaryTextFormField extends StatelessWidget {
         ),
         validator: validator, // Passage du validateur au TextFormField
         decoration: InputDecoration(
-          border: InputBorder.none, // La bordure est gÃ©rÃ©e par le Container
+          border: InputBorder.none, // La bordure est gérée par le Container
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
           filled: true,
-          fillColor: Colors.transparent, // Le Container gÃ¨re la couleur
+          fillColor: Colors.transparent, // Le Container gère la couleur
           hintText: hintText,
           hintStyle: GoogleFonts.plusJakartaSans(
             color: AppColor.kGrayscale40,

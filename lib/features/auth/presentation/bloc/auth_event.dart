@@ -20,9 +20,27 @@ class RegisterRequested extends AuthEvent {
   final String email;
   final String motDePasse;
   final String telephone;
+  final String pays;
+  final String? villeId;
+  final String? adresse;
+  final String typeCompte;
+  final String? raisonSociale;
+  final String? numeroIdentificationFiscale;
+  final String? numeroTvaIntracom;
+  final String? codePostal;
+  final String? codeParrainage;
   const RegisterRequested({
     required this.nom, required this.prenom, required this.email,
     required this.motDePasse, required this.telephone,
+    this.pays = 'SN',
+    this.villeId,
+    this.adresse,
+    this.typeCompte = 'particulier',
+    this.raisonSociale,
+    this.numeroIdentificationFiscale,
+    this.numeroTvaIntracom,
+    this.codePostal,
+    this.codeParrainage,
   });
   @override
   List<Object?> get props => [email];

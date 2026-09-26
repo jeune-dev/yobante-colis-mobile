@@ -9,8 +9,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:toastification/toastification.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'core/i18n/langue.dart';
 import 'core/routes/app_router.dart';
 import 'core/services/auth_event_bus.dart';
+import 'core/services/mesure_audience.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
@@ -42,6 +45,8 @@ void main() async {
   }
 
   await di.init();
+  LangueApp.instance.initialiser(di.sl<SharedPreferences>());
+  MesureAudience.instance.demarrer();
   runApp(const MyApp());
 }
 
@@ -54,6 +59,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _navigatorKey = GlobalKey<NavigatorState>();
+  final _observateur = ObservateurAudience();
   late final StreamSubscription<void> _logoutSub;
 
   @override
@@ -76,24 +82,26 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => di.sl<AuthBloc>()),
-      ],
+      providers: [BlocProvider(create: (_) => di.sl<AuthBloc>())],
       child: ToastificationWrapper(
-        child: MaterialApp(
-          navigatorKey: _navigatorKey,
-          debugShowCheckedModeBanner: false,
-          title: 'Yobnate Colis',
-          theme: AppTheme.light(),
-          locale: const Locale('fr', 'FR'),
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('fr', 'FR'), Locale('en', 'US')],
-          home: const SplashPage(),
-          onGenerateRoute: AppRouter.onGenerateRoute,
+        child: ValueListenableBuilder<Langue>(
+          valueListenable: LangueApp.instance,
+          builder: (context, langue, _) => MaterialApp(
+            navigatorKey: _navigatorKey,
+            debugShowCheckedModeBanner: false,
+            title: 'Yobnate Colis',
+            theme: AppTheme.light(),
+            locale: langue.locale,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: [for (final l in Langue.values) l.locale],
+            home: const SplashPage(),
+            onGenerateRoute: AppRouter.onGenerateRoute,
+            navigatorObservers: [_observateur],
+          ),
         ),
       ),
     );

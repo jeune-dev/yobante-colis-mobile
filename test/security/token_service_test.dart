@@ -96,6 +96,20 @@ void main() {
       expect(await fakeStorage.read(key: 'jwt_token'), isNull);
     });
 
+    test('getValidToken conserve le refresh token quand le jeton d\'accès expire', () async {
+      await fakeStorage.write(key: 'jwt_token', value: expiredToken);
+      await fakeStorage.write(key: 'refresh_token', value: 'some_refresh');
+
+      expect(await tokenService.getValidToken(), isNull);
+      expect(await fakeStorage.read(key: 'refresh_token'), 'some_refresh');
+    });
+
+    test('isAuthenticated reste vrai avec un jeton expiré si un refresh token existe', () async {
+      await fakeStorage.write(key: 'jwt_token', value: expiredToken);
+      await fakeStorage.write(key: 'refresh_token', value: 'some_refresh');
+      expect(await tokenService.isAuthenticated, true);
+    });
+
     test('clearToken supprime le token JWT et le refresh token', () async {
       await fakeStorage.write(key: 'jwt_token', value: validToken);
       await fakeStorage.write(key: 'refresh_token', value: 'some_refresh');

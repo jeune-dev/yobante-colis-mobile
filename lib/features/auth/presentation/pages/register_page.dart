@@ -1,14 +1,28 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:toastification/toastification.dart';
 
+import '../../../../core/config/env.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../../core/utils/formatters.dart';
+import 'verification_email_page.dart';
 import '../../../../core/widgets/toast_notif.dart';
+import '../../../../injection_container.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../../../../core/i18n/langue.dart';
+
+class _VilleOption {
+  final String id;
+  final String nom;
+  const _VilleOption(this.id, this.nom);
+  factory _VilleOption.fromJson(Map<String, dynamic> j) =>
+      _VilleOption(j['id'] as String, j['nom'] as String? ?? '');
+}
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -24,6 +38,12 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _telephoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _adresseController = TextEditingController();
+  final _raisonSocialeController = TextEditingController();
+  final _ninController = TextEditingController();
+  final _tvaController = TextEditingController();
+  final _codePostalController = TextEditingController();
+  final _parrainageController = TextEditingController();
   bool _obscurePassword = true;
 
   bool _hasUpperCase = false;
@@ -33,8 +53,39 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _hasMinLength = false;
   bool _passwordFocused = false;
 
+  String _pays = 'SN';
+  String _typeCompte = 'particulier';
+  List<_VilleOption> _villes = [];
+  _VilleOption? _ville;
+  bool _chargementVilles = true;
+
   bool get _isPasswordValid =>
       _hasUpperCase && _hasLowerCase && _hasDigit && _hasSpecialChar && _hasMinLength;
+
+  @override
+  void initState() {
+    super.initState();
+    _chargerVilles();
+  }
+
+  Future<void> _chargerVilles() async {
+    setState(() {
+      _chargementVilles = true;
+      _ville = null;
+    });
+    try {
+      final res = await sl<Dio>().get(Env.publicVilles, queryParameters: {'pays': _pays});
+      final list = (res.data['data']['villes'] as List)
+          .map((e) => _VilleOption.fromJson(e as Map<String, dynamic>))
+          .toList();
+      setState(() {
+        _villes = list;
+        _chargementVilles = false;
+      });
+    } catch (_) {
+      setState(() => _chargementVilles = false);
+    }
+  }
 
   void _checkPasswordStrength(String value) {
     setState(() {
@@ -53,7 +104,18 @@ class _RegisterPageState extends State<RegisterPage> {
         prenom: _prenomController.text.trim(),
         email: _emailController.text.trim(),
         motDePasse: _passwordController.text,
-        telephone: _telephoneController.text.trim(),
+        telephone: normaliserTelephone(_telephoneController.text, paysParDefaut: _pays),
+        pays: _pays,
+        villeId: _ville?.id,
+        adresse: _adresseController.text.trim().isEmpty ? null : _adresseController.text.trim(),
+        typeCompte: _typeCompte,
+        raisonSociale: _typeCompte == 'entreprise' && _raisonSocialeController.text.trim().isNotEmpty
+            ? _raisonSocialeController.text.trim()
+            : null,
+        numeroIdentificationFiscale: _ninController.text.trim().isEmpty ? null : _ninController.text.trim(),
+        numeroTvaIntracom: _tvaController.text.trim().isEmpty ? null : _tvaController.text.trim(),
+        codePostal: _codePostalController.text.trim().isEmpty ? null : _codePostalController.text.trim(),
+        codeParrainage: _parrainageController.text.trim().isEmpty ? null : _parrainageController.text.trim().toUpperCase(),
       ));
     }
   }
@@ -65,6 +127,12 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailController.dispose();
     _telephoneController.dispose();
     _passwordController.dispose();
+    _adresseController.dispose();
+    _raisonSocialeController.dispose();
+    _ninController.dispose();
+    _tvaController.dispose();
+    _codePostalController.dispose();
+    _parrainageController.dispose();
     super.dispose();
   }
 
@@ -75,11 +143,15 @@ class _RegisterPageState extends State<RegisterPage> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess || state is RegisterSuccess) {
-            showToast(context, 'Inscription réussie', 'Vous pouvez maintenant vous connecter !', ToastificationType.success);
-            Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.loginRoute, (_) => false);
+            // Le compte doit être activé par le lien reçu par email avant la première connexion
+            final email = _emailController.text.trim();
             context.read<AuthBloc>().add(ResetAuthState());
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => VerificationEmailPage(email: email)),
+              (route) => route.settings.name == AppRouter.clientRoute || route.isFirst,
+            );
           } else if (state is AuthFailure) {
-            showToast(context, 'Échec de l\'inscription', state.message, ToastificationType.error);
+            showToast(context, tr('Échec de l\'inscription'), state.message, ToastificationType.error);
           }
         },
         builder: (context, state) {
@@ -107,37 +179,104 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 24),
                     Center(
-                      child: Image.asset('assets/images/logosignapk.jpeg', width: 100, fit: BoxFit.contain),
+                      child: Image.asset('assets/images/logo_yobante_icon.png', width: 100, fit: BoxFit.contain),
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Créer un compte',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 28, fontWeight: FontWeight.w800, color: AppColor.kGrayscaleDark100),
+                      tr('Créer un compte'),
+                      style: GoogleFonts.plusJakartaSans(fontSize: 28, fontWeight: FontWeight.w700, color: AppColor.kGrayscaleDark100),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Rejoignez Yobnate Colis pour suivre vos envois',
+                      tr('Rejoignez Yobante Express pour suivre vos envois'),
                       style: GoogleFonts.plusJakartaSans(fontSize: 14, color: AppColor.kGrayscale40),
                     ),
                     const SizedBox(height: 28),
-                    _buildField('Prénom', 'Ex: Mamadou', _prenomController, Icons.person_outline,
-                        validator: (v) => (v == null || v.isEmpty) ? 'Champ requis' : null),
+                    _buildField(tr('Prénom'), tr('Ex: Mamadou'), _prenomController, Icons.person_outline,
+                        validator: (v) => (v == null || v.isEmpty) ? tr('Champ requis') : null),
                     const SizedBox(height: 16),
-                    _buildField('Nom', 'Ex: Diallo', _nomController, Icons.person_outline,
-                        validator: (v) => (v == null || v.isEmpty) ? 'Champ requis' : null),
+                    _buildField(tr('Nom'), tr('Ex: Diallo'), _nomController, Icons.person_outline,
+                        validator: (v) => (v == null || v.isEmpty) ? tr('Champ requis') : null),
                     const SizedBox(height: 16),
-                    _buildField('Adresse e-mail', 'exemple@gmail.com', _emailController, Icons.email_outlined,
+                    _buildField(tr('Adresse e-mail'), 'exemple@gmail.com', _emailController, Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
                         validator: (v) {
-                          if (v == null || v.isEmpty) return 'Champ requis';
-                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v)) return 'Email invalide';
+                          if (v == null || v.isEmpty) return tr('Champ requis');
+                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v)) return tr('Email invalide');
                           return null;
                         }),
                     const SizedBox(height: 16),
-                    _buildField('Téléphone', 'Ex: 771234567', _telephoneController, Icons.phone_outlined,
+                    _buildField(tr('Téléphone'), tr('Ex: 77 123 45 67 ou 06 12 34 56 78'), _telephoneController, Icons.phone_outlined,
                         keyboardType: TextInputType.phone,
-                        validator: (v) => (v == null || v.isEmpty) ? 'Champ requis' : null),
+                        validator: validerTelephone),
+                    const SizedBox(height: 20),
+
+                    Text(tr('Pays'), style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.kGrayscaleDark100)),
+                    const SizedBox(height: 8),
+                    SegmentedButton<String>(
+                      segments: [
+                        ButtonSegment(value: 'SN', label: Text(tr('Sénégal'), style: TextStyle(fontSize: 12))),
+                        ButtonSegment(value: 'FR', label: Text(tr('France'), style: TextStyle(fontSize: 12))),
+                      ],
+                      selected: {_pays},
+                      onSelectionChanged: (s) {
+                        setState(() => _pays = s.first);
+                        _chargerVilles();
+                      },
+                    ),
                     const SizedBox(height: 16),
+
+                    Text(tr('Ville (optionnel)'), style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.kGrayscaleDark100)),
+                    const SizedBox(height: 8),
+                    if (_chargementVilles)
+                      const LinearProgressIndicator()
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(color: const Color(0xFFF8F8FA), borderRadius: BorderRadius.circular(14)),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<_VilleOption>(
+                            isExpanded: true,
+                            value: _ville,
+                            hint: Text(tr('Sélectionner une ville'), style: GoogleFonts.plusJakartaSans(fontSize: 14, color: AppColor.kGrayscale40)),
+                            items: _villes.map((v) => DropdownMenuItem(value: v, child: Text(v.nom))).toList(),
+                            onChanged: (v) => setState(() => _ville = v),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    _buildField(tr('Adresse (optionnel)'), tr('Ex: Rue 10, Médina'), _adresseController, Icons.location_on_outlined),
+                    const SizedBox(height: 16),
+                    _buildField(tr('Code postal (optionnel)'), tr('Pour être prévenu des collectes près de chez vous'),
+                        _codePostalController, Icons.markunread_mailbox_outlined,
+                        keyboardType: TextInputType.number),
+                    const SizedBox(height: 16),
+                    _buildField(tr('Code de parrainage (optionnel)'), tr('Ex: K7P2QX9M'), _parrainageController,
+                        Icons.card_giftcard_outlined),
+                    const SizedBox(height: 20),
+
+                    Text(tr('Type de compte'), style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.kGrayscaleDark100)),
+                    const SizedBox(height: 8),
+                    SegmentedButton<String>(
+                      segments: [
+                        ButtonSegment(value: 'particulier', label: Text(tr('Particulier'), style: TextStyle(fontSize: 12))),
+                        ButtonSegment(value: 'entreprise', label: Text(tr('Entreprise'), style: TextStyle(fontSize: 12))),
+                      ],
+                      selected: {_typeCompte},
+                      onSelectionChanged: (s) => setState(() => _typeCompte = s.first),
+                    ),
+
+                    if (_typeCompte == 'entreprise') ...[
+                      const SizedBox(height: 16),
+                      _buildField(tr('Raison sociale'), tr('Nom de l\'entreprise'), _raisonSocialeController, Icons.apartment_outlined,
+                          validator: (v) => (v == null || v.trim().isEmpty) ? tr('Requis pour un compte entreprise') : null),
+                      const SizedBox(height: 16),
+                      _buildField(tr('Numéro d\'identification fiscale (optionnel)'), tr('NINEA / SIRET'), _ninController, Icons.badge_outlined),
+                      const SizedBox(height: 16),
+                      _buildField(tr('Numéro de TVA intracommunautaire (optionnel)'), tr('Ex: FR12345678900'), _tvaController, Icons.receipt_long_outlined),
+                    ],
+
+                    const SizedBox(height: 20),
                     _buildPasswordField(),
                     const SizedBox(height: 28),
                     SizedBox(
@@ -153,7 +292,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         child: isLoading
                             ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                            : Text("S'inscrire", style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700)),
+                            : Text(tr("S'inscrire"), style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700)),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -161,8 +300,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       child: TextButton(
                         onPressed: () => Navigator.of(context).pushReplacementNamed(AppRouter.loginRoute),
                         child: Text.rich(TextSpan(children: [
-                          TextSpan(text: 'Déjà un compte ? ', style: GoogleFonts.plusJakartaSans(color: AppColor.kGrayscale40, fontSize: 14)),
-                          TextSpan(text: 'Se connecter', style: GoogleFonts.plusJakartaSans(color: AppColor.kPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
+                          TextSpan(text: tr('Déjà un compte ? '), style: GoogleFonts.plusJakartaSans(color: AppColor.kGrayscale40, fontSize: 14)),
+                          TextSpan(text: tr('Se connecter'), style: GoogleFonts.plusJakartaSans(color: AppColor.kPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
                         ])),
                       ),
                     ),
@@ -205,7 +344,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Mot de passe', style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.kGrayscaleDark100)),
+        Text(tr('Mot de passe'), style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.kGrayscaleDark100)),
         const SizedBox(height: 8),
         Focus(
           onFocusChange: (f) => setState(() => _passwordFocused = f),
@@ -214,15 +353,15 @@ class _RegisterPageState extends State<RegisterPage> {
             obscureText: _obscurePassword,
             onChanged: _checkPasswordStrength,
             style: GoogleFonts.plusJakartaSans(fontSize: 15),
-            decoration: _inputDecoration('Créez un mot de passe sécurisé', Icons.lock_outline_rounded).copyWith(
+            decoration: _inputDecoration(tr('Créez un mot de passe sécurisé'), Icons.lock_outline_rounded).copyWith(
               suffixIcon: GestureDetector(
                 onTap: () => setState(() => _obscurePassword = !_obscurePassword),
                 child: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColor.kGrayscale40, size: 20),
               ),
             ),
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Champ requis';
-              if (!_isPasswordValid) return 'Le mot de passe ne respecte pas tous les critères';
+              if (v == null || v.isEmpty) return tr('Champ requis');
+              if (!_isPasswordValid) return tr('Le mot de passe ne respecte pas tous les critères');
               return null;
             },
           ),
@@ -235,13 +374,13 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Critères :', style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700)),
+                Text(tr('Critères :'), style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
-                _criteriaRow('Au moins 8 caractères', _hasMinLength),
-                _criteriaRow('Une majuscule (A–Z)', _hasUpperCase),
-                _criteriaRow('Une minuscule (a–z)', _hasLowerCase),
-                _criteriaRow('Un chiffre (0–9)', _hasDigit),
-                _criteriaRow('Un caractère spécial (!@#\$%...)', _hasSpecialChar),
+                _criteriaRow(tr('Au moins 8 caractères'), _hasMinLength),
+                _criteriaRow(tr('Une majuscule (A–Z)'), _hasUpperCase),
+                _criteriaRow(tr('Une minuscule (a–z)'), _hasLowerCase),
+                _criteriaRow(tr('Un chiffre (0–9)'), _hasDigit),
+                _criteriaRow(tr('Un caractère spécial (!@#\$%...)'), _hasSpecialChar),
               ],
             ),
           ),
@@ -254,9 +393,9 @@ class _RegisterPageState extends State<RegisterPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(children: [
-        Icon(met ? Icons.check_circle_rounded : Icons.cancel_rounded, size: 14, color: met ? const Color(0xFF22C55E) : Colors.redAccent),
+        Icon(met ? Icons.check_circle_rounded : Icons.cancel_rounded, size: 14, color: met ? const Color(0xFF22C55E) : AppColor.kErreur),
         const SizedBox(width: 6),
-        Text(text, style: GoogleFonts.plusJakartaSans(fontSize: 11, color: met ? const Color(0xFF22C55E) : Colors.redAccent)),
+        Text(text, style: GoogleFonts.plusJakartaSans(fontSize: 11, color: met ? const Color(0xFF22C55E) : AppColor.kErreur)),
       ]),
     );
   }
@@ -272,9 +411,9 @@ class _RegisterPageState extends State<RegisterPage> {
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColor.kPrimary, width: 1.5)),
-      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
-      focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.redAccent, width: 1.5)),
-      errorStyle: GoogleFonts.plusJakartaSans(fontSize: 11, color: Colors.redAccent),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColor.kErreur, width: 1.5)),
+      focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColor.kErreur, width: 1.5)),
+      errorStyle: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kErreur),
     );
   }
 }

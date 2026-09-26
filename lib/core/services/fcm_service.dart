@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import '../config/env.dart';
 import '../routes/app_router.dart';
 import '../../injection_container.dart';
+import 'package:toastification/toastification.dart';
+import '../widgets/toast_notif.dart';
 import 'token_service.dart';
 
 /// Handler background/terminated — doit être une fonction top-level
@@ -35,8 +37,11 @@ class FcmService {
 
     // 3. Handler message quand l'app est au premier plan
     _foregroundSub?.cancel();
-    _foregroundSub = FirebaseMessaging.onMessage.listen((_) {
-      // On ne fait rien en foreground — la notif système apparaît automatiquement
+    _foregroundSub = FirebaseMessaging.onMessage.listen((message) {
+      // Application ouverte : Android n'affiche pas la notification, on la présente dans l'app
+      final notif = message.notification;
+      if (notif == null || !context.mounted) return;
+      showToast(context, notif.title ?? 'Yobante', notif.body ?? '', ToastificationType.info);
     });
 
     // 4. Handler tap sur notif quand l'app était en arrière-plan
@@ -76,7 +81,7 @@ class FcmService {
 
       // Le Dio injecté a déjà l'intercepteur Authorization
       await sl<Dio>().post(
-        Env.accountDeviceToken,
+        Env.clientDeviceToken,
         data: {'token': token, 'platform': Platform.isIOS ? 'ios' : 'android'},
       );
     } catch (_) {
@@ -84,9 +89,16 @@ class FcmService {
     }
   }
 
-  /// Navigation lors d'un tap sur notification
+  /// Navigation lors d'un tap sur notification : le backend joint à chaque push
+  /// l'entité concernée (`entite`, `entiteId`) — un colis s'ouvre directement.
   static void _handleNotificationTap(BuildContext context, Map<String, dynamic> data) {
     if (!context.mounted) return;
+    final entite = data['entite'] as String?;
+    final id = data['entiteId'] as String?;
+    if (entite == 'Colis' && id != null && id.isNotEmpty) {
+      Navigator.of(context).pushNamed(AppRouter.detailColisRoute, arguments: id);
+      return;
+    }
     Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.clientRoute, (route) => false);
   }
 }

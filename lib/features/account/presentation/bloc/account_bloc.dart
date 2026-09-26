@@ -5,6 +5,7 @@ import '../../domain/usecases/modifier_info_personnelles.dart';
 import '../../domain/usecases/change_password.dart';
 import 'account_event.dart';
 import 'account_state.dart';
+import '../../../../core/i18n/langue.dart';
 
 class AccountBloc extends Bloc<AccountEvent, AccountState> {
   final GetMe getMe;
@@ -46,7 +47,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     );
     result.fold(
       (failure) => emit(AccountError(failure.errorMessage)),
-      (user) => emit(AccountSuccess(user: user, message: 'Profil mis à jour avec succès')),
+      (user) => emit(AccountSuccess(user: user, message: tr('Profil mis à jour avec succès'))),
     );
   }
 
@@ -58,7 +59,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     final result = await accountRepository.uploadAvatar(event.filePath);
     result.fold(
       (failure) => emit(AccountError(failure.errorMessage)),
-      (user) => emit(AccountSuccess(user: user, message: 'Photo de profil mise à jour')),
+      (user) => emit(AccountSuccess(user: user, message: tr('Photo de profil mise à jour'))),
     );
   }
 
@@ -73,7 +74,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     );
     result.fold(
       (failure) => emit(AccountError(failure.errorMessage)),
-      (_) => emit(PasswordChanged(message: 'Mot de passe modifié avec succès')),
+      (_) => emit(PasswordChanged(message: tr('Mot de passe modifié avec succès'))),
     );
   }
 }

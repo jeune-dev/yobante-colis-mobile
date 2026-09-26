@@ -4,16 +4,22 @@ import 'package:jwt_decode/jwt_decode.dart';
 /// Service de gestion du JWT.
 /// Vérifie l'expiration du token côté client avant chaque requête.
 /// Ne stocke jamais le mot de passe.
+///
+/// Le jeton d'accès vit 1 h ; le refresh token (7 jours) permet d'en obtenir un
+/// nouveau. Une session reste donc ouverte tant qu'un refresh token est stocké,
+/// même si le jeton d'accès a expiré : c'est l'intercepteur Dio qui le renouvelle.
 class TokenService {
   final FlutterSecureStorage secureStorage;
 
   TokenService({required this.secureStorage});
 
-  /// Vérifie qu'un token existe ET qu'il n'est pas expiré.
+  /// Vrai si une session existe : jeton d'accès valide, ou refresh token
+  /// permettant d'en obtenir un nouveau.
   Future<bool> get isAuthenticated async {
     final token = await getToken();
-    if (token == null || token.isEmpty) return false;
-    return !_isTokenExpired(token);
+    if (token != null && token.isNotEmpty && !_isTokenExpired(token)) return true;
+    final refresh = await getRefreshToken();
+    return refresh != null && refresh.isNotEmpty;
   }
 
   Future<String?> getToken() async {
@@ -21,12 +27,13 @@ class TokenService {
   }
 
   /// Retourne le token uniquement s'il est valide (non expiré).
-  /// Supprime automatiquement le token si expiré.
+  /// Un jeton expiré est supprimé, mais le refresh token est conservé pour
+  /// permettre le renouvellement de la session.
   Future<String?> getValidToken() async {
     final token = await getToken();
     if (token == null || token.isEmpty) return null;
     if (_isTokenExpired(token)) {
-      await clearToken();
+      await secureStorage.delete(key: 'jwt_token');
       return null;
     }
     return token;

@@ -7,6 +7,15 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> register({
     required String nom, required String prenom,
     required String email, required String motDePasse, required String telephone,
+    String pays = 'SN',
+    String? villeId,
+    String? adresse,
+    String typeCompte = 'particulier',
+    String? raisonSociale,
+    String? numeroIdentificationFiscale,
+    String? numeroTvaIntracom,
+    String? codePostal,
+    String? codeParrainage,
   });
   Future<Either<Failure, void>> forgotPassword(String email);
   Future<Either<Failure, void>> resetPassword(String email, String code, String newPassword);

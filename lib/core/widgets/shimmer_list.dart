@@ -1,7 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-/// Skeleton shimmer animÃ© pour les Ã©tats de chargement des listes.
-/// Un seul [AnimationController] est partagÃ© pour toutes les cartes.
+/// Skeleton shimmer animé pour les états de chargement des listes.
+/// Un seul [AnimationController] est partagé pour toutes les cartes.
 class ShimmerList extends StatefulWidget {
   final int itemCount;
   final Color accentColor;
@@ -89,7 +89,7 @@ class _ShimmerCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // â”€â”€ Ligne en-tÃªte â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Ligne en-tête ─────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -124,7 +124,7 @@ class _ShimmerCard extends StatelessWidget {
             ),
           ),
           Divider(color: Colors.grey[100], height: 1),
-          // â”€â”€ Chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Chips ─────────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
@@ -146,7 +146,7 @@ class _ShimmerCard extends StatelessWidget {
             ),
           ),
           Divider(color: Colors.grey[100], height: 1),
-          // â”€â”€ Boutons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Boutons ───────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(

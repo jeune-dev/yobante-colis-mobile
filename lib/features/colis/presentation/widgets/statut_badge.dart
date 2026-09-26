@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/theme/app_color.dart';
+import '../../../../core/i18n/langue.dart';
 
 class StatutBadge extends StatelessWidget {
   final String statut;
@@ -25,14 +27,26 @@ class StatutBadge extends StatelessWidget {
 
   static (String, Color) _info(String s) {
     switch (s) {
-      case 'en_attente':    return ('En attente',      Colors.orange);
-      case 'en_preparation':return ('En préparation',  Colors.blue);
-      case 'en_transit':    return ('En transit',      Colors.indigo);
-      case 'arrive':        return ('Arrivé',          Colors.teal);
-      case 'recupere':      return ('Récupéré',        Colors.cyan);
-      case 'livre':         return ('Livré',           Colors.green);
-      case 'annule':        return ('Annulé',          Colors.red);
-      default:              return (s,                 Colors.grey);
+      case 'brouillon':           return (tr('Brouillon'),            Colors.grey);
+      case 'en_attente_validation': return (tr("En cours d'étude"),   AppColor.kAlerte);
+      case 'devis_propose':       return (tr('Proposition reçue'),    AppColor.kInfo);
+      case 'refuse':              return (tr('Refusé'),               AppColor.kErreur);
+      case 'en_attente':          return (tr('En attente de remise'), AppColor.kAlerte);
+      case 'enlevement_planifie': return (tr('Enlèvement planifié'),  AppColor.kAlerte);
+      case 'enleve':               return (tr('Enlevé'),               AppColor.kInfo);
+      case 'receptionne':          return (tr('Réceptionné'),          AppColor.kInfo);
+      case 'en_preparation':      return (tr('En préparation'),       AppColor.kInfo);
+      case 'en_transit':          return (tr('En transit'),           AppColor.kInfo);
+      case 'en_douane':           return (tr('En douane'),            Colors.brown);
+      case 'arrive':              return (tr('Arrivé'),               AppColor.kInfo);
+      case 'disponible_retrait': return (tr('Disponible au retrait'), AppColor.kInfo);
+      case 'en_livraison':        return (tr('En livraison'),         Colors.deepPurple);
+      case 'recupere':             return (tr('Récupéré'),             AppColor.kInfo);
+      case 'livre':                return (tr('Livré'),                AppColor.kSucces);
+      case 'retourne':             return (tr('Retourné'),             AppColor.kAlerte);
+      case 'incident':             return (tr('Incident'),             AppColor.kErreur);
+      case 'annule':               return (tr('Annulé'),               AppColor.kErreur);
+      default:                     return (s,                      Colors.grey);
     }
   }
 }

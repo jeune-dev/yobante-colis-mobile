@@ -32,4 +32,10 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
     try { await remote.marquerToutesLues(); return const Right(null); }
     on ServerException catch (e) { return Left(ServerFailure(e.message)); }
   }
+
+  @override
+  Future<Either<Failure, void>> supprimer(String id) async {
+    try { await remote.supprimer(id); return const Right(null); }
+    on ServerException catch (e) { return Left(ServerFailure(e.message)); }
+  }
 }

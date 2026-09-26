@@ -38,9 +38,29 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> register({
     required String nom, required String prenom,
     required String email, required String motDePasse, required String telephone,
+    String pays = 'SN',
+    String? villeId,
+    String? adresse,
+    String typeCompte = 'particulier',
+    String? raisonSociale,
+    String? numeroIdentificationFiscale,
+    String? numeroTvaIntracom,
+    String? codePostal,
+    String? codeParrainage,
   }) async {
     try {
-      await remoteDataSource.register(nom: nom, prenom: prenom, email: email, motDePasse: motDePasse, telephone: telephone);
+      await remoteDataSource.register(
+        nom: nom, prenom: prenom, email: email, motDePasse: motDePasse, telephone: telephone,
+        pays: pays,
+        villeId: villeId,
+        adresse: adresse,
+        typeCompte: typeCompte,
+        raisonSociale: raisonSociale,
+        numeroIdentificationFiscale: numeroIdentificationFiscale,
+        numeroTvaIntracom: numeroTvaIntracom,
+        codePostal: codePostal,
+        codeParrainage: codeParrainage,
+      );
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -76,8 +96,9 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     final rt = await tokenService.getRefreshToken();
-    if (rt != null && rt.isNotEmpty) {
-      await remoteDataSource.logout(rt);
+    final at = await tokenService.getToken();
+    if ((rt != null && rt.isNotEmpty) || (at != null && at.isNotEmpty)) {
+      await remoteDataSource.logout(rt ?? '', accessToken: at);
     }
     await tokenService.clearToken();
     await secureStorage.delete(key: 'user_id');

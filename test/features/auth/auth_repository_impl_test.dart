@@ -59,6 +59,7 @@ class _FakeAuthDataSource extends Fake implements AuthRemoteDataSource {
   AuthResponseModel? loginResult;
   ServerException? loginError;
   bool logoutCalled = false;
+  String? logoutAccessToken;
 
   @override
   Future<AuthResponseModel> login(String email, String password) async {
@@ -67,8 +68,9 @@ class _FakeAuthDataSource extends Fake implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> logout(String refreshToken) async {
+  Future<void> logout(String refreshToken, {String? accessToken}) async {
     logoutCalled = true;
+    logoutAccessToken = accessToken;
   }
 
   @override
@@ -78,6 +80,15 @@ class _FakeAuthDataSource extends Fake implements AuthRemoteDataSource {
     required String email,
     required String motDePasse,
     required String telephone,
+    String pays = 'SN',
+    String? villeId,
+    String? adresse,
+    String typeCompte = 'particulier',
+    String? raisonSociale,
+    String? numeroIdentificationFiscale,
+    String? numeroTvaIntracom,
+    String? codePostal,
+    String? codeParrainage,
   }) async {}
 
   @override
@@ -185,6 +196,15 @@ void main() {
       await repo.logout();
 
       expect(fakeDs.logoutCalled, true);
+    });
+
+    test("joint le jeton d'accès pour qu'il soit révoqué", () async {
+      await fakeStorage.write(key: 'jwt_token', value: _kValidToken);
+      await fakeStorage.write(key: 'refresh_token', value: _kRefreshToken);
+
+      await repo.logout();
+
+      expect(fakeDs.logoutAccessToken, _kValidToken);
     });
 
     test('ne plante pas si aucun refresh token', () async {

@@ -5,8 +5,15 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/config/env.dart';
+import 'core/demo/demo_account_repository.dart';
+import 'core/demo/demo_colis_repository.dart';
+import 'core/demo/demo_config.dart';
+import 'core/demo/demo_notifications_repository.dart';
+import 'core/demo/demo_paiements_repository.dart';
+import 'core/demo/demo_villes_repository.dart';
 import 'core/services/token_service.dart';
 import 'core/services/auth_event_bus.dart';
+import 'core/services/mesure_audience.dart';
 
 // Auth
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
@@ -16,6 +23,7 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 
 // Account
 import 'features/account/data/datasources/account_remote_datasource.dart';
+import 'features/account/data/datasources/espace_client_remote_datasource.dart';
 import 'features/account/data/repositories/account_repository_impl.dart';
 import 'features/account/domain/repositories/account_repository.dart';
 import 'features/account/domain/usecases/get_me.dart';
@@ -29,6 +37,15 @@ import 'features/colis/data/repositories/colis_repository_impl.dart';
 import 'features/colis/domain/repositories/colis_repository.dart';
 import 'features/colis/domain/usecases/colis_usecases.dart';
 import 'features/colis/presentation/bloc/colis_bloc.dart';
+
+// Catalogue
+import 'features/catalogue/data/catalogue_remote_datasource.dart';
+
+// Réclamations, adresses, enlèvements, avis
+import 'features/reclamations/data/reclamations_remote_datasource.dart';
+import 'features/adresses/data/adresses_remote_datasource.dart';
+import 'features/enlevements/data/enlevements_remote_datasource.dart';
+import 'features/avis/data/avis_remote_datasource.dart';
 
 // Villes
 import 'features/villes/data/datasources/villes_remote_datasource.dart';
@@ -51,7 +68,16 @@ import 'features/paiements/presentation/bloc/paiements_bloc.dart';
 
 final sl = GetIt.instance;
 
-Future<bool> _tryRefresh(Dio dio) async {
+/// Rafraîchissement en cours, partagé par toutes les requêtes concurrentes : le
+/// backend consomme le refresh token à chaque usage (rotation), deux appels
+/// simultanés avec le même jeton feraient échouer le second et déconnecter.
+Future<bool>? _refreshEnCours;
+
+Future<bool> _tryRefresh(Dio dio) {
+  return _refreshEnCours ??= _rafraichir(dio).whenComplete(() => _refreshEnCours = null);
+}
+
+Future<bool> _rafraichir(Dio dio) async {
   try {
     final refreshToken = await sl<TokenService>().getRefreshToken();
     if (refreshToken == null || refreshToken.isEmpty) return false;
@@ -86,7 +112,7 @@ Future<void> init() async {
   // ── Dio ──────────────────────────────────────────────────────────────────
   sl.registerLazySingleton(() {
     final dio = Dio(BaseOptions(
-      baseUrl: Env.baseUrl,
+      baseUrl: Env.apiUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 30),
       sendTimeout: const Duration(seconds: 30),
@@ -96,9 +122,15 @@ Future<void> init() async {
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         if (kDebugMode) debugPrint('[REQ] ${options.method} ${options.path}');
+        // Identifiant anonyme de l'installation (conversion simulation → commande)
+        options.headers['X-Visiteur-Id'] = MesureAudience.instance.visiteurId;
         final skip = options.extra['skipAuthInterceptor'] == true;
         if (!skip) {
-          final token = await sl<TokenService>().getValidToken();
+          var token = await sl<TokenService>().getValidToken();
+          // Jeton d'accès expiré mais session ouverte : renouvellement avant l'envoi
+          if (token == null && (await sl<TokenService>().getRefreshToken())?.isNotEmpty == true) {
+            if (await _tryRefresh(dio)) token = await sl<TokenService>().getValidToken();
+          }
           if (token != null) options.headers['Authorization'] = 'Bearer $token';
         }
         handler.next(options);
@@ -110,18 +142,28 @@ Future<void> init() async {
       onError: (e, handler) async {
         if (kDebugMode) debugPrint('[ERR] ${e.response?.statusCode} ${e.requestOptions.path}');
 
-        if (e.response?.statusCode == 401 && e.requestOptions.extra['skipAuthInterceptor'] != true) {
-          final refreshed = await _tryRefresh(dio);
-          if (refreshed) {
-            final token = await sl<TokenService>().getValidToken();
-            e.requestOptions.headers['Authorization'] = 'Bearer $token';
-            try {
-              final retry = await dio.fetch(e.requestOptions);
-              return handler.resolve(retry);
-            } catch (_) {}
+        final opts = e.requestOptions;
+        if (e.response?.statusCode == 401 &&
+            opts.extra['skipAuthInterceptor'] != true &&
+            opts.extra['authRetried'] != true) {
+          // Session sans refresh token (visiteur) : rien à renouveler, pas de déconnexion
+          final aSession = (await sl<TokenService>().getRefreshToken())?.isNotEmpty == true ||
+              opts.headers['Authorization'] != null;
+          if (aSession) {
+            if (await _tryRefresh(dio)) {
+              final token = await sl<TokenService>().getValidToken();
+              opts.headers['Authorization'] = 'Bearer $token';
+              opts.extra['authRetried'] = true;
+              try {
+                return handler.resolve(await dio.fetch(opts));
+              } on DioException catch (retryError) {
+                // Toujours 401 avec un jeton neuf : session révoquée côté serveur
+                if (retryError.response?.statusCode != 401) return handler.next(retryError);
+              }
+            }
+            await sl<TokenService>().clearToken();
+            AuthEventBus.instance.emitLogout();
           }
-          await sl<TokenService>().clearToken();
-          AuthEventBus.instance.emitLogout();
         }
 
         final isNetwork = e.type == DioExceptionType.connectionTimeout ||
@@ -153,7 +195,9 @@ Future<void> init() async {
 
   // ── ACCOUNT ───────────────────────────────────────────────────────────────
   sl.registerLazySingleton<AccountRemoteDataSource>(() => AccountRemoteDataSourceImpl(dio: sl()));
-  sl.registerLazySingleton<AccountRepository>(() => AccountRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => EspaceClientRemoteDataSource(dio: sl()));
+  sl.registerLazySingleton<AccountRepository>(
+      () => kDemoMode ? DemoAccountRepository() : AccountRepositoryImpl(sl()));
   sl.registerLazySingleton(() => GetMe(sl()));
   sl.registerLazySingleton(() => ModifierInfoPersonnelles(sl()));
   sl.registerLazySingleton(() => ChangePassword(sl()));
@@ -161,30 +205,48 @@ Future<void> init() async {
 
   // ── COLIS ─────────────────────────────────────────────────────────────────
   sl.registerLazySingleton<ColisRemoteDataSource>(() => ColisRemoteDataSourceImpl(dio: sl()));
-  sl.registerLazySingleton<ColisRepository>(() => ColisRepositoryImpl(sl()));
+  sl.registerLazySingleton<ColisRepository>(
+      () => kDemoMode ? DemoColisRepository() : ColisRepositoryImpl(sl()));
   sl.registerLazySingleton(() => GetColis(sl()));
+  sl.registerLazySingleton(() => GetColisRecus(sl()));
   sl.registerLazySingleton(() => GetColisDetail(sl()));
   sl.registerLazySingleton(() => CreerColis(sl()));
   sl.registerLazySingleton(() => GetSuiviColis(sl()));
   sl.registerLazySingleton(() => AnnulerColis(sl()));
+  sl.registerLazySingleton(() => RepondreProposition(sl()));
+  sl.registerLazySingleton(() => ModifierColis(sl()));
   sl.registerFactory(() => ColisBloc(
-    getColis: sl(), getColisDetail: sl(), creerColis: sl(),
-    getSuiviColis: sl(), annulerColis: sl(),
+    getColis: sl(), getColisRecus: sl(), getColisDetail: sl(), creerColis: sl(),
+    getSuiviColis: sl(), annulerColis: sl(), repondreProposition: sl(), modifierColis: sl(),
   ));
+
+  // ── CATALOGUE (données publiques) ─────────────────────────────────────────
+  sl.registerLazySingleton(() => CatalogueRemoteDataSource(dio: sl()));
+
+  // ── RÉCLAMATIONS (service après-vente) ─────────────────────────────────────
+  sl.registerLazySingleton(() => ReclamationsRemoteDataSource(dio: sl()));
+
+  // ── CARNET D'ADRESSES, ENLÈVEMENTS, AVIS ───────────────────────────────────
+  sl.registerLazySingleton(() => AdressesRemoteDataSource(dio: sl()));
+  sl.registerLazySingleton(() => EnlevementsRemoteDataSource(dio: sl()));
+  sl.registerLazySingleton(() => AvisRemoteDataSource(dio: sl()));
 
   // ── VILLES ────────────────────────────────────────────────────────────────
   sl.registerLazySingleton<VillesRemoteDataSource>(() => VillesRemoteDataSourceImpl(dio: sl()));
-  sl.registerLazySingleton<VillesRepository>(() => VillesRepositoryImpl(sl()));
+  sl.registerLazySingleton<VillesRepository>(
+      () => kDemoMode ? DemoVillesRepository() : VillesRepositoryImpl(sl()));
   sl.registerLazySingleton(() => GetVilles(sl()));
   sl.registerFactory(() => VillesBloc(getVilles: sl()));
 
   // ── NOTIFICATIONS ─────────────────────────────────────────────────────────
   sl.registerLazySingleton<NotificationsRemoteDataSource>(() => NotificationsRemoteDataSourceImpl(dio: sl()));
-  sl.registerLazySingleton<NotificationsRepository>(() => NotificationsRepositoryImpl(sl()));
+  sl.registerLazySingleton<NotificationsRepository>(
+      () => kDemoMode ? DemoNotificationsRepository() : NotificationsRepositoryImpl(sl()));
   sl.registerFactory(() => NotificationsBloc(repo: sl()));
 
   // ── PAIEMENTS ─────────────────────────────────────────────────────────────
   sl.registerLazySingleton<PaiementsRemoteDataSource>(() => PaiementsRemoteDataSourceImpl(dio: sl()));
-  sl.registerLazySingleton<PaiementsRepository>(() => PaiementsRepositoryImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton<PaiementsRepository>(
+      () => kDemoMode ? DemoPaiementsRepository() : PaiementsRepositoryImpl(remoteDataSource: sl()));
   sl.registerFactory(() => PaiementsBloc(paiementsRepository: sl()));
 }

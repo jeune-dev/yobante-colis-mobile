@@ -6,7 +6,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../../../core/config/user_role.dart';
+import '../../../../core/routes/app_router.dart';
+import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../../core/widgets/empty_state.dart';
 import '../../domain/entities/account_user.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../features/auth/presentation/bloc/auth_bloc.dart';
@@ -15,12 +18,44 @@ import '../../../../injection_container.dart';
 import '../bloc/account_bloc.dart';
 import '../bloc/account_event.dart';
 import '../bloc/account_state.dart';
+import '../../../../core/i18n/langue.dart';
 
-class ProfilPage extends StatelessWidget {
+class ProfilPage extends StatefulWidget {
   const ProfilPage({super.key});
 
   @override
+  State<ProfilPage> createState() => _ProfilPageState();
+}
+
+class _ProfilPageState extends State<ProfilPage> {
+  bool? _isAuth;
+
+  @override
+  void initState() {
+    super.initState();
+    isUserAuthenticated().then((auth) {
+      if (mounted) setState(() => _isAuth = auth);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isAuth == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (_isAuth == false) {
+      return Scaffold(
+        backgroundColor: AppColor.kBackground,
+        appBar: AppBar(title: Text(tr('Profil'))),
+        body: EmptyState(
+          icon: Icons.person_outline,
+          title: tr('Vous n\'êtes pas connecté'),
+          subtitle: tr('Connectez-vous pour accéder à votre profil.'),
+          actionLabel: tr('Se connecter'),
+          onAction: () => Navigator.of(context).pushNamed(AppRouter.loginRoute),
+        ),
+      );
+    }
     return BlocProvider(
       create: (_) => sl<AccountBloc>()..add(LoadMe()),
       child: const _ProfilView(),
@@ -57,26 +92,26 @@ class _ProfilViewState extends State<_ProfilView> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Modifier le profil',
+              Text(tr('Modifier le profil'),
                   style: GoogleFonts.plusJakartaSans(fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 20),
               TextFormField(
                 controller: prenomCtrl,
-                decoration: const InputDecoration(labelText: 'Prénom'),
-                validator: (v) => v == null || v.trim().length < 2 ? 'Requis (min 2 car.)' : null,
+                decoration: InputDecoration(labelText: tr('Prénom')),
+                validator: (v) => v == null || v.trim().length < 2 ? tr('Requis (min 2 car.)') : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: nomCtrl,
-                decoration: const InputDecoration(labelText: 'Nom'),
-                validator: (v) => v == null || v.trim().length < 2 ? 'Requis (min 2 car.)' : null,
+                decoration: InputDecoration(labelText: tr('Nom')),
+                validator: (v) => v == null || v.trim().length < 2 ? tr('Requis (min 2 car.)') : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: telCtrl,
-                decoration: const InputDecoration(labelText: 'Téléphone'),
+                decoration: InputDecoration(labelText: tr('Téléphone')),
                 keyboardType: TextInputType.phone,
-                validator: (v) => v == null || v.trim().isEmpty ? 'Requis' : null,
+                validator: (v) => v == null || v.trim().isEmpty ? tr('Requis') : null,
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -88,7 +123,7 @@ class _ProfilViewState extends State<_ProfilView> {
                     ctx.read<AccountBloc>().add(ModifierInfoPersonnellesEvent(
                       nom: nomCtrl.text.trim(),
                       prenom: prenomCtrl.text.trim(),
-                      telephone: telCtrl.text.trim(),
+                      telephone: telCtrl.text.trim().replaceAll(RegExp(r'[\s\-.]'), ''),
                     ));
                   },
                   style: ElevatedButton.styleFrom(
@@ -97,7 +132,7 @@ class _ProfilViewState extends State<_ProfilView> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text('Enregistrer', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+                  child: Text(tr('Enregistrer'), style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
                 ),
               ),
             ],
@@ -135,40 +170,40 @@ class _ProfilViewState extends State<_ProfilView> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Changer le mot de passe',
+                Text(tr('Changer le mot de passe'),
                     style: GoogleFonts.plusJakartaSans(fontSize: 17, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: oldCtrl,
                   obscureText: obscureOld,
                   decoration: InputDecoration(
-                    labelText: 'Ancien mot de passe',
+                    labelText: tr('Ancien mot de passe'),
                     suffixIcon: IconButton(
                       icon: Icon(obscureOld ? Icons.visibility_off : Icons.visibility),
                       onPressed: () => setSheetState(() => obscureOld = !obscureOld),
                     ),
                   ),
-                  validator: (v) => v == null || v.isEmpty ? 'Requis' : null,
+                  validator: (v) => v == null || v.isEmpty ? tr('Requis') : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: newCtrl,
                   obscureText: obscureNew,
                   decoration: InputDecoration(
-                    labelText: 'Nouveau mot de passe',
+                    labelText: tr('Nouveau mot de passe'),
                     suffixIcon: IconButton(
                       icon: Icon(obscureNew ? Icons.visibility_off : Icons.visibility),
                       onPressed: () => setSheetState(() => obscureNew = !obscureNew),
                     ),
                   ),
-                  validator: (v) => v == null || v.length < 6 ? 'Min 6 caractères' : null,
+                  validator: (v) => v == null || v.length < 6 ? tr('Min 6 caractères') : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: confirmCtrl,
                   obscureText: true,
-                  decoration: const InputDecoration(labelText: 'Confirmer le nouveau mot de passe'),
-                  validator: (v) => v != newCtrl.text ? 'Les mots de passe ne correspondent pas' : null,
+                  decoration: InputDecoration(labelText: tr('Confirmer le nouveau mot de passe')),
+                  validator: (v) => v != newCtrl.text ? tr('Les mots de passe ne correspondent pas') : null,
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -188,7 +223,7 @@ class _ProfilViewState extends State<_ProfilView> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: Text('Confirmer', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+                    child: Text(tr('Confirmer'), style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
                   ),
                 ),
               ],
@@ -205,7 +240,7 @@ class _ProfilViewState extends State<_ProfilView> {
 
   Future<void> _pickAndUploadAvatar() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80, maxWidth: 1024);
     if (picked != null && mounted) {
       context.read<AccountBloc>().add(UploadAvatarEvent(picked.path));
     }
@@ -216,17 +251,17 @@ class _ProfilViewState extends State<_ProfilView> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Déconnexion', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
-        content: Text('Voulez-vous vraiment vous déconnecter ?', style: GoogleFonts.plusJakartaSans()),
+        title: Text(tr('Déconnexion'), style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+        content: Text(tr('Voulez-vous vraiment vous déconnecter ?'), style: GoogleFonts.plusJakartaSans()),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(tr('Annuler'))),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               context.read<AuthBloc>().add(LogoutRequested());
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('Déconnecter', style: GoogleFonts.plusJakartaSans(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColor.kErreur),
+            child: Text(tr('Déconnecter'), style: GoogleFonts.plusJakartaSans(color: Colors.white)),
           ),
         ],
       ),
@@ -238,12 +273,15 @@ class _ProfilViewState extends State<_ProfilView> {
     return BlocConsumer<AccountBloc, AccountState>(
       listener: (context, state) {
         if (state is AccountSuccess) {
-          showToast(context, 'Succès', state.message, ToastificationType.success);
+          showToast(context, tr('Succès'), state.message, ToastificationType.success);
         } else if (state is PasswordChanged) {
-          showToast(context, 'Succès', state.message, ToastificationType.success);
-          context.read<AccountBloc>().add(LoadMe());
+          // Le backend révoque toutes les sessions après un changement de mot de passe
+          showToast(context, tr('Mot de passe modifié'), tr('Reconnectez-vous avec votre nouveau mot de passe.'),
+              ToastificationType.success);
+          context.read<AuthBloc>().add(LogoutRequested());
+          Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.loginRoute, (_) => false);
         } else if (state is AccountError) {
-          showToast(context, 'Erreur', state.message, ToastificationType.error);
+          showToast(context, tr('Erreur'), state.message, ToastificationType.error);
         }
       },
       builder: (context, state) {
@@ -260,11 +298,11 @@ class _ProfilViewState extends State<_ProfilView> {
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Icon(Icons.person_off_outlined, size: 60, color: Colors.grey[300]),
               const SizedBox(height: 16),
-              Text('Impossible de charger le profil', style: TextStyle(color: Colors.grey[500])),
+              Text(tr('Impossible de charger le profil'), style: TextStyle(color: Colors.grey[500])),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () => context.read<AccountBloc>().add(LoadMe()),
-                child: const Text('Réessayer'),
+                child: Text(tr('Réessayer')),
               ),
             ]),
           );
@@ -318,7 +356,7 @@ class _ProfilViewState extends State<_ProfilView> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Text(user.fullName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+                      Text(user.fullName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
                       const SizedBox(height: 4),
                       _roleBadge(role),
                     ],
@@ -334,19 +372,19 @@ class _ProfilViewState extends State<_ProfilView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _sectionCard(
-                      'Informations personnelles',
+                      tr('Informations personnelles'),
                       Icons.person_outline,
                       [
-                        _infoRow(Icons.badge_outlined, 'Prénom', user.prenom),
-                        _infoRow(Icons.badge_outlined, 'Nom', user.nom),
-                        _infoRow(Icons.email_outlined, 'Email', user.email),
-                        _infoRow(Icons.phone_outlined, 'Téléphone', user.telephone),
+                        _infoRow(Icons.badge_outlined, tr('Prénom'), user.prenom),
+                        _infoRow(Icons.badge_outlined, tr('Nom'), user.nom),
+                        _infoRow(Icons.email_outlined, tr('Email'), user.email),
+                        _infoRow(Icons.phone_outlined, tr('Téléphone'), user.telephone),
                       ],
                       onEdit: () => _showEditProfilSheet(context, user),
                     ),
                     const SizedBox(height: 16),
-                    _sectionCard('Compte', Icons.security_outlined, [
-                      _infoRow(Icons.manage_accounts_outlined, 'Rôle', role.label),
+                    _sectionCard(tr('Compte'), Icons.security_outlined, [
+                      _infoRow(Icons.manage_accounts_outlined, tr('Rôle'), role.label),
                       _statusRow(user.isActive),
                     ]),
                     const SizedBox(height: 16),
@@ -355,7 +393,7 @@ class _ProfilViewState extends State<_ProfilView> {
                       child: OutlinedButton.icon(
                         onPressed: () => _showChangePasswordSheet(context),
                         icon: const Icon(Icons.lock_outline),
-                        label: Text('Changer le mot de passe',
+                        label: Text(tr('Changer le mot de passe'),
                             style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -369,10 +407,10 @@ class _ProfilViewState extends State<_ProfilView> {
                       height: 50,
                       child: OutlinedButton.icon(
                         onPressed: _showLogoutDialog,
-                        icon: const Icon(Icons.logout, color: Colors.red),
-                        label: Text('Se déconnecter', style: GoogleFonts.plusJakartaSans(color: Colors.red, fontWeight: FontWeight.w600)),
+                        icon: const Icon(Icons.logout, color: AppColor.kErreur),
+                        label: Text(tr('Se déconnecter'), style: GoogleFonts.plusJakartaSans(color: AppColor.kErreur, fontWeight: FontWeight.w600)),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.red),
+                          side: const BorderSide(color: AppColor.kErreur),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
                       ),
@@ -459,7 +497,7 @@ class _ProfilViewState extends State<_ProfilView> {
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 18),
                 color: AppColor.kPrimary,
-                tooltip: 'Modifier',
+                tooltip: tr('Modifier'),
                 onPressed: onEdit,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -491,14 +529,14 @@ class _ProfilViewState extends State<_ProfilView> {
 
   Widget _statusRow(bool? isActive) {
     final active = isActive ?? true;
-    final color = active ? Colors.green : Colors.orange;
-    final label = active ? 'Actif' : 'Inactif';
+    final color = active ? AppColor.kSucces : AppColor.kAlerte;
+    final label = active ? tr('Actif') : tr('Inactif');
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(children: [
         Icon(Icons.circle, size: 10, color: color),
         const SizedBox(width: 12),
-        Expanded(child: Text('Statut', style: TextStyle(fontSize: 11, color: Colors.grey[400]))),
+        Expanded(child: Text(tr('Statut'), style: TextStyle(fontSize: 11, color: Colors.grey[400]))),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
           decoration: BoxDecoration(

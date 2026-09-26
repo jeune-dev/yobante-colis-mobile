@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/constants/categories.dart';
 import '../../../../core/routes/app_router.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../../../core/routes/app_shell_key.dart';
+import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/shimmer_list.dart';
@@ -12,21 +16,39 @@ import '../bloc/colis_bloc.dart';
 import '../bloc/colis_event.dart';
 import '../bloc/colis_state.dart';
 import '../widgets/statut_badge.dart';
+import '../../../../core/i18n/langue.dart';
 
 class ColisListePage extends StatelessWidget {
-  const ColisListePage({super.key});
+  /// Vrai quand la liste est affichée dans l'onglet « Mes envois » (sans barre d'application propre).
+  final bool integre;
+  const ColisListePage({super.key, this.integre = false});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<ColisBloc>()..add(const LoadColis()),
-      child: const _ColisListeView(),
+    return FutureBuilder<bool>(
+      future: isUserAuthenticated(),
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+        final isAuth = snap.data == true;
+        return BlocProvider(
+          create: (_) {
+            final bloc = sl<ColisBloc>();
+            if (isAuth) bloc.add(const LoadColis());
+            return bloc;
+          },
+          child: _ColisListeView(isAuth: isAuth, integre: integre),
+        );
+      },
     );
   }
 }
 
 class _ColisListeView extends StatefulWidget {
-  const _ColisListeView();
+  final bool isAuth;
+  final bool integre;
+  const _ColisListeView({required this.isAuth, this.integre = false});
 
   @override
   State<_ColisListeView> createState() => _ColisListeViewState();
@@ -36,6 +58,7 @@ class _ColisListeViewState extends State<_ColisListeView> {
   String? _filtreStatut;
 
   void _recharger() {
+    if (!widget.isAuth) return;
     context.read<ColisBloc>().add(LoadColis(statut: _filtreStatut));
   }
 
@@ -43,33 +66,48 @@ class _ColisListeViewState extends State<_ColisListeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.kBackground,
-      appBar: AppBar(
-        title: const Text('Mes colis'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list_rounded),
-            onPressed: _showFiltreDialog,
-          ),
-        ],
-      ),
+      appBar: widget.integre
+          ? null
+          : AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => appShellScaffoldKey.currentState?.openDrawer(),
+              ),
+              title: Text(tr('Envoyés')),
+              actions: [
+                if (widget.isAuth)
+                  IconButton(
+                    icon: const Icon(Icons.filter_list_rounded),
+                    onPressed: _showFiltreDialog,
+                  ),
+              ],
+            ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.of(context)
             .pushNamed(AppRouter.creationColisRoute)
             .then((created) { if (created == true) _recharger(); }),
-        backgroundColor: AppColor.kPrimary,
-        foregroundColor: AppColor.kWhite,
+        backgroundColor: AppColor.kSecondary,
+        foregroundColor: AppColor.kPrimary,
         icon: const Icon(Icons.add),
-        label: const Text('Nouveau colis'),
+        label: Text(tr('Expédier')),
       ),
-      body: BlocBuilder<ColisBloc, ColisState>(
+      body: !widget.isAuth
+          ? EmptyState(
+              icon: Icons.inventory_2_outlined,
+              title: tr('Aucun colis'),
+              subtitle: tr('Connectez-vous pour créer et suivre vos colis.'),
+              actionLabel: tr('Se connecter'),
+              onAction: () => Navigator.of(context).pushNamed(AppRouter.loginRoute),
+            )
+          : BlocBuilder<ColisBloc, ColisState>(
         builder: (context, state) {
           if (state is ColisLoading) return const ShimmerList();
           if (state is ColisFailure) {
             return EmptyState(
               icon: Icons.error_outline,
-              title: 'Erreur',
+              title: tr('Erreur'),
               subtitle: state.message,
-              actionLabel: 'Réessayer',
+              actionLabel: tr('Réessayer'),
               onAction: _recharger,
             );
           }
@@ -77,9 +115,9 @@ class _ColisListeViewState extends State<_ColisListeView> {
             if (state.colis.isEmpty) {
               return EmptyState(
                 icon: Icons.inventory_2_outlined,
-                title: 'Aucun colis',
-                subtitle: 'Vous n\'avez pas encore de colis enregistré.',
-                actionLabel: 'Envoyer un colis',
+                title: tr('Aucun colis'),
+                subtitle: tr('Vous n\'avez pas encore de colis enregistré.'),
+                actionLabel: tr('Envoyer un colis'),
                 onAction: () => Navigator.of(context)
                     .pushNamed(AppRouter.creationColisRoute)
                     .then((created) { if (created == true) _recharger(); }),
@@ -102,7 +140,7 @@ class _ColisListeViewState extends State<_ColisListeView> {
                           onPressed: () => context.read<ColisBloc>().add(
                             LoadMoreColis(statut: _filtreStatut, page: nextPage),
                           ),
-                          child: const Text('Charger plus'),
+                          child: Text(tr('Charger plus')),
                         ),
                       ),
                     );
@@ -127,8 +165,8 @@ class _ColisListeViewState extends State<_ColisListeView> {
   }
 
   void _showFiltreDialog() {
-    final statuts = [null, 'en_attente', 'en_preparation', 'en_transit', 'arrive', 'recupere', 'livre', 'annule'];
-    final labels  = ['Tous', 'En attente', 'En préparation', 'En transit', 'Arrivé', 'Récupéré', 'Livré', 'Annulé'];
+    final statuts = [null, 'en_attente_validation', 'devis_propose', 'en_attente', 'en_transit', 'en_douane', 'arrive', 'livre', 'annule'];
+    final labels  = ['Tous', tr('En cours d\'étude'), tr('Proposition reçue'), tr('En attente de remise'), tr('En transit'), tr('En dédouanement'), tr('Arrivé'), tr('Livré'), tr('Annulé')];
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
@@ -136,11 +174,11 @@ class _ColisListeViewState extends State<_ColisListeView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 16),
-          Text('Filtrer par statut', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 16)),
+          Text(tr('Filtrer par statut'), style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: 8),
           ...List.generate(statuts.length, (i) => ListTile(
             title: Text(labels[i]),
-            trailing: _filtreStatut == statuts[i] ? const Icon(Icons.check, color: Colors.green) : null,
+            trailing: _filtreStatut == statuts[i] ? const Icon(Icons.check, color: AppColor.kSucces) : null,
             onTap: () {
               Navigator.pop(context);
               setState(() => _filtreStatut = statuts[i]);
@@ -155,7 +193,7 @@ class _ColisListeViewState extends State<_ColisListeView> {
 }
 
 class _ColisCard extends StatelessWidget {
-  static final _fmt = DateFormat('dd MMM yyyy', 'fr_FR');
+  static DateFormat get _fmt => formatDate();
 
   final Colis colis;
   final VoidCallback onTap;
@@ -186,22 +224,28 @@ class _ColisCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            _InfoRow(icon: Icons.person_outline, label: 'Destinataire', value: colis.destinataireNom),
+            _InfoRow(icon: Icons.person_outline, label: tr('Destinataire'), value: colis.destinataireNom),
             const SizedBox(height: 6),
             _InfoRow(
               icon: Icons.location_on_outlined,
-              label: 'Trajet',
-              value: '${colis.villeDepartNom ?? '—'} → ${colis.villeArriveeNom ?? '—'}',
+              label: tr('Trajet'),
+              value: '${colis.villeDepart?.nom ?? '—'} → ${colis.villeArrivee?.nom ?? '—'}',
             ),
             const SizedBox(height: 6),
-            _InfoRow(icon: Icons.scale_outlined, label: 'Poids', value: '${colis.poids} kg'),
-            if (colis.montant != null) ...[
-              const SizedBox(height: 6),
-              _InfoRow(icon: Icons.payments_outlined, label: 'Montant', value: '${colis.montant!.toStringAsFixed(0)} FCFA'),
-            ],
+            _InfoRow(
+              icon: CategorieColis.parCode(colis.categorie).icone,
+              label: tr('Catégorie'),
+              value: CategorieColis.parCode(colis.categorie).libelle,
+            ),
+            const SizedBox(height: 6),
+            _InfoRow(
+              icon: Icons.payments_outlined,
+              label: tr('Montant'),
+              value: colis.montantEnAttente ? tr('Proposé après étude') : formaterMontant(colis.montantTotal, colis.devise),
+            ),
             const SizedBox(height: 8),
             Text(
-              'Créé le ${_fmt.format(colis.createdAt)}',
+              tr('Créé le ${_fmt.format(colis.createdAt)}'),
               style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40),
             ),
           ],
