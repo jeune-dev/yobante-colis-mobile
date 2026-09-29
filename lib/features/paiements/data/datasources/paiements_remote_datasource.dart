@@ -27,7 +27,8 @@ class PaiementsRemoteDataSourceImpl implements PaiementsRemoteDataSource {
   @override
   Future<List<FactureColisModel>> getFactures() async {
     try {
-      final res = await dio.get(Env.clientFactures);
+      // Pas de pagination à l'écran : la page maximale autorisée par l'API (100)
+      final res = await dio.get(Env.clientFactures, queryParameters: {'limit': 100});
       final list = res.data['data']['factures'] as List? ?? [];
       return list.map((e) => FactureColisModel.fromJson(e as Map<String, dynamic>)).toList();
     } on DioException catch (e) {

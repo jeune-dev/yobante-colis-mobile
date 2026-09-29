@@ -111,8 +111,9 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
   static bool _hasNextPage(Map<String, dynamic>? p) {
     if (p == null) return false;
     if (p['hasNextPage'] == true) return true;
-    final page = p['page'] as int?;
-    final total = p['totalPages'] as int?;
+    // Contrat : { totalItems, totalPages, currentPage, pageSize }
+    final page = ((p['currentPage'] ?? p['page']) as num?)?.toInt();
+    final total = (p['totalPages'] as num?)?.toInt();
     return page != null && total != null && page < total;
   }
 

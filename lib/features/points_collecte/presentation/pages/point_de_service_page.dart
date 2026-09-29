@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/env.dart';
+import '../../../../core/errors/api_error.dart';
 import '../../../../core/routes/app_shell_key.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/empty_state.dart';
@@ -99,9 +100,11 @@ class _PointDeServicePageState extends State<PointDeServicePage> {
       final list = (res.data['data']['points'] as List)
           .map((e) => _PointCollecte.fromJson(e as Map<String, dynamic>))
           .toList();
+      if (!mounted) return;
       setState(() => _resultats = list);
     } on DioException catch (e) {
-      setState(() => _erreur = e.response?.data?['message'] as String? ?? tr('Erreur lors de la recherche.'));
+      if (!mounted) return;
+      setState(() => _erreur = messageErreur(e, tr('Erreur lors de la recherche.')));
     } finally {
       if (mounted) setState(() => _chargement = false);
     }

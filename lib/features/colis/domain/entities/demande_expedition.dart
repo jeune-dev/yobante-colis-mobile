@@ -219,7 +219,10 @@ class DemandeExpedition extends Equatable {
       'deviseValeur': deviseValeur,
       'conditionsAcceptees': conditionsAcceptees ? 'true' : 'false',
     };
-    if (categorie != 'documents' && valeurDeclaree > 0) champs['valeurDeclaree'] = '$valeurDeclaree';
+    // Obligatoire pour la catégorie 2 (colis moyen), même à 0
+    if (categorie == 'colis_moyen' || (categorie != 'documents' && valeurDeclaree > 0)) {
+      champs['valeurDeclaree'] = '$valeurDeclaree';
+    }
     if (articles.isNotEmpty) champs['articles'] = jsonEncode(articles.map((a) => a.toJson()).toList());
     if (pieces.isNotEmpty) {
       champs['pieces'] = jsonEncode(pieces.map((p) => p.toJson()).toList());

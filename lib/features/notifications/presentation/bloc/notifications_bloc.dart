@@ -54,7 +54,8 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
 
   Future<void> _onLoad(LoadNotifications _, Emitter<NotificationsState> emit) async {
     emit(NotificationsLoading());
-    final listFuture = repo.getNotifications();
+    // Pas de pagination à l'écran : la page maximale autorisée par l'API (100)
+    final listFuture = repo.getNotifications(limit: 100);
     final countFuture = repo.getNonLuesCount();
     final result = await listFuture;
     final countResult = await countFuture;

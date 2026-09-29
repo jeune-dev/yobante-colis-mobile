@@ -3,8 +3,9 @@ class Env {
 
   static String get baseUrl {
     const v = String.fromEnvironment('API_BASE_URL');
-    // 10.0.2.2 = localhost depuis l'émulateur Android ; le backend écoute sur le port 3000
-    return v.isEmpty ? 'http://10.0.2.2:3000' : v;
+    // Par défaut : API de production (HTTPS). Pour un backend local, passer
+    // --dart-define=API_BASE_URL=http://10.0.2.2:3000 (émulateur Android).
+    return v.isEmpty ? 'https://api.yobanterek.com' : v;
   }
 
   /// Préfixe versionné recommandé par le contrat d'API (les chemins sans préfixe restent servis).

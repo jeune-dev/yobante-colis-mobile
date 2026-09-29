@@ -1,0 +1,39 @@
+# Ce fichier n'est PAS chargé par l'application (aucun package flutter_dotenv) —
+# il documente les endpoints réellement câblés dans lib/core/config/env.dart.
+# La vraie config runtime est dart_defines.json (API_BASE_URL, via --dart-define-from-file).
+
+API_BASE_URL=https://api.yobanterek.com/api/v1
+
+# ── AUTH ──────────────────────────────────────────────────────────────────────
+AUTH_REGISTER_PATH=/auth/register
+AUTH_LOGIN_PATH=/auth/login
+AUTH_LOGOUT_PATH=/auth/logout
+AUTH_REFRESH_PATH=/auth/refresh-token
+AUTH_FORGOT_PASSWORD_PATH=/auth/forgot-password
+AUTH_RESET_PASSWORD_PATH=/auth/reset-password
+AUTH_CHANGE_PASSWORD_PATH=/auth/change-password
+
+# ── CLIENT — COLIS ────────────────────────────────────────────────────────────
+CLIENT_COLIS_PATH=/client/colis
+CLIENT_COLIS_SUIVI_PATH=/client/colis/{id}/suivi
+CLIENT_COLIS_ANNULER_PATH=/client/colis/{id}/annuler
+
+# ── CLIENT — PROFIL ───────────────────────────────────────────────────────────
+CLIENT_PROFIL_PATH=/client/profil
+CLIENT_PROFIL_AVATAR_PATH=/client/profil/avatar
+CLIENT_DEVICE_TOKEN_PATH=/client/profil/device-token
+
+# ── CLIENT — NOTIFICATIONS ────────────────────────────────────────────────────
+CLIENT_NOTIFICATIONS_PATH=/client/notifications
+CLIENT_NOTIF_NON_LUES_PATH=/client/notifications/non-lues
+CLIENT_NOTIF_TOUTES_LUES_PATH=/client/notifications/toutes-lues
+
+# ── CLIENT — PAIEMENTS / FACTURES ─────────────────────────────────────────────
+CLIENT_FACTURES_PATH=/client/paiements/factures
+
+# ── VILLES (référentiel, accessible à tout utilisateur authentifié) ──────────
+ADMIN_VILLES_PATH=/admin/villes
+
+# ── Non encore consommés par l'app mais disponibles côté backend ─────────────
+# (devis, étiquettes, bordereau, facture commerciale, photos, abonnement suivi,
+# adresses, enlèvements, réclamations — voir src/routes/client sur le backend)

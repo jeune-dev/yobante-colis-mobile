@@ -78,12 +78,13 @@ class _RegisterPageState extends State<RegisterPage> {
       final list = (res.data['data']['villes'] as List)
           .map((e) => _VilleOption.fromJson(e as Map<String, dynamic>))
           .toList();
+      if (!mounted) return;
       setState(() {
         _villes = list;
         _chargementVilles = false;
       });
     } catch (_) {
-      setState(() => _chargementVilles = false);
+      if (mounted) setState(() => _chargementVilles = false);
     }
   }
 
