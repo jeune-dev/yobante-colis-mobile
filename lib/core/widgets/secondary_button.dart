@@ -84,8 +84,9 @@ class _SecondaryButtonState extends State<SecondaryButton>
           ),
         ),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 17),
-          height: widget.height,
+          // Hauteur minimale (et non fixe) : le bouton grandit avec la taille du texte
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          constraints: BoxConstraints(minHeight: widget.height),
           alignment: Alignment.center,
           width: widget.width,
           decoration: BoxDecoration(
@@ -100,13 +101,16 @@ class _SecondaryButtonState extends State<SecondaryButton>
                 icon,
                 const SizedBox(width: 12),
               ],
-              Text(
+              Flexible(
+                child: Text(
                 widget.text,
+                textAlign: TextAlign.center,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: widget.fontSize ?? 14,
                   fontWeight: FontWeight.w600,
                   color: widget.textColor,
                 ),
+              ),
               ),
             ],
           ),

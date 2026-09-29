@@ -8,6 +8,7 @@ import 'package:yobnate_colis/features/colis/domain/usecases/colis_usecases.dart
 import 'package:yobnate_colis/features/colis/presentation/bloc/colis_bloc.dart';
 import 'package:yobnate_colis/features/colis/presentation/bloc/colis_event.dart';
 import 'package:yobnate_colis/features/colis/presentation/bloc/colis_state.dart';
+import 'package:yobnate_colis/core/types/avec_message.dart';
 
 // ── Faux dépôt ────────────────────────────────────────────────────────────────
 
@@ -15,7 +16,7 @@ class _FakeColisRepository extends Fake implements ColisRepository {
   Either<Failure, Map<String, dynamic>>? getColisResult;
   Either<Failure, Map<String, dynamic>>? getColisRecusResult;
   Either<Failure, Colis>? getDetailResult;
-  Either<Failure, Colis>? annulerResult;
+  Either<Failure, AvecMessage<Colis>>? annulerResult;
   Either<Failure, List<SuiviEvenement>>? suiviResult;
 
   @override
@@ -39,7 +40,7 @@ class _FakeColisRepository extends Fake implements ColisRepository {
       getDetailResult!;
 
   @override
-  Future<Either<Failure, Colis>> annulerColis(String id,
+  Future<Either<Failure, AvecMessage<Colis>>> annulerColis(String id,
           {String? motif}) async =>
       annulerResult!;
 
@@ -60,11 +61,11 @@ class _FakeColisRepository extends Fake implements ColisRepository {
       Left(const ServerFailure('non utilisé'));
 
   @override
-  Future<Either<Failure, Colis>> refuserProposition(String id, {String? motif}) async =>
+  Future<Either<Failure, AvecMessage<Colis>>> refuserProposition(String id, {String? motif}) async =>
       Left(const ServerFailure('non utilisé'));
 
   @override
-  Future<Either<Failure, Colis>> modifierColis(String id, Map<String, dynamic> champs) async =>
+  Future<Either<Failure, AvecMessage<Colis>>> modifierColis(String id, Map<String, dynamic> champs) async =>
       Left(const ServerFailure('non utilisé'));
 }
 
@@ -275,7 +276,7 @@ void main() {
 
   group('ColisBloc — AnnulerColisRequested', () {
     test('succès → [ColisLoading, ColisAnnule]', () async {
-      fakeRepo.annulerResult = Right(_kColis);
+      fakeRepo.annulerResult = Right((valeur: _kColis, message: 'Expédition annulée.'));
       final bloc = _buildBloc(fakeRepo);
 
       final states =
@@ -332,7 +333,7 @@ class _FakeColisRepositoryWithCapture extends Fake
       Left(const ServerFailure(''));
 
   @override
-  Future<Either<Failure, Colis>> annulerColis(String id,
+  Future<Either<Failure, AvecMessage<Colis>>> annulerColis(String id,
           {String? motif}) async =>
       Left(const ServerFailure(''));
 
@@ -353,10 +354,10 @@ class _FakeColisRepositoryWithCapture extends Fake
       Left(const ServerFailure('non utilisé'));
 
   @override
-  Future<Either<Failure, Colis>> refuserProposition(String id, {String? motif}) async =>
+  Future<Either<Failure, AvecMessage<Colis>>> refuserProposition(String id, {String? motif}) async =>
       Left(const ServerFailure('non utilisé'));
 
   @override
-  Future<Either<Failure, Colis>> modifierColis(String id, Map<String, dynamic> champs) async =>
+  Future<Either<Failure, AvecMessage<Colis>>> modifierColis(String id, Map<String, dynamic> champs) async =>
       Left(const ServerFailure('non utilisé'));
 }

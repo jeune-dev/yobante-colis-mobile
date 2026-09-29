@@ -162,16 +162,19 @@ class EnlevementsRemoteDataSource {
   /// ascenseur, emballageRequis. Renvoie la demande et le message du backend.
   Future<({DemandeEnlevement demande, String message})> creer(Map<String, dynamic> champs) => appelApi(() async {
         final res = await dio.post(Env.clientEnlevements, data: champs);
-        return (demande: _demande(res), message: res.data['message'] as String? ?? tr('Enlèvement programmé.'));
+        return (demande: _demande(res), message: messageApi(res));
       }, tr('Impossible de programmer l\'enlèvement'));
 
-  Future<DemandeEnlevement> modifier(String id, Map<String, dynamic> champs) => appelApi(
-      () async => _demande(await dio.put(Env.clientEnlevementId(id), data: champs)),
-      tr('Impossible de modifier la demande'));
+  Future<({DemandeEnlevement demande, String message})> modifier(String id, Map<String, dynamic> champs) =>
+      appelApi(() async {
+        final res = await dio.put(Env.clientEnlevementId(id), data: champs);
+        return (demande: _demande(res), message: messageApi(res));
+      }, tr('Impossible de modifier la demande'));
 
-  Future<DemandeEnlevement> annuler(String id, {String? motif}) => appelApi(
-      () async => _demande(await dio.patch(Env.clientEnlevementAnnuler(id), data: {
-            if (motif != null && motif.trim().isNotEmpty) 'motif': motif.trim(),
-          })),
-      tr('Impossible d\'annuler la demande'));
+  Future<({DemandeEnlevement demande, String message})> annuler(String id, {String? motif}) => appelApi(() async {
+        final res = await dio.patch(Env.clientEnlevementAnnuler(id), data: {
+          if (motif != null && motif.trim().isNotEmpty) 'motif': motif.trim(),
+        });
+        return (demande: _demande(res), message: messageApi(res));
+      }, tr('Impossible d\'annuler la demande'));
 }

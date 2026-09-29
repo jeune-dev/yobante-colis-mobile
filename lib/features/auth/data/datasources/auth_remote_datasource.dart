@@ -7,7 +7,8 @@ import '../../../../core/i18n/langue.dart';
 
 abstract class AuthRemoteDataSource {
   Future<AuthResponseModel> login(String email, String password);
-  Future<void> register({
+  /// Inscription, mot de passe oublié, réinitialisation : renvoient le message du backend.
+  Future<String> register({
     required String nom, required String prenom,
     required String email, required String motDePasse, required String telephone,
     String pays = 'SN',
@@ -20,8 +21,8 @@ abstract class AuthRemoteDataSource {
     String? codePostal,
     String? codeParrainage,
   });
-  Future<void> forgotPassword(String email);
-  Future<void> resetPassword(String email, String code, String newPassword);
+  Future<String> forgotPassword(String email);
+  Future<String> resetPassword(String email, String code, String newPassword);
   Future<void> logout(String refreshToken, {String? accessToken});
 }
 
@@ -41,12 +42,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final model = AuthResponseModel.fromJson(res.data as Map<String, dynamic>);
       return model;
     } on DioException catch (e) {
-      throw ServerException(message: messageErreur(e, tr('Erreur de connexion')));
+      final message = messageErreur(e, tr('Erreur de connexion'));
+      // 403 à la connexion : compte désactivé, ou email pas encore confirmé
+      if (e.response?.statusCode == 403 && message.toLowerCase().contains('confirm')) {
+        throw EmailNonConfirmeException(message: message);
+      }
+      throw ServerException(message: message);
     }
   }
 
   @override
-  Future<void> register({
+  Future<String> register({
     required String nom, required String prenom,
     required String email, required String motDePasse, required String telephone,
     String pays = 'SN',
@@ -60,7 +66,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? codeParrainage,
   }) async {
     try {
-      await dio.post(
+      final res = await dio.post(
         Env.authRegister,
         data: {
           'nom': nom, 'prenom': prenom, 'email': email, 'password': motDePasse, 'telephone': telephone,
@@ -77,26 +83,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
         options: Options(extra: {'skipAuthInterceptor': true}),
       );
+      return messageApi(res);
     } on DioException catch (e) {
       throw ServerException(message: messageErreur(e, tr('Erreur d\'inscription')));
     }
   }
 
   @override
-  Future<void> forgotPassword(String email) async {
+  Future<String> forgotPassword(String email) async {
     try {
-      await dio.post(Env.authForgot, data: {'email': email},
-          options: Options(extra: {'skipAuthInterceptor': true}));
+      return messageApi(await dio.post(Env.authForgot, data: {'email': email},
+          options: Options(extra: {'skipAuthInterceptor': true})));
     } on DioException catch (e) {
       throw ServerException(message: messageErreur(e, tr('Erreur')));
     }
   }
 
   @override
-  Future<void> resetPassword(String email, String code, String newPassword) async {
+  Future<String> resetPassword(String email, String code, String newPassword) async {
     try {
-      await dio.post(Env.authReset, data: {'email': email, 'code': code, 'newPassword': newPassword},
-          options: Options(extra: {'skipAuthInterceptor': true}));
+      return messageApi(await dio.post(Env.authReset, data: {'email': email, 'code': code, 'newPassword': newPassword},
+          options: Options(extra: {'skipAuthInterceptor': true})));
     } on DioException catch (e) {
       throw ServerException(message: messageErreur(e, tr('Erreur')));
     }

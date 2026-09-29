@@ -11,6 +11,7 @@ import '../../../../injection_container.dart';
 import '../bloc/notifications_bloc.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/services/ouverture_notification.dart';
 
 /// Page autonome (fournit son propre [NotificationsBloc]) — accessible depuis
 /// le tiroir latéral, indépendamment des onglets de la coquille principale.
@@ -120,10 +121,8 @@ class _NotificationsViewState extends State<_NotificationsView> {
                     tileColor: n.isRead ? null : AppColor.kPrimary.withValues(alpha: 0.03),
                     onTap: () {
                       if (!n.isRead) bloc.add(MarquerLue(n.id));
-                      // Notification liée à une expédition : ouverture directe du colis
-                      if (n.entite == 'Colis' && (n.entiteId ?? '').isNotEmpty) {
-                        Navigator.of(context).pushNamed(AppRouter.detailColisRoute, arguments: n.entiteId);
-                      }
+                      // Colis, facture, réclamation, enlèvement… : ouverture de l'écran concerné
+                      ouvrirEntiteNotification(context, n.entite, n.entiteId);
                     },
                     ),
                   );

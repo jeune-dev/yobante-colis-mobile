@@ -29,6 +29,14 @@ String messageErreur(DioException e, [String defaut = 'Une erreur est survenue']
   return defaut;
 }
 
+/// Message de la réponse du backend (`{ success, message, data }`), prévu pour
+/// être affiché tel quel ; [defaut] ne sert que si la réponse n'en contient pas.
+String messageApi(Response res, [String defaut = '']) {
+  final data = res.data;
+  final message = data is Map ? data['message'] : null;
+  return message is String && message.isNotEmpty ? message : defaut;
+}
+
 /// Exécute un appel réseau en traduisant les erreurs Dio en [ServerException].
 Future<T> appelApi<T>(Future<T> Function() appel, [String defaut = 'Une erreur est survenue']) async {
   try {

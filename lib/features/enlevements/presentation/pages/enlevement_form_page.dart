@@ -13,6 +13,7 @@ import '../../../colis/domain/entities/colis.dart';
 import '../../../expedition/presentation/widgets/selecteur_ville.dart';
 import '../../data/enlevements_remote_datasource.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/validateurs.dart';
 
 /// Programmation (ou modification) d'un enlèvement à domicile.
 /// Renvoie la demande enregistrée.
@@ -143,8 +144,8 @@ class _EnlevementFormPageState extends State<EnlevementFormPage> {
       if (_edition) {
         final maj = await _source.modifier(_d!.id, commun);
         if (!mounted) return;
-        showToast(context, tr('Enregistré'), tr('Demande d\'enlèvement mise à jour.'), ToastificationType.success);
-        Navigator.of(context).pop(maj);
+        if (maj.message.isNotEmpty) showToast(context, tr('Enregistré'), maj.message, ToastificationType.success);
+        Navigator.of(context).pop(maj.demande);
       } else {
         final r = await _source.creer({
           ...commun,
@@ -195,7 +196,8 @@ class _EnlevementFormPageState extends State<EnlevementFormPage> {
                 ChampTexte(
                   controller: _contactNom,
                   label: tr('Personne à contacter'),
-                  validator: (v) => (v ?? '').trim().length < 2 ? tr('Nom requis') : null,
+                  maxLength: 120,
+                  validator: texte(requis: true, min: 2, max: 120, message: tr('Nom requis')),
                 ),
                 ChampTexte(
                   controller: _contactTel,
@@ -228,14 +230,27 @@ class _EnlevementFormPageState extends State<EnlevementFormPage> {
                 ChampTexte(
                   controller: _adresse,
                   label: tr('Adresse'),
-                  validator: (v) => (v ?? '').trim().length < 3 ? tr('Adresse requise') : null,
+                  maxLength: 255,
+                  validator: texte(requis: true, min: 3, max: 255, message: tr('Adresse requise')),
                 ),
-                ChampTexte(controller: _complement, label: tr('Complément (bâtiment, code…)')),
+                ChampTexte(controller: _complement, label: tr('Complément (bâtiment, code…)'), maxLength: 255),
                 if (!_edition)
-                  ChampTexte(controller: _codePostal, label: tr('Code postal'), clavier: TextInputType.number),
+                  ChampTexte(
+                    controller: _codePostal,
+                    label: tr('Code postal'),
+                    clavier: TextInputType.number,
+                    maxLength: 10,
+                    validator: codePostal(pays: _pays),
+                  ),
                 Row(children: [
                   Expanded(
-                    child: ChampTexte(controller: _etage, label: tr('Étage'), clavier: TextInputType.number),
+                    child: ChampTexte(
+                      controller: _etage,
+                      label: tr('Étage'),
+                      clavier: const TextInputType.numberWithOptions(signed: true),
+                      maxLength: 3,
+                      validator: entier(min: -5, max: 60),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -291,6 +306,7 @@ class _EnlevementFormPageState extends State<EnlevementFormPage> {
                   controller: _poids,
                   label: tr('Poids estimé total (kg, facultatif)'),
                   clavier: const TextInputType.numberWithOptions(decimal: true),
+                  validator: nombre(max: 1000, strictementPositif: true),
                 ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
@@ -298,7 +314,7 @@ class _EnlevementFormPageState extends State<EnlevementFormPage> {
                 value: _emballage,
                 onChanged: (v) => setState(() => _emballage = v),
               ),
-              ChampTexte(controller: _instructions, label: tr('Instructions pour le coursier'), maxLines: 2),
+              ChampTexte(controller: _instructions, label: tr('Instructions pour le coursier'), maxLines: 2, maxLength: 500),
             ]),
             const SizedBox(height: 24),
             ElevatedButton(

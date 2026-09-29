@@ -185,7 +185,7 @@ class _DetailEnlevementPageState extends State<DetailEnlevementPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(tr('Annuler l\'enlèvement ?')),
-        content: TextField(controller: motif, decoration: InputDecoration(labelText: tr('Motif (facultatif)'))),
+        content: TextField(controller: motif, maxLength: 255, decoration: InputDecoration(labelText: tr('Motif (facultatif)'))),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(tr('Retour'))),
           TextButton(
@@ -197,13 +197,13 @@ class _DetailEnlevementPageState extends State<DetailEnlevementPage> {
     );
     if (ok != true || !mounted) return;
     try {
-      final d = await _source.annuler(widget.id, motif: motif.text);
+      final r = await _source.annuler(widget.id, motif: motif.text);
       if (!mounted) return;
       setState(() {
-        _d = d;
+        _d = r.demande;
         _change = true;
       });
-      showToast(context, tr('Annulé'), tr('La demande d\'enlèvement est annulée.'), ToastificationType.success);
+      if (r.message.isNotEmpty) showToast(context, tr('Annulé'), r.message, ToastificationType.success);
     } on ServerException catch (e) {
       if (mounted) showToast(context, tr('Erreur'), e.message, ToastificationType.error);
     }

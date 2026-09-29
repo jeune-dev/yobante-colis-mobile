@@ -14,12 +14,12 @@ class AccountLoaded extends AccountState {
 class AccountSuccess extends AccountState {
   final AccountUser user;
   final String message;
-  AccountSuccess({required this.user, this.message = 'Profil mis à jour'});
+  AccountSuccess({required this.user, required this.message});
 }
 
 class PasswordChanged extends AccountState {
   final String message;
-  PasswordChanged({this.message = 'Mot de passe modifié avec succès'});
+  PasswordChanged({required this.message});
 }
 
 class AccountError extends AccountState {

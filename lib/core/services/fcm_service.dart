@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import '../config/env.dart';
@@ -9,6 +10,7 @@ import '../../injection_container.dart';
 import 'package:toastification/toastification.dart';
 import '../widgets/toast_notif.dart';
 import 'token_service.dart';
+import 'ouverture_notification.dart';
 
 /// Handler background/terminated — doit être une fonction top-level
 @pragma('vm:entry-point')
@@ -19,12 +21,17 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 class FcmService {
   static final _messaging = FirebaseMessaging.instance;
 
+  /// Firebase absent (iOS sans GoogleService-Info.plist) : les notifications push
+  /// sont désactivées sans erreur ; notifications internes et emails continuent.
+  static bool get _firebasePret => Firebase.apps.isNotEmpty;
+
   static StreamSubscription? _foregroundSub;
   static StreamSubscription? _openedAppSub;
   static StreamSubscription? _tokenRefreshSub;
 
   /// Initialise FCM : permissions + handlers + envoi du token au backend
   static Future<void> init(BuildContext context) async {
+    if (!_firebasePret) return;
     // 1. Demander la permission (iOS + Android 13+)
     await _messaging.requestPermission(
       alert: true,
@@ -71,6 +78,7 @@ class FcmService {
   /// Public — appelé aussi depuis AuthBloc juste après un login réussi,
   /// sans avoir besoin de BuildContext.
   static Future<void> uploadToken() async {
+    if (!_firebasePret) return;
     try {
       final token = await _messaging.getToken();
       if (token == null) return;
@@ -95,10 +103,7 @@ class FcmService {
     if (!context.mounted) return;
     final entite = data['entite'] as String?;
     final id = data['entiteId'] as String?;
-    if (entite == 'Colis' && id != null && id.isNotEmpty) {
-      Navigator.of(context).pushNamed(AppRouter.detailColisRoute, arguments: id);
-      return;
-    }
+    if (ouvrirEntiteNotification(context, entite, id)) return;
     Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.clientRoute, (route) => false);
   }
 }

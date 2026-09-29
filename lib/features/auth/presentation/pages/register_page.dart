@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:toastification/toastification.dart';
@@ -15,6 +16,7 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/validateurs.dart';
 
 class _VilleOption {
   final String id;
@@ -47,7 +49,6 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _obscurePassword = true;
 
   bool _hasUpperCase = false;
-  bool _hasLowerCase = false;
   bool _hasDigit = false;
   bool _hasSpecialChar = false;
   bool _hasMinLength = false;
@@ -60,7 +61,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _chargementVilles = true;
 
   bool get _isPasswordValid =>
-      _hasUpperCase && _hasLowerCase && _hasDigit && _hasSpecialChar && _hasMinLength;
+      _hasUpperCase && _hasDigit && _hasSpecialChar && _hasMinLength;
 
   @override
   void initState() {
@@ -90,11 +91,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _checkPasswordStrength(String value) {
     setState(() {
-      _hasUpperCase = value.contains(RegExp(r'[A-Z]'));
-      _hasLowerCase = value.contains(RegExp(r'[a-z]'));
-      _hasDigit = value.contains(RegExp(r'[0-9]'));
-      _hasSpecialChar = value.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-+=\[\]\\\/~`]'));
-      _hasMinLength = value.length >= 8;
+      // Règle du backend : majuscule, chiffre, caractère spécial, 8 à 72 caractères
+      _hasUpperCase = RegleMotDePasse.majuscule(value);
+      _hasDigit = RegleMotDePasse.chiffre(value);
+      _hasSpecialChar = RegleMotDePasse.special(value);
+      _hasMinLength = RegleMotDePasse.longueur(value);
     });
   }
 
@@ -146,9 +147,10 @@ class _RegisterPageState extends State<RegisterPage> {
           if (state is AuthSuccess || state is RegisterSuccess) {
             // Le compte doit être activé par le lien reçu par email avant la première connexion
             final email = _emailController.text.trim();
+            final message = state is RegisterSuccess ? state.message : null;
             context.read<AuthBloc>().add(ResetAuthState());
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => VerificationEmailPage(email: email)),
+              MaterialPageRoute(builder: (_) => VerificationEmailPage(email: email, message: message)),
               (route) => route.settings.name == AppRouter.clientRoute || route.isFirst,
             );
           } else if (state is AuthFailure) {
@@ -194,18 +196,15 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 28),
                     _buildField(tr('Prénom'), tr('Ex: Mamadou'), _prenomController, Icons.person_outline,
-                        validator: (v) => (v == null || v.isEmpty) ? tr('Champ requis') : null),
+                        maxLength: 50, validator: texte(requis: true, min: 2, max: 50)),
                     const SizedBox(height: 16),
                     _buildField(tr('Nom'), tr('Ex: Diallo'), _nomController, Icons.person_outline,
-                        validator: (v) => (v == null || v.isEmpty) ? tr('Champ requis') : null),
+                        maxLength: 50, validator: texte(requis: true, min: 2, max: 50)),
                     const SizedBox(height: 16),
                     _buildField(tr('Adresse e-mail'), 'exemple@gmail.com', _emailController, Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return tr('Champ requis');
-                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v)) return tr('Email invalide');
-                          return null;
-                        }),
+                        maxLength: 150,
+                        validator: email()),
                     const SizedBox(height: 16),
                     _buildField(tr('Téléphone'), tr('Ex: 77 123 45 67 ou 06 12 34 56 78'), _telephoneController, Icons.phone_outlined,
                         keyboardType: TextInputType.phone,
@@ -246,14 +245,16 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ),
                     const SizedBox(height: 16),
-                    _buildField(tr('Adresse (optionnel)'), tr('Ex: Rue 10, Médina'), _adresseController, Icons.location_on_outlined),
+                    _buildField(tr('Adresse (optionnel)'), tr('Ex: Rue 10, Médina'), _adresseController, Icons.location_on_outlined,
+                        maxLength: 255, validator: texte(max: 255)),
                     const SizedBox(height: 16),
                     _buildField(tr('Code postal (optionnel)'), tr('Pour être prévenu des collectes près de chez vous'),
                         _codePostalController, Icons.markunread_mailbox_outlined,
-                        keyboardType: TextInputType.number),
+                        keyboardType: TextInputType.number,
+                        maxLength: 10, validator: codePostal(pays: _pays)),
                     const SizedBox(height: 16),
                     _buildField(tr('Code de parrainage (optionnel)'), tr('Ex: K7P2QX9M'), _parrainageController,
-                        Icons.card_giftcard_outlined),
+                        Icons.card_giftcard_outlined, maxLength: 12, validator: texte(max: 12)),
                     const SizedBox(height: 20),
 
                     Text(tr('Type de compte'), style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.kGrayscaleDark100)),
@@ -270,11 +271,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     if (_typeCompte == 'entreprise') ...[
                       const SizedBox(height: 16),
                       _buildField(tr('Raison sociale'), tr('Nom de l\'entreprise'), _raisonSocialeController, Icons.apartment_outlined,
-                          validator: (v) => (v == null || v.trim().isEmpty) ? tr('Requis pour un compte entreprise') : null),
+                          maxLength: 150,
+                          validator: texte(requis: true, max: 150, message: tr('Requis pour un compte entreprise'))),
                       const SizedBox(height: 16),
-                      _buildField(tr('Numéro d\'identification fiscale (optionnel)'), tr('NINEA / SIRET'), _ninController, Icons.badge_outlined),
+                      _buildField(tr('Numéro d\'identification fiscale (optionnel)'), tr('NINEA / SIRET'), _ninController, Icons.badge_outlined,
+                          maxLength: 30, validator: texte(max: 30)),
                       const SizedBox(height: 16),
-                      _buildField(tr('Numéro de TVA intracommunautaire (optionnel)'), tr('Ex: FR12345678900'), _tvaController, Icons.receipt_long_outlined),
+                      _buildField(tr('Numéro de TVA intracommunautaire (optionnel)'), tr('Ex: FR12345678900'), _tvaController, Icons.receipt_long_outlined,
+                          maxLength: 20, validator: texte(max: 20)),
                     ],
 
                     const SizedBox(height: 20),
@@ -324,6 +328,7 @@ class _RegisterPageState extends State<RegisterPage> {
     IconData icon, {
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
+    int? maxLength,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,6 +341,7 @@ class _RegisterPageState extends State<RegisterPage> {
           style: GoogleFonts.plusJakartaSans(fontSize: 15),
           decoration: _inputDecoration(hint, icon),
           validator: validator,
+          inputFormatters: maxLength == null ? null : [LengthLimitingTextInputFormatter(maxLength)],
         ),
       ],
     );
@@ -353,6 +359,7 @@ class _RegisterPageState extends State<RegisterPage> {
             controller: _passwordController,
             obscureText: _obscurePassword,
             onChanged: _checkPasswordStrength,
+            inputFormatters: [LengthLimitingTextInputFormatter(72)],
             style: GoogleFonts.plusJakartaSans(fontSize: 15),
             decoration: _inputDecoration(tr('Créez un mot de passe sécurisé'), Icons.lock_outline_rounded).copyWith(
               suffixIcon: GestureDetector(
@@ -377,9 +384,8 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 Text(tr('Critères :'), style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
-                _criteriaRow(tr('Au moins 8 caractères'), _hasMinLength),
+                _criteriaRow(tr('8 à 72 caractères'), _hasMinLength),
                 _criteriaRow(tr('Une majuscule (A–Z)'), _hasUpperCase),
-                _criteriaRow(tr('Une minuscule (a–z)'), _hasLowerCase),
                 _criteriaRow(tr('Un chiffre (0–9)'), _hasDigit),
                 _criteriaRow(tr('Un caractère spécial (!@#\$%...)'), _hasSpecialChar),
               ],

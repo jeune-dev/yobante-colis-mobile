@@ -180,7 +180,7 @@ void main() {
     expect(detail.infosCollecte['etage'], 2);
     expect(detail.destinataireQuartier, 'Médina');
 
-    final modifie = await colis.modifierColis(detail.id, {'destinatairePointRepere': 'Près du marché'});
+    final modifie = (await colis.modifierColis(detail.id, {'destinatairePointRepere': 'Près du marché'})).valeur;
     expect(modifie.destinatairePointRepere, 'Près du marché');
   }, skip: ignorer);
 

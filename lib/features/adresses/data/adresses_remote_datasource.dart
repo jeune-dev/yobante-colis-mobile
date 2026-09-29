@@ -119,17 +119,24 @@ class AdressesRemoteDataSource {
   /// telephoneSecondaire, email, pays, villeId, adresse, complementAdresse,
   /// quartier, codePostal, latitude, longitude, instructions,
   /// pointRetraitPrefereId, parDefaut.
-  Future<AdresseCarnet> creer(Map<String, dynamic> champs) => appelApi(
-      () async => _adresse(await dio.post(Env.clientAdresses, data: champs)), tr('Impossible d\'ajouter l\'adresse'));
+  /// Renvoie l'adresse enregistrée et le message du backend.
+  Future<({AdresseCarnet adresse, String message})> creer(Map<String, dynamic> champs) => appelApi(() async {
+        final res = await dio.post(Env.clientAdresses, data: champs);
+        return (adresse: _adresse(res), message: messageApi(res));
+      }, tr('Impossible d\'ajouter l\'adresse'));
 
-  Future<AdresseCarnet> modifier(String id, Map<String, dynamic> champs) => appelApi(
-      () async => _adresse(await dio.put(Env.clientAdresseId(id), data: champs)),
-      tr('Impossible de modifier l\'adresse'));
+  Future<({AdresseCarnet adresse, String message})> modifier(String id, Map<String, dynamic> champs) =>
+      appelApi(() async {
+        final res = await dio.put(Env.clientAdresseId(id), data: champs);
+        return (adresse: _adresse(res), message: messageApi(res));
+      }, tr('Impossible de modifier l\'adresse'));
 
-  Future<AdresseCarnet> definirParDefaut(String id) => appelApi(
-      () async => _adresse(await dio.patch(Env.clientAdresseDefaut(id), data: const {})),
+  /// Renvoie le message du backend.
+  Future<String> definirParDefaut(String id) => appelApi(
+      () async => messageApi(await dio.patch(Env.clientAdresseDefaut(id), data: const {})),
       tr('Impossible de définir l\'adresse par défaut'));
 
-  Future<void> supprimer(String id) =>
-      appelApi(() async => dio.delete(Env.clientAdresseId(id)), tr('Impossible de supprimer l\'adresse'));
+  /// Renvoie le message du backend.
+  Future<String> supprimer(String id) => appelApi(
+      () async => messageApi(await dio.delete(Env.clientAdresseId(id))), tr('Impossible de supprimer l\'adresse'));
 }

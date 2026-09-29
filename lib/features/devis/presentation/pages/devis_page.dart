@@ -16,6 +16,7 @@ import '../../../expedition/presentation/widgets/choix_categorie.dart';
 import '../../../expedition/presentation/widgets/selecteur_articles.dart';
 import '../../../expedition/presentation/widgets/selecteur_ville.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/validateurs.dart';
 
 /// Calculateur de tarif façon DHL « Obtenir un devis » : accessible sans
 /// compte, il compare les offres (fret maritime, aérien) pour la catégorie,
@@ -133,6 +134,13 @@ class _DevisPageState extends State<DevisPage> {
     }
     if (_categorie.code != 'documents' && besoin.articles.isEmpty && besoin.pieces.isEmpty) {
       setState(() => _erreur = tr('Choisissez un article ou indiquez le poids de votre colis.'));
+      return;
+    }
+    // Limites de l'API : 1000 kg, 500 cm par dimension
+    final erreurMesure = nombre(max: 1000)(_poids.text) ??
+        [_longueur, _largeur, _hauteur].map((c) => nombre(max: 500)(c.text)).whereType<String>().firstOrNull;
+    if (erreurMesure != null) {
+      setState(() => _erreur = tr('Poids ou dimensions : $erreurMesure'));
       return;
     }
     setState(() {

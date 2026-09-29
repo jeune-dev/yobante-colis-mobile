@@ -11,6 +11,7 @@ import '../../../colis/data/datasources/colis_remote_datasource.dart';
 import '../../../colis/domain/entities/colis.dart';
 import '../../data/reclamations_remote_datasource.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/validateurs.dart';
 
 /// Ouverture d'une réclamation, éventuellement rattachée à une expédition.
 /// Renvoie la réclamation créée.
@@ -70,7 +71,7 @@ class _NouvelleReclamationPageState extends State<NouvelleReclamationPage> {
     setState(() => _envoi = true);
     try {
       final montant = double.tryParse(_montant.text.trim().replaceAll(',', '.'));
-      final reclamation = await sl<ReclamationsRemoteDataSource>().ouvrir(
+      final r = await sl<ReclamationsRemoteDataSource>().ouvrir(
         type: _type,
         objet: _objet.text,
         description: _description.text,
@@ -80,9 +81,10 @@ class _NouvelleReclamationPageState extends State<NouvelleReclamationPage> {
         piecesPaths: _pieces,
       );
       if (!mounted) return;
-      showToast(context, tr('Réclamation enregistrée'),
-          tr('Référence ${reclamation.reference}. Notre service client revient vers vous.'), ToastificationType.success);
-      Navigator.of(context).pop(reclamation);
+      if (r.message.isNotEmpty) {
+        showToast(context, tr('Réclamation enregistrée'), r.message, ToastificationType.success);
+      }
+      Navigator.of(context).pop(r.reclamation);
     } on ServerException catch (e) {
       if (mounted) showToast(context, tr('Erreur'), e.message, ToastificationType.error);
     } finally {
@@ -134,19 +136,22 @@ class _NouvelleReclamationPageState extends State<NouvelleReclamationPage> {
               ChampTexte(
                 controller: _objet,
                 label: tr('Objet'),
-                validator: (v) => (v ?? '').trim().length < 3 ? tr('Au moins 3 caractères') : null,
+                maxLength: 150,
+                validator: texte(requis: true, min: 3, max: 150),
               ),
               ChampTexte(
                 controller: _description,
                 label: tr('Décrivez le problème'),
                 maxLines: 5,
-                validator: (v) => (v ?? '').trim().length < 10 ? tr('Au moins 10 caractères') : null,
+                maxLength: 2000,
+                validator: texte(requis: true, min: 10, max: 2000),
               ),
               if (indemnisable)
                 ChampTexte(
                   controller: _montant,
                   label: tr('Indemnisation demandée (${_colis?.devise ?? 'EUR'}, facultatif)'),
                   clavier: const TextInputType.numberWithOptions(decimal: true),
+                  validator: nombre(),
                 ),
             ]),
             const SizedBox(height: 16),

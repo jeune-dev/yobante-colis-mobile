@@ -295,8 +295,8 @@ class _MesAvisState extends State<_MesAvis> {
 
   Future<void> _supprimer(Avis a) async {
     try {
-      await _source.supprimer(a.id);
-      if (mounted) showToast(context, tr('Supprimé'), tr('Votre avis a été supprimé.'), ToastificationType.success);
+      final message = await _source.supprimer(a.id);
+      if (mounted && message.isNotEmpty) showToast(context, tr('Supprimé'), message, ToastificationType.success);
     } on ServerException catch (e) {
       if (mounted) showToast(context, tr('Erreur'), e.message, ToastificationType.error);
     }

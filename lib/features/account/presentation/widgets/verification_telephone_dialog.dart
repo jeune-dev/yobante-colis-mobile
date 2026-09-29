@@ -10,15 +10,12 @@ import '../../../../core/i18n/langue.dart';
 /// envoyé par WhatsApp, puis saisi ici. Le backend exige cette preuve avant de
 /// montrer les colis dont le compte est destinataire (rapprochés par numéro).
 ///
-/// Renvoie `true` si le numéro est vérifié à la fermeture.
-Future<bool> verifierTelephone(BuildContext context) async {
-  final resultat = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => const _VerificationTelephoneDialog(),
-  );
-  return resultat == true;
-}
+/// Renvoie le message du backend si le numéro est vérifié, `null` sinon.
+Future<String?> verifierTelephone(BuildContext context) => showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const _VerificationTelephoneDialog(),
+    );
 
 class _VerificationTelephoneDialog extends StatefulWidget {
   const _VerificationTelephoneDialog();
@@ -60,7 +57,7 @@ class _VerificationTelephoneDialogState extends State<_VerificationTelephoneDial
         if (!mounted) return;
         // Numéro déjà vérifié côté serveur : rien d'autre à faire
         if (message.contains('déjà vérifié')) {
-          Navigator.of(context).pop(true);
+          Navigator.of(context).pop(message);
           return;
         }
         setState(() {
@@ -76,8 +73,8 @@ class _VerificationTelephoneDialogState extends State<_VerificationTelephoneDial
       return;
     }
     await _executer(() async {
-      await _source.verifierTelephone(code);
-      if (mounted) Navigator.of(context).pop(true);
+      final message = await _source.verifierTelephone(code);
+      if (mounted) Navigator.of(context).pop(message);
     });
   }
 
@@ -119,7 +116,7 @@ class _VerificationTelephoneDialogState extends State<_VerificationTelephoneDial
       ),
       actions: [
         TextButton(
-          onPressed: _envoi ? null : () => Navigator.of(context).pop(false),
+          onPressed: _envoi ? null : () => Navigator.of(context).pop(),
           child: Text(tr('Annuler')),
         ),
         if (_codeEnvoye)

@@ -4,6 +4,7 @@ import '../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/errors/failure.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
@@ -21,7 +22,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     final result = await authRepository.login(event.identifiant, event.motDePasse);
     await result.fold(
-      (f) async => emit(AuthFailure(message: f.errorMessage)),
+      (f) async => emit(AuthFailure(message: f.errorMessage, emailNonConfirme: f is EmailNonConfirmeFailure)),
       (user) async {
         emit(AuthSuccess(user: user));
         FcmService.uploadToken().catchError((_) {});
@@ -46,7 +47,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     result.fold(
       (f) => emit(AuthFailure(message: f.errorMessage)),
-      (_) => emit(const RegisterSuccess()),
+      (message) => emit(RegisterSuccess(message: message)),
     );
   }
 
@@ -55,7 +56,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await authRepository.forgotPassword(event.email);
     result.fold(
       (f) => emit(AuthFailure(message: f.errorMessage)),
-      (_) => emit(ForgotPasswordSuccess(message: tr('Un code a été envoyé à votre email.'))),
+      (message) => emit(ForgotPasswordSuccess(message: message)),
     );
   }
 
@@ -64,7 +65,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await authRepository.resetPassword(event.email, event.otpRecu, event.newPassword);
     result.fold(
       (f) => emit(AuthFailure(message: f.errorMessage)),
-      (_) => emit(ResetPasswordSuccess()),
+      (message) => emit(ResetPasswordSuccess(message: message)),
     );
   }
 

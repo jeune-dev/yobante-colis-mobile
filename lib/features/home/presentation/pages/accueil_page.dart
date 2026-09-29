@@ -134,13 +134,16 @@ class _AccueilPageState extends State<AccueilPage> {
               ..._contenu.annonces.map(_banniereAnnonce),
               Text(tr('Que souhaitez-vous faire ?'), style: titreSection()),
               const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 3,
+              // Hauteur des tuiles suivant la taille du texte (réglage d'accessibilité),
+              // 2 colonnes sur les très petits écrans
+              LayoutBuilder(builder: (context, contraintes) => GridView.count(
+                crossAxisCount: contraintes.maxWidth < 330 ? 2 : 3,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
-                childAspectRatio: 0.95,
+                childAspectRatio: (contraintes.maxWidth < 330 ? 1.35 : 0.95) /
+                    MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.3),
                 children: [
                   _Raccourci(Icons.send_rounded, tr('Expédier'), widget.onExpedier ?? () {}, principal: true),
                   _Raccourci(Icons.calculate_outlined, tr('Calculer\nun tarif'), () => _ouvrir(const DevisPage())),
@@ -150,7 +153,7 @@ class _AccueilPageState extends State<AccueilPage> {
                   _Raccourci(Icons.chat_outlined, tr('WhatsApp'),
                       () => ouvrirWhatsapp(context, numero: _config?.whatsappContact, message: tr('Bonjour Yobante,'))),
                 ],
-              ),
+              )),
               if (_enCours.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 Row(children: [

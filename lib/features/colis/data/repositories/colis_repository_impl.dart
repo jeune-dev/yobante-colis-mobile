@@ -5,6 +5,7 @@ import '../../domain/entities/colis.dart';
 import '../../domain/entities/demande_expedition.dart';
 import '../../domain/repositories/colis_repository.dart';
 import '../datasources/colis_remote_datasource.dart';
+import '../../../../core/types/avec_message.dart';
 
 class ColisRepositoryImpl implements ColisRepository {
   final ColisRemoteDataSource remote;
@@ -42,7 +43,7 @@ class ColisRepositoryImpl implements ColisRepository {
       _executer(() => remote.getSuiviColis(id));
 
   @override
-  Future<Either<Failure, Colis>> annulerColis(String id, {String? motif}) =>
+  Future<Either<Failure, AvecMessage<Colis>>> annulerColis(String id, {String? motif}) =>
       _executer(() => remote.annulerColis(id, motif: motif));
 
   @override
@@ -50,10 +51,10 @@ class ColisRepositoryImpl implements ColisRepository {
       _executer(() => remote.accepterProposition(id));
 
   @override
-  Future<Either<Failure, Colis>> refuserProposition(String id, {String? motif}) =>
+  Future<Either<Failure, AvecMessage<Colis>>> refuserProposition(String id, {String? motif}) =>
       _executer(() => remote.refuserProposition(id, motif: motif));
 
   @override
-  Future<Either<Failure, Colis>> modifierColis(String id, Map<String, dynamic> champs) =>
+  Future<Either<Failure, AvecMessage<Colis>>> modifierColis(String id, Map<String, dynamic> champs) =>
       _executer(() => remote.modifierColis(id, champs));
 }

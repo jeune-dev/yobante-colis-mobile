@@ -74,14 +74,16 @@ class _AdressesPageState extends State<AdressesPage> {
       Navigator.of(context).pop(enregistree);
       return;
     }
-    showToast(context, tr('Enregistré'), tr('Adresse enregistrée dans votre carnet.'), ToastificationType.success);
     _charger();
   }
 
-  Future<void> _action(Future<void> Function() action, String succes) async {
+  /// [action] renvoie le message du backend, affiché tel quel.
+  Future<void> _action(Future<String> Function() action) async {
     try {
-      await action();
-      if (mounted) showToast(context, tr('Carnet mis à jour'), succes, ToastificationType.success);
+      final message = await action();
+      if (mounted && message.isNotEmpty) {
+        showToast(context, tr('Carnet mis à jour'), message, ToastificationType.success);
+      }
     } on ServerException catch (e) {
       if (mounted) showToast(context, tr('Erreur'), e.message, ToastificationType.error);
     }
@@ -103,7 +105,7 @@ class _AdressesPageState extends State<AdressesPage> {
         ],
       ),
     );
-    if (ok == true) await _action(() => _source.supprimer(a.id), tr('Adresse supprimée.'));
+    if (ok == true) await _action(() => _source.supprimer(a.id));
   }
 
   @override
@@ -146,7 +148,7 @@ class _AdressesPageState extends State<AdressesPage> {
                               : () => _formulaire(liste[i]),
                           onDefaut: liste[i].parDefaut
                               ? null
-                              : () => _action(() => _source.definirParDefaut(liste[i].id), tr('Adresse par défaut modifiée.')),
+                              : () => _action(() => _source.definirParDefaut(liste[i].id)),
                           onSupprimer: widget.selection ? null : () => _supprimer(liste[i]),
                         ),
                       ),

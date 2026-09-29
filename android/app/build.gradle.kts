@@ -53,7 +53,18 @@ android {
     // ENSUITE buildTypes
     buildTypes {
         release {
-            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            // Sans android/key.properties, une version « release » signée avec la clé de
+            // debug serait refusée par le Play Store (et impossible à mettre à jour).
+            // Le build échoue donc, sauf essai local explicite : SIGNATURE_DEBUG=1.
+            val signatureRelease = signingConfigs.findByName("release")
+            val buildRelease = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
+            if (signatureRelease == null && buildRelease && System.getenv("SIGNATURE_DEBUG") != "1") {
+                throw GradleException(
+                    "Signature release introuvable : créez android/key.properties (storeFile, storePassword, " +
+                        "keyAlias, keyPassword). Pour un simple essai local : SIGNATURE_DEBUG=1 flutter build apk --release"
+                )
+            }
+            signingConfig = signatureRelease ?: signingConfigs.getByName("debug")
             // VULN-C02 : Obfuscation activée en production
             isMinifyEnabled = true
             isShrinkResources = true

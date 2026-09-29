@@ -34,7 +34,7 @@ class AppRouter {
       case registerRoute:
         return _page(const RegisterPage(), settings);
       case forgotPasswordRoute:
-        return _page(const ForgotPasswordPage(), settings);
+        return _page(ForgotPasswordPage(email: settings.arguments as String?), settings);
       case resetPasswordRoute:
         return _page(ResetPasswordPage(email: settings.arguments as String? ?? ''), settings);
       case clientRoute:

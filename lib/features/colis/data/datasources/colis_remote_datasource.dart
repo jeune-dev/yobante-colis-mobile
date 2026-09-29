@@ -5,6 +5,8 @@ import '../models/colis_model.dart';
 import '../../domain/entities/colis.dart';
 import '../../domain/entities/demande_expedition.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/fichier_upload.dart';
+import '../../../../core/types/avec_message.dart';
 
 abstract class ColisRemoteDataSource {
   Future<Map<String, dynamic>> getColis({String? statut, int page = 1, int limit = 20});
@@ -19,14 +21,15 @@ abstract class ColisRemoteDataSource {
   });
 
   Future<List<SuiviEvenement>> getSuiviColis(String id);
-  Future<ColisModel> annulerColis(String id, {String? motif});
+  // Annulation, refus, modification : colis à jour et message du backend
+  Future<AvecMessage<ColisModel>> annulerColis(String id, {String? motif});
 
   /// Catégorie 3 : réponse du client à la proposition tarifaire.
   Future<ResultatDeclaration> accepterProposition(String id);
-  Future<ColisModel> refuserProposition(String id, {String? motif});
+  Future<AvecMessage<ColisModel>> refuserProposition(String id, {String? motif});
 
   /// Correction de la demande (destinataire, adresse) avant l'arrivée au Sénégal.
-  Future<ColisModel> modifierColis(String id, Map<String, dynamic> champs);
+  Future<AvecMessage<ColisModel>> modifierColis(String id, Map<String, dynamic> champs);
 
   /// Photos complémentaires (10 au total par expédition). Renvoie le message du backend.
   Future<String> ajouterPhotos(String id, List<String> photosPaths);
@@ -84,14 +87,14 @@ class ColisRemoteDataSourceImpl implements ColisRemoteDataSource {
       appelApi(() async {
         final formData = FormData.fromMap(demande.versFormulaire());
         for (final chemin in photosPaths) {
-          formData.files.add(MapEntry('photos', await MultipartFile.fromFile(chemin)));
+          formData.files.add(MapEntry('photos', await fichierMultipart(chemin, tailleMax: kTailleMaxPhotoColis)));
         }
         final res = await dio.post(Env.clientColis, data: formData, onSendProgress: onSendProgress);
         final data = _data(res);
         final facture = data['facture'] as Map<String, dynamic>?;
         return ResultatDeclaration(
           colis: ColisModel.fromJson(data['colis'] as Map<String, dynamic>),
-          message: res.data['message'] as String? ?? tr('Expédition enregistrée.'),
+          message: messageApi(res),
           factureReference: facture?['reference'] as String?,
           lienPaiement: data['lienPaiement'] as String?,
           adresseReception: data['adresseReception'] as Map<String, dynamic>?,
@@ -106,9 +109,9 @@ class ColisRemoteDataSourceImpl implements ColisRemoteDataSource {
       }, tr('Erreur serveur'));
 
   @override
-  Future<ColisModel> annulerColis(String id, {String? motif}) => appelApi(() async {
+  Future<AvecMessage<ColisModel>> annulerColis(String id, {String? motif}) => appelApi(() async {
         final res = await dio.patch(Env.clientColisAnnuler(id), data: motif != null ? {'motif': motif} : {});
-        return ColisModel.fromJson(_data(res)['colis'] as Map<String, dynamic>);
+        return (valeur: ColisModel.fromJson(_data(res)['colis'] as Map<String, dynamic>), message: messageApi(res));
       }, tr('Erreur serveur'));
 
   @override
@@ -118,32 +121,32 @@ class ColisRemoteDataSourceImpl implements ColisRemoteDataSource {
         final facture = data['facture'] as Map<String, dynamic>?;
         return ResultatDeclaration(
           colis: ColisModel.fromJson(data['colis'] as Map<String, dynamic>),
-          message: res.data['message'] as String? ?? tr('Proposition acceptée.'),
+          message: messageApi(res),
           factureReference: facture?['reference'] as String?,
           lienPaiement: data['lienPaiement'] as String?,
         );
       }, tr('Impossible d\'accepter la proposition'));
 
   @override
-  Future<ColisModel> refuserProposition(String id, {String? motif}) => appelApi(() async {
+  Future<AvecMessage<ColisModel>> refuserProposition(String id, {String? motif}) => appelApi(() async {
         final res = await dio.post(Env.clientColisRefuser(id), data: {'motif': ?motif});
-        return ColisModel.fromJson(_data(res)['colis'] as Map<String, dynamic>);
+        return (valeur: ColisModel.fromJson(_data(res)['colis'] as Map<String, dynamic>), message: messageApi(res));
       }, tr('Impossible de décliner la proposition'));
 
   @override
-  Future<ColisModel> modifierColis(String id, Map<String, dynamic> champs) => appelApi(() async {
+  Future<AvecMessage<ColisModel>> modifierColis(String id, Map<String, dynamic> champs) => appelApi(() async {
         final res = await dio.patch(Env.clientColisId(id), data: champs);
-        return ColisModel.fromJson(_data(res)['colis'] as Map<String, dynamic>);
+        return (valeur: ColisModel.fromJson(_data(res)['colis'] as Map<String, dynamic>), message: messageApi(res));
       }, tr('Impossible de modifier la demande'));
 
   @override
   Future<String> ajouterPhotos(String id, List<String> photosPaths) => appelApi(() async {
         final form = FormData();
         for (final chemin in photosPaths) {
-          form.files.add(MapEntry('photos', await MultipartFile.fromFile(chemin)));
+          form.files.add(MapEntry('photos', await fichierMultipart(chemin)));
         }
         final res = await dio.post(Env.clientColisPhotos(id), data: form);
-        return res.data['message'] as String? ?? tr('Photos ajoutées.');
+        return messageApi(res);
       }, tr('Envoi des photos impossible'));
 
   @override
@@ -156,7 +159,7 @@ class ColisRemoteDataSourceImpl implements ColisRemoteDataSource {
           ),
         });
         final res = await dio.post(Env.clientColisVocal(id), data: form);
-        return res.data['message'] as String? ?? tr('Message vocal enregistré.');
+        return messageApi(res);
       }, tr('Envoi du message vocal impossible'));
 
   @override
@@ -165,6 +168,6 @@ class ColisRemoteDataSourceImpl implements ColisRemoteDataSource {
       appelApi(() async {
         final res = await dio.post(Env.clientColisAbonnement(id),
             data: {'canal': canal, 'destination': destination.trim(), 'profil': profil});
-        return res.data['message'] as String? ?? tr('Alertes de suivi activées.');
+        return messageApi(res);
       }, tr('Inscription aux alertes impossible'));
 }

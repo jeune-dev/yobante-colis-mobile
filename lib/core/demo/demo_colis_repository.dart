@@ -5,6 +5,7 @@ import '../../features/colis/domain/entities/demande_expedition.dart';
 import '../../features/colis/domain/repositories/colis_repository.dart';
 import '../../features/villes/domain/entities/ville.dart';
 import 'demo_data.dart';
+import '../types/avec_message.dart';
 
 /// Implémentation locale de [ColisRepository] pour le mode démo
 /// (voir demo_config.dart) — aucune requête réseau, données en mémoire.
@@ -104,17 +105,17 @@ class DemoColisRepository implements ColisRepository {
   }
 
   @override
-  Future<Either<Failure, Colis>> refuserProposition(String id, {String? motif}) async {
+  Future<Either<Failure, AvecMessage<Colis>>> refuserProposition(String id, {String? motif}) async {
     final colis = _findColis(id);
     if (colis == null) return const Left(ServerFailure('Colis introuvable'));
-    return Right(colis);
+    return Right((valeur: colis, message: 'Proposition déclinée. Votre demande est clôturée.'));
   }
 
   @override
-  Future<Either<Failure, Colis>> modifierColis(String id, Map<String, dynamic> champs) async {
+  Future<Either<Failure, AvecMessage<Colis>>> modifierColis(String id, Map<String, dynamic> champs) async {
     final colis = _findColis(id);
     if (colis == null) return const Left(ServerFailure('Colis introuvable'));
-    return Right(colis);
+    return Right((valeur: colis, message: 'Votre demande a été mise à jour.'));
   }
 
   @override
@@ -150,7 +151,7 @@ class DemoColisRepository implements ColisRepository {
   }
 
   @override
-  Future<Either<Failure, Colis>> annulerColis(String id, {String? motif}) async {
+  Future<Either<Failure, AvecMessage<Colis>>> annulerColis(String id, {String? motif}) async {
     await Future.delayed(const Duration(milliseconds: 400));
     final index = DemoData.colis.indexWhere((c) => c.id == id);
     if (index == -1) return const Left(ServerFailure('Colis introuvable'));
@@ -169,7 +170,7 @@ class DemoColisRepository implements ColisRepository {
       annuleMotif: motif ?? 'Annulé par le client', createdAt: ancien.createdAt,
     );
     DemoData.colis[index] = annule;
-    return Right(annule);
+    return Right((valeur: annule, message: 'Expédition annulée.'));
   }
 
   Colis? _findColis(String id) {

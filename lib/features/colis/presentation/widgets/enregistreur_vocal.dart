@@ -57,14 +57,21 @@ class _EnregistreurVocalState extends State<_EnregistreurVocal> {
       return;
     }
     final dossier = await getTemporaryDirectory();
+    // Fenêtre fermée pendant la demande d'autorisation : ne rien démarrer
+    if (!mounted) return;
     final chemin = '${dossier.path}/vocal_${DateTime.now().millisecondsSinceEpoch}.m4a';
     await _enregistreur.start(const RecordConfig(encoder: AudioEncoder.aacLc), path: chemin);
+    if (!mounted) return;
     setState(() {
       _enCours = true;
       _fichier = null;
       _duree = Duration.zero;
     });
-    _minuteur = Timer.periodic(const Duration(seconds: 1), (_) {
+    _minuteur = Timer.periodic(const Duration(seconds: 1), (minuteur) {
+      if (!mounted) {
+        minuteur.cancel();
+        return;
+      }
       setState(() => _duree += const Duration(seconds: 1));
       if (_duree >= _dureeMax) _arreter();
     });

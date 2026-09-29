@@ -21,6 +21,7 @@ import '../bloc/colis_state.dart';
 import '../widgets/services_colis.dart';
 import '../widgets/statut_badge.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/validateurs.dart';
 
 class DetailColisPage extends StatelessWidget {
   final String colisId;
@@ -46,7 +47,7 @@ class _DetailColisView extends StatelessWidget {
     return BlocConsumer<ColisBloc, ColisState>(
       listener: (ctx, state) {
         if (state is ColisAnnule) {
-          showToast(ctx, tr('Demande annulée'), tr('Votre expédition a été annulée.'), ToastificationType.success);
+          if (state.message.isNotEmpty) showToast(ctx, tr('Demande annulée'), state.message, ToastificationType.success);
           Navigator.of(ctx).pop(true);
         }
         if (state is PropositionAcceptee) {
@@ -55,11 +56,11 @@ class _DetailColisView extends StatelessWidget {
           _recharger(ctx);
         }
         if (state is PropositionRefusee) {
-          showToast(ctx, tr('Proposition déclinée'), tr('Votre demande est clôturée.'), ToastificationType.info);
+          if (state.message.isNotEmpty) showToast(ctx, tr('Proposition déclinée'), state.message, ToastificationType.info);
           _recharger(ctx);
         }
         if (state is ColisModifie) {
-          showToast(ctx, tr('Demande modifiée'), tr('Vos modifications sont enregistrées.'), ToastificationType.success);
+          if (state.message.isNotEmpty) showToast(ctx, tr('Demande modifiée'), state.message, ToastificationType.success);
           _recharger(ctx);
         }
         if (state is ColisFailure) showToast(ctx, tr('Erreur'), state.message, ToastificationType.error);
@@ -315,6 +316,7 @@ class _Detail extends StatelessWidget {
         content: TextField(
           controller: motif,
           maxLines: 2,
+          maxLength: 255,
           decoration: InputDecoration(hintText: tr('Motif (facultatif)')),
         ),
         actions: [
@@ -358,6 +360,18 @@ class _Detail extends StatelessWidget {
       'destinatairePointRepere': tr('Point de repère'),
       'instructionsLivraison': tr('Instructions de livraison'),
     };
+    // Contraintes de PATCH /client/colis/:id
+    final regles = <String, (int, String? Function(String?))>{
+      'destinataireNom': (120, texte(requis: true, min: 2, max: 120)),
+      'destinataireTelephone': (20, telephone()),
+      'adresseLivraison': (255, texte(max: 255)),
+      'destinataireQuartier': (100, texte(max: 100)),
+      'destinataireArrondissement': (100, texte(max: 100)),
+      'destinataireDepartement': (100, texte(max: 100)),
+      'destinatairePointRepere': (255, texte(max: 255)),
+      'instructionsLivraison': (500, texte(max: 500)),
+    };
+    final formKey = GlobalKey<FormState>();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -365,17 +379,26 @@ class _Detail extends StatelessWidget {
       builder: (ctx) => Padding(
         padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
         child: SingleChildScrollView(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child: Form(
+           key: formKey,
+           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(tr('Modifier ma demande'), style: titreSection(17)),
             const SizedBox(height: 4),
             Text(tr('Possible jusqu\'à l\'arrivée de la marchandise au Sénégal.'), style: texteDiscret()),
             const SizedBox(height: 16),
-            ...champs.entries.map((e) => ChampTexte(controller: e.value, label: libelles[e.key]!)),
+            ...champs.entries.map((e) => ChampTexte(
+                  controller: e.value,
+                  label: libelles[e.key]!,
+                  clavier: e.key == 'destinataireTelephone' ? TextInputType.phone : null,
+                  maxLength: regles[e.key]?.$1,
+                  validator: regles[e.key]?.$2,
+                )),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
+                  if (!formKey.currentState!.validate()) return;
                   final modifs = <String, dynamic>{};
                   champs.forEach((cle, ctrl) {
                     final valeur = ctrl.text.trim();
@@ -393,7 +416,8 @@ class _Detail extends StatelessWidget {
                 child: Text(tr('Enregistrer')),
               ),
             ),
-          ]),
+           ]),
+          ),
         ),
       ),
     );

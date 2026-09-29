@@ -54,12 +54,13 @@ class _DetailReclamationPageState extends State<DetailReclamationPage> {
     }
   }
 
-  Future<void> _action(Future<void> Function() action, String succes) async {
+  /// [action] renvoie le message du backend, affiché tel quel.
+  Future<void> _action(Future<String> Function() action) async {
     setState(() => _envoi = true);
     try {
-      await action();
+      final message = await action();
       if (!mounted) return;
-      showToast(context, tr('Envoyé'), succes, ToastificationType.success);
+      if (message.isNotEmpty) showToast(context, tr('Envoyé'), message, ToastificationType.success);
       await _charger();
     } on ServerException catch (e) {
       if (mounted) showToast(context, tr('Erreur'), e.message, ToastificationType.error);
@@ -72,9 +73,10 @@ class _DetailReclamationPageState extends State<DetailReclamationPage> {
     final texte = _reponse.text.trim();
     if (texte.isEmpty) return;
     await _action(() async {
-      await _source.repondre(widget.id, texte);
+      final message = await _source.repondre(widget.id, texte);
       _reponse.clear();
-    }, tr('Votre message a été transmis au service client.'));
+      return message;
+    });
   }
 
   @override
@@ -135,7 +137,7 @@ class _DetailReclamationPageState extends State<DetailReclamationPage> {
                           const SizedBox(height: 16),
                           _Notation(
                             note: r.noteSatisfaction,
-                            onNoter: (n) => _action(() => _source.noter(r.id, n), tr('Merci pour votre retour.')),
+                            onNoter: (n) => _action(() => _source.noter(r.id, n)),
                           ),
                         ],
                       ]),

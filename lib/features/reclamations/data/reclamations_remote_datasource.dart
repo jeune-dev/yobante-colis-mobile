@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../../core/config/env.dart';
 import '../../../core/errors/api_error.dart';
 import '../../../core/i18n/langue.dart';
+import '../../../core/utils/fichier_upload.dart';
 
 /// Service après-vente : réclamations du client connecté (perte, avarie,
 /// retard…) instruites par le support à travers un fil de messages.
@@ -159,7 +160,8 @@ class ReclamationsRemoteDataSource {
       }, tr('Impossible de charger la réclamation'));
 
   /// Ouvre une réclamation (multipart : pièces jointes facultatives, champ « pieces »).
-  Future<Reclamation> ouvrir({
+  /// Renvoie la réclamation créée et le message du backend.
+  Future<({Reclamation reclamation, String message})> ouvrir({
     required String type,
     required String objet,
     required String description,
@@ -178,23 +180,28 @@ class ReclamationsRemoteDataSource {
           'devise': ?devise,
         });
         for (final chemin in piecesPaths) {
-          form.files.add(MapEntry('pieces', await MultipartFile.fromFile(chemin)));
+          form.files.add(MapEntry('pieces', await fichierMultipart(chemin, pdfAccepte: true)));
         }
         final res = await dio.post(Env.clientReclamations, data: form);
-        return Reclamation.fromJson(_data(res)['reclamation'] as Map<String, dynamic>);
+        return (
+          reclamation: Reclamation.fromJson(_data(res)['reclamation'] as Map<String, dynamic>),
+          message: messageApi(res),
+        );
       }, tr('Impossible d\'enregistrer la réclamation'));
 
-  Future<void> repondre(String id, String message, {List<String> piecesPaths = const []}) =>
+  /// Renvoie le message du backend.
+  Future<String> repondre(String id, String message, {List<String> piecesPaths = const []}) =>
       appelApi(() async {
         final form = FormData.fromMap({'message': message.trim()});
         for (final chemin in piecesPaths) {
-          form.files.add(MapEntry('pieces', await MultipartFile.fromFile(chemin)));
+          form.files.add(MapEntry('pieces', await fichierMultipart(chemin, pdfAccepte: true)));
         }
-        await dio.post(Env.clientReclamationMessages(id), data: form);
+        return messageApi(await dio.post(Env.clientReclamationMessages(id), data: form));
       }, tr('Envoi du message impossible'));
 
   /// Note de satisfaction (1 à 5), une fois la réclamation close.
-  Future<void> noter(String id, int note) => appelApi(() async {
-        await dio.patch(Env.clientReclamationNote(id), data: {'note': note});
-      }, tr('Impossible d\'enregistrer la note'));
+  /// Renvoie le message du backend.
+  Future<String> noter(String id, int note) => appelApi(
+      () async => messageApi(await dio.patch(Env.clientReclamationNote(id), data: {'note': note})),
+      tr('Impossible d\'enregistrer la note'));
 }

@@ -86,7 +86,9 @@ class _PrimaryButtonState extends State<PrimaryButton>
               borderRadius: BorderRadius.circular(widget.borderRadius),
             ),
             child: Container(
-              height: widget.height ?? 55,
+              // Hauteur minimale (et non fixe) : le bouton grandit avec la taille du texte
+              constraints: BoxConstraints(minHeight: widget.height ?? 55),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               alignment: Alignment.center,
               width: widget.width ?? double.maxFinite,
               decoration: BoxDecoration(
@@ -105,6 +107,7 @@ class _PrimaryButtonState extends State<PrimaryButton>
                   : widget.child ??
                       Text(
                         widget.text,
+                        textAlign: TextAlign.center,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: widget.fontSize ?? 14,
                           fontWeight: FontWeight.w500,

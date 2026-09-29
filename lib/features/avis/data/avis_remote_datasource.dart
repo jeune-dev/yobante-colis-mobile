@@ -107,9 +107,10 @@ class AvisRemoteDataSource {
           if (commentaire != null && commentaire.trim().isNotEmpty) 'commentaire': commentaire.trim(),
           'colisId': ?colisId,
         });
-        return res.data['message'] as String? ?? tr('Merci pour votre avis.');
+        return messageApi(res);
       }, tr('Impossible d\'enregistrer votre avis'));
 
-  Future<void> supprimer(String id) =>
-      appelApi(() async => dio.delete(Env.clientAvisId(id)), tr('Impossible de supprimer l\'avis'));
+  /// Renvoie le message du backend.
+  Future<String> supprimer(String id) => appelApi(
+      () async => messageApi(await dio.delete(Env.clientAvisId(id))), tr('Impossible de supprimer l\'avis'));
 }

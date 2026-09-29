@@ -124,6 +124,12 @@ Future<void> init() async {
         if (kDebugMode) debugPrint('[REQ] ${options.method} ${options.path}');
         // Identifiant anonyme de l'installation (conversion simulation → commande)
         options.headers['X-Visiteur-Id'] = MesureAudience.instance.visiteurId;
+        // Envoi de fichiers (jusqu'à 10 photos de 10 Mo) : délais adaptés aux
+        // réseaux mobiles lents, au lieu des 30 s des requêtes ordinaires
+        if (options.data is FormData) {
+          options.sendTimeout = const Duration(minutes: 3);
+          options.receiveTimeout = const Duration(minutes: 2);
+        }
         final skip = options.extra['skipAuthInterceptor'] == true;
         if (!skip) {
           var token = await sl<TokenService>().getValidToken();
@@ -169,8 +175,12 @@ Future<void> init() async {
         final isNetwork = e.type == DioExceptionType.connectionTimeout ||
             e.type == DioExceptionType.receiveTimeout ||
             e.type == DioExceptionType.connectionError;
+        // Seules les lectures sont rejouées : une création (POST) ou une modification
+        // arrivée au serveur mais dont la réponse a tardé serait enregistrée deux
+        // fois, et un formulaire multipart ne peut pas être renvoyé tel quel.
+        final rejouable = opts.method == 'GET' || opts.method == 'HEAD';
         final retries = e.requestOptions.extra['retryCount'] as int? ?? 0;
-        if (isNetwork && retries < 2) {
+        if (isNetwork && rejouable && retries < 2) {
           e.requestOptions.extra['retryCount'] = retries + 1;
           await Future.delayed(Duration(seconds: retries + 1));
           try {

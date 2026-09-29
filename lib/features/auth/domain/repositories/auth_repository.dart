@@ -4,7 +4,8 @@ import '../entities/user.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, User>> login(String email, String password);
-  Future<Either<Failure, void>> register({
+  // Inscription, mot de passe oublié, réinitialisation : message du backend en retour
+  Future<Either<Failure, String>> register({
     required String nom, required String prenom,
     required String email, required String motDePasse, required String telephone,
     String pays = 'SN',
@@ -17,7 +18,7 @@ abstract class AuthRepository {
     String? codePostal,
     String? codeParrainage,
   });
-  Future<Either<Failure, void>> forgotPassword(String email);
-  Future<Either<Failure, void>> resetPassword(String email, String code, String newPassword);
+  Future<Either<Failure, String>> forgotPassword(String email);
+  Future<Either<Failure, String>> resetPassword(String email, String code, String newPassword);
   Future<void> logout();
 }

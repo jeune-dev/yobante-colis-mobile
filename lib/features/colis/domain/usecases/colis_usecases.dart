@@ -3,6 +3,7 @@ import '../../../../core/errors/failure.dart';
 import '../entities/colis.dart';
 import '../entities/demande_expedition.dart';
 import '../repositories/colis_repository.dart';
+import '../../../../core/types/avec_message.dart';
 
 class GetColis {
   final ColisRepository repo;
@@ -44,7 +45,7 @@ class GetSuiviColis {
 class AnnulerColis {
   final ColisRepository repo;
   AnnulerColis(this.repo);
-  Future<Either<Failure, Colis>> call(String id, {String? motif}) =>
+  Future<Either<Failure, AvecMessage<Colis>>> call(String id, {String? motif}) =>
       repo.annulerColis(id, motif: motif);
 }
 
@@ -52,13 +53,13 @@ class RepondreProposition {
   final ColisRepository repo;
   RepondreProposition(this.repo);
   Future<Either<Failure, ResultatDeclaration>> accepter(String id) => repo.accepterProposition(id);
-  Future<Either<Failure, Colis>> refuser(String id, {String? motif}) =>
+  Future<Either<Failure, AvecMessage<Colis>>> refuser(String id, {String? motif}) =>
       repo.refuserProposition(id, motif: motif);
 }
 
 class ModifierColis {
   final ColisRepository repo;
   ModifierColis(this.repo);
-  Future<Either<Failure, Colis>> call(String id, Map<String, dynamic> champs) =>
+  Future<Either<Failure, AvecMessage<Colis>>> call(String id, Map<String, dynamic> champs) =>
       repo.modifierColis(id, champs);
 }

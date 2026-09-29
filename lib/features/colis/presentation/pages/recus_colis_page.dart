@@ -88,7 +88,7 @@ class _RecusView extends StatelessWidget {
                       actionLabel: tr('Vérifier mon numéro'),
                       onAction: () async {
                         final bloc = context.read<ColisBloc>();
-                        if (await verifierTelephone(context)) bloc.add(const LoadColisRecus());
+                        if (await verifierTelephone(context) != null) bloc.add(const LoadColisRecus());
                       },
                     );
                   }

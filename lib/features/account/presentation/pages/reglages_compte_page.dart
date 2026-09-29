@@ -19,6 +19,7 @@ import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../data/datasources/espace_client_remote_datasource.dart';
 import '../widgets/verification_telephone_dialog.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/validateurs.dart';
 
 /// Réglages du compte : domiciliation (tournées de collecte), notifications
 /// (email, push, WhatsApp) et tarif professionnel (NINEA / Kbis).
@@ -66,13 +67,14 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
     }
   }
 
-  Future<void> _executer(Future<ProfilClient> Function() action, String succes) async {
+  /// [action] renvoie le profil à jour et le message du backend, affiché tel quel.
+  Future<void> _executer(Future<({ProfilClient profil, String message})> Function() action) async {
     setState(() => _envoi = true);
     try {
-      final profil = await action();
+      final r = await action();
       if (!mounted) return;
-      setState(() => _profil = profil);
-      showToast(context, tr('Enregistré'), succes, ToastificationType.success);
+      setState(() => _profil = r.profil);
+      if (r.message.isNotEmpty) showToast(context, tr('Enregistré'), r.message, ToastificationType.success);
     } on ServerException catch (e) {
       if (mounted) showToast(context, tr('Erreur'), e.message, ToastificationType.error);
     } finally {
@@ -81,14 +83,11 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
   }
 
   Future<void> _preference(String cle, bool valeur) =>
-      _executer(() => _source.modifierPreferences({cle: valeur}), tr('Préférence mise à jour.'));
+      _executer(() => _source.modifierPreferences({cle: valeur}));
 
   Future<void> _deposerJustificatif() async {
     if (_ninea.text.trim() != (_profil?.numeroIdentificationFiscale ?? '')) {
-      await _executer(
-        () => _source.modifierProfil({'numeroIdentificationFiscale': _ninea.text.trim()}),
-        tr('Numéro enregistré.'),
-      );
+      await _executer(() => _source.modifierProfil({'numeroIdentificationFiscale': _ninea.text.trim()}));
     }
     final fichier = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85, maxWidth: 2000);
     if (fichier == null || !mounted) return;
@@ -105,8 +104,9 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
   }
 
   Future<void> _verifierTelephone() async {
-    if (await verifierTelephone(context)) {
-      if (mounted) showToast(context, tr('Numéro vérifié'), tr('Vos colis reçus sont désormais accessibles.'), ToastificationType.success);
+    final message = await verifierTelephone(context);
+    if (message != null) {
+      if (mounted && message.isNotEmpty) showToast(context, tr('Numéro vérifié'), message, ToastificationType.success);
       await _charger();
     }
   }
@@ -204,14 +204,18 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
                   Text(tr('Votre code postal permet de vous prévenir des tournées de collecte dans votre secteur.'),
                       style: texteDiscret()),
                   const SizedBox(height: 12),
-                  ChampTexte(controller: _codePostal, label: tr('Code postal'), clavier: TextInputType.number),
+                  ChampTexte(controller: _codePostal, label: tr('Code postal'), clavier: TextInputType.number, maxLength: 10),
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
-                      onPressed: () => _executer(
-                        () => _source.modifierProfil({'codePostal': _codePostal.text.trim()}),
-                        tr('Code postal enregistré.'),
-                      ),
+                      onPressed: () {
+                        final erreur = codePostal()(_codePostal.text);
+                        if (erreur != null) {
+                          showToast(context, tr('Code postal'), erreur, ToastificationType.warning);
+                          return;
+                        }
+                        _executer(() => _source.modifierProfil({'codePostal': _codePostal.text.trim()}));
+                      },
                       child: Text(tr('Enregistrer')),
                     ),
                   ),
@@ -276,7 +280,7 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
                     ),
                   if (!p.justificatifProValide) ...[
                     const SizedBox(height: 12),
-                    ChampTexte(controller: _ninea, label: tr('Numéro NINEA ou SIRET')),
+                    ChampTexte(controller: _ninea, label: tr('Numéro NINEA ou SIRET'), maxLength: 30),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(

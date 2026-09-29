@@ -11,6 +11,7 @@ import '../../../catalogue/domain/catalogue_entities.dart';
 import '../../../expedition/presentation/widgets/selecteur_ville.dart';
 import '../../data/adresses_remote_datasource.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/validateurs.dart';
 
 /// Création ou modification d'une adresse du carnet. Renvoie l'adresse enregistrée.
 class AdresseFormPage extends StatefulWidget {
@@ -99,10 +100,12 @@ class _AdresseFormPageState extends State<AdresseFormPage> {
     setState(() => _envoi = true);
     try {
       final source = sl<AdressesRemoteDataSource>();
-      final enregistree = widget.adresse == null
+      final r = widget.adresse == null
           ? await source.creer(champs)
           : await source.modifier(widget.adresse!.id, champs);
-      if (mounted) Navigator.of(context).pop(enregistree);
+      if (!mounted) return;
+      if (r.message.isNotEmpty) showToast(context, tr('Enregistré'), r.message, ToastificationType.success);
+      Navigator.of(context).pop(r.adresse);
     } on ServerException catch (e) {
       if (mounted) showToast(context, tr('Erreur'), e.message, ToastificationType.error);
     } finally {
@@ -125,7 +128,8 @@ class _AdresseFormPageState extends State<AdresseFormPage> {
               ChampTexte(
                 controller: _libelle,
                 label: tr('Nom de l\'adresse (ex : Maman à Dakar)'),
-                validator: (v) => (v ?? '').trim().length < 2 ? tr('Au moins 2 caractères') : null,
+                maxLength: 80,
+                validator: texte(requis: true, min: 2, max: 80),
               ),
               DropdownButtonFormField<String>(
                 initialValue: _type,
@@ -137,16 +141,23 @@ class _AdresseFormPageState extends State<AdresseFormPage> {
               ChampTexte(
                 controller: _nom,
                 label: tr('Nom complet'),
-                validator: (v) => (v ?? '').trim().length < 2 ? tr('Nom requis') : null,
+                maxLength: 120,
+                validator: texte(requis: true, min: 2, max: 120, message: tr('Nom requis')),
               ),
-              ChampTexte(controller: _entreprise, label: tr('Entreprise (facultatif)')),
+              ChampTexte(controller: _entreprise, label: tr('Entreprise (facultatif)'), maxLength: 120),
               ChampTexte(
                 controller: _telephone,
                 label: tr('Téléphone'),
                 clavier: TextInputType.phone,
                 validator: validerTelephone,
               ),
-              ChampTexte(controller: _email, label: tr('Email (facultatif)'), clavier: TextInputType.emailAddress),
+              ChampTexte(
+                controller: _email,
+                label: tr('Email (facultatif)'),
+                clavier: TextInputType.emailAddress,
+                maxLength: 150,
+                validator: email(requis: false),
+              ),
             ]),
             const SizedBox(height: 16),
             CarteSection(titre: tr('Adresse'), icone: Icons.home_outlined, children: [
@@ -173,13 +184,20 @@ class _AdresseFormPageState extends State<AdresseFormPage> {
               ChampTexte(
                 controller: _adresse,
                 label: tr('Adresse'),
-                validator: (v) => (v ?? '').trim().length < 3 ? tr('Adresse requise') : null,
+                maxLength: 255,
+                validator: texte(requis: true, min: 3, max: 255, message: tr('Adresse requise')),
               ),
-              ChampTexte(controller: _complement, label: tr('Complément (facultatif)')),
-              if (_pays == 'SN') ChampTexte(controller: _quartier, label: tr('Quartier')),
+              ChampTexte(controller: _complement, label: tr('Complément (facultatif)'), maxLength: 255),
+              if (_pays == 'SN') ChampTexte(controller: _quartier, label: tr('Quartier'), maxLength: 100),
               if (_pays == 'FR')
-                ChampTexte(controller: _codePostal, label: tr('Code postal'), clavier: TextInputType.number),
-              ChampTexte(controller: _instructions, label: tr('Instructions (facultatif)'), maxLines: 2),
+                ChampTexte(
+                  controller: _codePostal,
+                  label: tr('Code postal'),
+                  clavier: TextInputType.number,
+                  maxLength: 10,
+                  validator: codePostal(pays: 'FR'),
+                ),
+              ChampTexte(controller: _instructions, label: tr('Instructions (facultatif)'), maxLines: 2, maxLength: 500),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(tr('Adresse par défaut')),

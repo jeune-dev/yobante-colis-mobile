@@ -27,6 +27,8 @@ class AuthRepositoryImpl implements AuthRepository {
       await secureStorage.write(key: 'user_id', value: res.user.id);
       await secureStorage.write(key: 'user_role', value: res.user.role);
       return Right(res.user);
+    } on EmailNonConfirmeException catch (e) {
+      return Left(EmailNonConfirmeFailure(e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -35,7 +37,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> register({
+  Future<Either<Failure, String>> register({
     required String nom, required String prenom,
     required String email, required String motDePasse, required String telephone,
     String pays = 'SN',
@@ -49,7 +51,7 @@ class AuthRepositoryImpl implements AuthRepository {
     String? codeParrainage,
   }) async {
     try {
-      await remoteDataSource.register(
+      final message = await remoteDataSource.register(
         nom: nom, prenom: prenom, email: email, motDePasse: motDePasse, telephone: telephone,
         pays: pays,
         villeId: villeId,
@@ -61,7 +63,7 @@ class AuthRepositoryImpl implements AuthRepository {
         codePostal: codePostal,
         codeParrainage: codeParrainage,
       );
-      return const Right(null);
+      return Right(message);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -70,10 +72,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> forgotPassword(String email) async {
+  Future<Either<Failure, String>> forgotPassword(String email) async {
     try {
-      await remoteDataSource.forgotPassword(email);
-      return const Right(null);
+      return Right(await remoteDataSource.forgotPassword(email));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -82,10 +83,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> resetPassword(String email, String code, String newPassword) async {
+  Future<Either<Failure, String>> resetPassword(String email, String code, String newPassword) async {
     try {
-      await remoteDataSource.resetPassword(email, code, newPassword);
-      return const Right(null);
+      return Right(await remoteDataSource.resetPassword(email, code, newPassword));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {

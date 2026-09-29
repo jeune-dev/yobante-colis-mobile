@@ -15,7 +15,11 @@ import '../../../../core/i18n/langue.dart';
 /// email : le backend refuse la connexion tant que l'adresse n'est pas confirmée.
 class VerificationEmailPage extends StatefulWidget {
   final String email;
-  const VerificationEmailPage({super.key, required this.email});
+
+  /// Message du backend à l'inscription (« Compte créé. Un lien… ») ; absent quand
+  /// la page est ouverte depuis la connexion.
+  final String? message;
+  const VerificationEmailPage({super.key, required this.email, this.message});
 
   /// Demande un nouveau lien de confirmation (réponse identique que le compte existe ou non).
   static Future<String> renvoyerLien(String email) async {
@@ -25,7 +29,7 @@ class VerificationEmailPage extends StatefulWidget {
         data: {'email': email},
         options: Options(extra: {'skipAuthInterceptor': true}),
       );
-      return res.data['message'] as String? ?? tr('Un nouveau lien vous a été envoyé.');
+      return messageApi(res);
     } on DioException catch (e) {
       throw Exception(messageErreur(e, tr('Envoi impossible pour le moment.')));
     }
@@ -71,6 +75,13 @@ class _VerificationEmailPageState extends State<VerificationEmailPage> {
           const SizedBox(height: 24),
           Text(tr('Vérifiez votre boîte mail'), textAlign: TextAlign.center, style: titreSection(22)),
           const SizedBox(height: 10),
+          if ((widget.message ?? '').isNotEmpty) ...[
+            Text(widget.message!, textAlign: TextAlign.center, style: texteDiscret(14)),
+            const SizedBox(height: 6),
+            Text(widget.email,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 14)),
+          ] else
           Text.rich(
             TextSpan(children: [
               TextSpan(text: tr('Nous avons envoyé un lien de confirmation à\n')),

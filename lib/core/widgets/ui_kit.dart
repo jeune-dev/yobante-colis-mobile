@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -90,7 +91,11 @@ class LigneInfo extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 130, child: Text(libelle, style: texteDiscret(13))),
+          // Colonne des libellés proportionnelle à l'écran (130 au plus)
+          SizedBox(
+            width: (MediaQuery.sizeOf(context).width * 0.34).clamp(90.0, 130.0),
+            child: Text(libelle, style: texteDiscret(13)),
+          ),
           Expanded(
             child: Text(
               valeur,
@@ -243,6 +248,9 @@ class ChampTexte extends StatelessWidget {
   final String? Function(String?)? validator;
   final int maxLines;
   final ValueChanged<String>? onChanged;
+
+  /// Longueur maximale acceptée par l'API : la saisie s'arrête à cette limite.
+  final int? maxLength;
   const ChampTexte({
     super.key,
     required this.controller,
@@ -253,6 +261,7 @@ class ChampTexte extends StatelessWidget {
     this.validator,
     this.maxLines = 1,
     this.onChanged,
+    this.maxLength,
   });
 
   @override
@@ -265,6 +274,7 @@ class ChampTexte extends StatelessWidget {
         maxLines: maxLines,
         validator: validator,
         onChanged: onChanged,
+        inputFormatters: maxLength == null ? null : [LengthLimitingTextInputFormatter(maxLength)],
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,

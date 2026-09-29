@@ -24,6 +24,7 @@ import '../widgets/selecteur_articles.dart';
 import '../widgets/selecteur_ville.dart';
 import 'confirmation_expedition_page.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/validateurs.dart';
 
 /// Valeurs de départ de l'assistant, transmises depuis le calculateur de tarif
 /// ou une tournée de collecte.
@@ -77,6 +78,18 @@ class _PieceSaisie {
   }
 
   bool get dimensionsCompletes => _n(longueur) != null && _n(largeur) != null && _n(hauteur) != null;
+
+  /// Limites de l'API : 1000 kg par colis, 500 cm par dimension.
+  String? get erreurLimites {
+    if ((_n(poids) ?? 0) > 1000) return tr('Le poids d\'un colis ne peut pas dépasser 1000 kg.');
+    if ([longueur, largeur, hauteur].any((c) => (_n(c) ?? 0) > 500)) {
+      return tr('Chaque dimension doit rester sous 500 cm.');
+    }
+    if ([poids, longueur, largeur, hauteur].any((c) => c.text.trim().isNotEmpty && _n(c) == null)) {
+      return tr('Poids ou dimension invalide : saisissez un nombre.');
+    }
+    return null;
+  }
 
   void dispose() {
     poids.dispose();
@@ -381,6 +394,10 @@ class _AssistantState extends State<_Assistant> {
         if (_categorie.code == 'documents' && _typeDocument.text.trim().isEmpty) {
           return tr('Précisez le type de document envoyé.');
         }
+        final limitePiece = _pieces.map((p) => p.erreurLimites).whereType<String>().firstOrNull;
+        if (limitePiece != null) return limitePiece;
+        if (_valeur.text.trim().isNotEmpty && _valeurSaisie == null) return tr('Valeur estimée invalide.');
+        if ((_valeurSaisie ?? 0) > 50000000) return tr('Valeur estimée trop élevée.');
         if (_categorie.code == 'colis_moyen') {
           if (_parGrille && !_quantites.values.any((q) => q > 0)) return tr('Choisissez au moins un article.');
           if (!_parGrille && _pieces.every((p) => p.versPiece() == null)) return tr('Indiquez le poids de votre colis.');
@@ -412,9 +429,21 @@ class _AssistantState extends State<_Assistant> {
         if (mode == 'enlevement_domicile' && _tourneeId == null && _dateCollecte == null) {
           return tr('Choisissez une tournée de collecte ou une date souhaitée.');
         }
+        if (mode != 'point_collecte') {
+          final cp = codePostal(pays: _villeDepart?.pays)(_codePostal.text);
+          if (cp != null) return cp;
+        }
+        if (mode == 'enlevement_domicile') {
+          final etage = entier(min: -5, max: 60)(_etage.text);
+          if (etage != null) return tr('Étage : $etage');
+        }
         return null;
       case 3:
         if (_expNom.text.trim().length < 2) return tr('Nom de l\'expéditeur requis.');
+        final emailExp = email(requis: false)(_expEmail.text);
+        if (emailExp != null) return tr('Email de l\'expéditeur : $emailExp');
+        final emailDest = email(requis: false)(_destEmail.text);
+        if (emailDest != null) return tr('Email du destinataire : $emailDest');
         if (validerTelephone(_expTel.text) != null) {
           return tr('Téléphone de l\'expéditeur : ${validerTelephone(_expTel.text)}');
         }
@@ -682,10 +711,11 @@ class _AssistantState extends State<_Assistant> {
         ChampTexte(
           controller: _typeDocument,
           label: tr('Type de document'),
+          maxLength: 100,
           hint: tr('Acte de naissance, diplôme, courrier…'),
           icone: Icons.description_outlined,
         ),
-        ChampTexte(controller: _description, label: tr('Précisions (facultatif)'), maxLines: 2),
+        ChampTexte(controller: _description, label: tr('Précisions (facultatif)'), maxLines: 2, maxLength: 500),
       ],
       if (c == 'colis_moyen') ...[
         Text(tr('Votre colis'), style: titreSection(17)),
@@ -736,6 +766,7 @@ class _AssistantState extends State<_Assistant> {
         ChampTexte(
           controller: _description,
           label: c == 'colis_xxl' ? tr('Description du contenu') : tr('Description du contenu (facultatif)'),
+          maxLength: 500,
           maxLines: 2,
         ),
         Row(
@@ -959,11 +990,12 @@ class _AssistantState extends State<_Assistant> {
           titre: tr('Si vous optez pour une collecte, veuillez indiquer les informations nécessaires.'),
         ),
         const SizedBox(height: 12),
-        ChampTexte(controller: _adresseDepart, label: tr('Adresse de collecte'), icone: Icons.home_outlined),
+        ChampTexte(controller: _adresseDepart, label: tr('Adresse de collecte'), icone: Icons.home_outlined, maxLength: 255),
         ChampTexte(
           controller: _codePostal,
           label: tr('Code postal'),
           clavier: TextInputType.number,
+          maxLength: 10,
           icone: Icons.markunread_mailbox_outlined,
           onChanged: (v) {
             if (v.trim().length >= 2 && _modeDepot == 'enlevement_domicile') _chargerTournees();
@@ -1029,7 +1061,12 @@ class _AssistantState extends State<_Assistant> {
         Row(
           children: [
             Expanded(
-              child: ChampTexte(controller: _etage, label: tr('Étage'), clavier: TextInputType.number),
+              child: ChampTexte(
+                controller: _etage,
+                label: tr('Étage'),
+                clavier: const TextInputType.numberWithOptions(signed: true),
+                maxLength: 3,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1049,7 +1086,7 @@ class _AssistantState extends State<_Assistant> {
           value: _emballageSurPlace,
           onChanged: (v) => setState(() => _emballageSurPlace = v),
         ),
-        ChampTexte(controller: _instructionsCollecte, label: tr('Instructions (digicode, accès…)'), maxLines: 2),
+        ChampTexte(controller: _instructionsCollecte, label: tr('Instructions (digicode, accès…)'), maxLines: 2, maxLength: 500),
       ],
       if (_modeDepot == 'envoi_postal') ...[
         Bandeau(
@@ -1116,9 +1153,9 @@ class _AssistantState extends State<_Assistant> {
       icone: Icons.person_outline,
       action: _boutonCarnet('expediteur'),
       children: [
-        ChampTexte(controller: _expNom, label: tr('Nom complet')),
+        ChampTexte(controller: _expNom, label: tr('Nom complet'), maxLength: 120),
         ChampTexte(controller: _expTel, label: tr('Téléphone'), clavier: TextInputType.phone, hint: tr('+33 6… ou 77…')),
-        ChampTexte(controller: _expEmail, label: tr('Email (facultatif)'), clavier: TextInputType.emailAddress),
+        ChampTexte(controller: _expEmail, label: tr('Email (facultatif)'), clavier: TextInputType.emailAddress, maxLength: 150),
       ],
     ),
     const SizedBox(height: 14),
@@ -1127,9 +1164,9 @@ class _AssistantState extends State<_Assistant> {
       icone: Icons.person_pin_circle_outlined,
       action: _boutonCarnet('destinataire'),
       children: [
-        ChampTexte(controller: _destNom, label: tr('Nom complet')),
+        ChampTexte(controller: _destNom, label: tr('Nom complet'), maxLength: 120),
         ChampTexte(controller: _destTel, label: tr('Téléphone'), clavier: TextInputType.phone, hint: tr('77… ou +221…')),
-        ChampTexte(controller: _destEmail, label: tr('Email (facultatif)'), clavier: TextInputType.emailAddress),
+        ChampTexte(controller: _destEmail, label: tr('Email (facultatif)'), clavier: TextInputType.emailAddress, maxLength: 150),
         SegmentedButton<String>(
           segments: [
             ButtonSegment(value: 'livraison_domicile', label: Text(tr('Livraison'))),
@@ -1158,7 +1195,7 @@ class _AssistantState extends State<_Assistant> {
             onChanged: (v) => setState(() => _pointRetraitId = v),
           )
         else
-          ChampTexte(controller: _adresseLivraison, label: tr('Adresse de livraison'), icone: Icons.home_outlined),
+          ChampTexte(controller: _adresseLivraison, label: tr('Adresse de livraison'), icone: Icons.home_outlined, maxLength: 255),
         if (_paysArrivee == 'SN') ...[
           const SizedBox(height: 4),
           Text(
@@ -1170,12 +1207,12 @@ class _AssistantState extends State<_Assistant> {
             ),
           ),
           const SizedBox(height: 8),
-          ChampTexte(controller: _quartier, label: tr('Quartier')),
-          ChampTexte(controller: _arrondissement, label: tr('Arrondissement')),
-          ChampTexte(controller: _departement, label: tr('Département')),
-          ChampTexte(controller: _pointRepere, label: tr('Point de repère'), hint: tr('Ex : face à la grande mosquée')),
+          ChampTexte(controller: _quartier, label: tr('Quartier'), maxLength: 100),
+          ChampTexte(controller: _arrondissement, label: tr('Arrondissement'), maxLength: 100),
+          ChampTexte(controller: _departement, label: tr('Département'), maxLength: 100),
+          ChampTexte(controller: _pointRepere, label: tr('Point de repère'), hint: tr('Ex : face à la grande mosquée'), maxLength: 255),
         ],
-        ChampTexte(controller: _instructionsLivraison, label: tr('Instructions de livraison (facultatif)'), maxLines: 2),
+        ChampTexte(controller: _instructionsLivraison, label: tr('Instructions de livraison (facultatif)'), maxLines: 2, maxLength: 500),
       ],
     ),
   ];

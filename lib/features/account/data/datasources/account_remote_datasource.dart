@@ -5,12 +5,16 @@ import '../../../../core/errors/exceptions.dart';
 import '../../../../core/utils/formatters.dart';
 import '../models/account_user_model.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/fichier_upload.dart';
+import '../../../../core/types/avec_message.dart';
 
 abstract class AccountRemoteDataSource {
   Future<AccountUserModel> getMe();
-  Future<AccountUserModel> modifierInfo({String? nom, String? prenom, String? telephone});
-  Future<AccountUserModel> uploadAvatar(String filePath);
-  Future<void> changePassword(String oldPassword, String newPassword);
+  Future<AvecMessage<AccountUserModel>> modifierInfo({String? nom, String? prenom, String? telephone});
+  Future<AvecMessage<AccountUserModel>> uploadAvatar(String filePath);
+
+  /// Renvoie le message du backend.
+  Future<String> changePassword(String oldPassword, String newPassword);
 }
 
 class AccountRemoteDataSourceImpl implements AccountRemoteDataSource {
@@ -28,34 +32,40 @@ class AccountRemoteDataSourceImpl implements AccountRemoteDataSource {
   }
 
   @override
-  Future<AccountUserModel> modifierInfo({String? nom, String? prenom, String? telephone}) async {
+  Future<AvecMessage<AccountUserModel>> modifierInfo({String? nom, String? prenom, String? telephone}) async {
     try {
       final data = <String, dynamic>{};
       if (nom != null) data['nom'] = nom;
       if (prenom != null) data['prenom'] = prenom;
       if (telephone != null) data['telephone'] = normaliserTelephone(telephone);
       final res = await dio.put(Env.clientProfil, data: data);
-      return AccountUserModel.fromJson(res.data['data']['utilisateur'] as Map<String, dynamic>);
+      return (
+        valeur: AccountUserModel.fromJson(res.data['data']['utilisateur'] as Map<String, dynamic>),
+        message: messageApi(res),
+      );
     } on DioException catch (e) {
       throw ServerException(message: messageErreur(e, tr('Erreur')));
     }
   }
 
   @override
-  Future<AccountUserModel> uploadAvatar(String filePath) async {
+  Future<AvecMessage<AccountUserModel>> uploadAvatar(String filePath) async {
     try {
-      final formData = FormData.fromMap({'avatar': await MultipartFile.fromFile(filePath)});
+      final formData = FormData.fromMap({'avatar': await fichierMultipart(filePath)});
       final res = await dio.post(Env.clientProfilAvatar, data: formData);
-      return AccountUserModel.fromJson(res.data['data']['utilisateur'] as Map<String, dynamic>);
+      return (
+        valeur: AccountUserModel.fromJson(res.data['data']['utilisateur'] as Map<String, dynamic>),
+        message: messageApi(res),
+      );
     } on DioException catch (e) {
       throw ServerException(message: messageErreur(e, tr('Erreur')));
     }
   }
 
   @override
-  Future<void> changePassword(String oldPassword, String newPassword) async {
+  Future<String> changePassword(String oldPassword, String newPassword) async {
     try {
-      await dio.put(Env.authChangePass, data: {'oldPassword': oldPassword, 'newPassword': newPassword});
+      return messageApi(await dio.put(Env.authChangePass, data: {'oldPassword': oldPassword, 'newPassword': newPassword}));
     } on DioException catch (e) {
       throw ServerException(message: messageErreur(e, tr('Erreur')));
     }

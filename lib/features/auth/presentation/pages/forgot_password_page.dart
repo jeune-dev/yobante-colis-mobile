@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:toastification/toastification.dart';
+import '../../../../core/i18n/langue.dart';
+import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../../core/utils/validateurs.dart';
 import '../../../../core/widgets/toast_notif.dart';
+import '../../../../core/widgets/ui_kit.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../../../../core/i18n/langue.dart';
 
+/// Étape 1 : l'utilisateur saisit son email, le backend envoie un code à 6 chiffres.
+///
+/// Le backend répond toujours de la même façon, que le compte existe ou non :
+/// on passe donc à l'étape 2 dans tous les cas, avec son message.
 class ForgotPasswordPage extends StatefulWidget {
-  const ForgotPasswordPage({super.key});
+  /// Email déjà saisi sur l'écran de connexion, repris ici.
+  final String? email;
+  const ForgotPasswordPage({super.key, this.email});
 
   @override
   State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
@@ -17,213 +28,74 @@ class ForgotPasswordPage extends StatefulWidget {
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  bool _submitted = false;
+  late final _email = TextEditingController(text: (widget.email ?? '').contains('@') ? widget.email : '');
+  bool _soumis = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _email.dispose();
     super.dispose();
   }
 
-  void _submit() {
-    setState(() => _submitted = true);
+  void _envoyer() {
+    setState(() => _soumis = true);
     if (!_formKey.currentState!.validate()) return;
-    context.read<AuthBloc>().add(
-          ForgotPasswordRequested(email: _emailController.text.trim()),
-        );
+    FocusScope.of(context).unfocus();
+    context.read<AuthBloc>().add(ForgotPasswordRequested(email: _email.text.trim()));
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
+      // AuthBloc est partagé par toute l'application : seul l'écran visible réagit
+      listenWhen: (_, _) => ModalRoute.of(context)?.isCurrent ?? false,
       listener: (context, state) {
         if (state is ForgotPasswordSuccess) {
-          showToast(
-            context,
-            tr('Code envoyé'),
-            tr('Un code a été envoyé à votre adresse email.'),
-            ToastificationType.success,
-          );
-          Navigator.of(context).pushNamed(
-            '/reset-password',
-            arguments: _emailController.text.trim(),
-          );
+          if (state.message.isNotEmpty) {
+            showToast(context, tr('Email envoyé'), state.message, ToastificationType.success);
+          }
+          Navigator.of(context).pushNamed(AppRouter.resetPasswordRoute, arguments: _email.text.trim());
         } else if (state is AuthFailure) {
           showToast(context, tr('Erreur'), state.message, ToastificationType.error);
         }
       },
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B)),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Form(
-              key: _formKey,
-              autovalidateMode: _submitted
-                  ? AutovalidateMode.onUserInteraction
-                  : AutovalidateMode.disabled,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 32),
-                  // Illustration
-                  Center(
-                    child: Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        color: AppColor.kPrimary.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: const Icon(
-                        Icons.lock_reset_rounded,
-                        size: 48,
-                        color: AppColor.kPrimary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    tr('Mot de passe oublié ?'),
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1E293B),
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    tr('Entrez votre adresse email et nous vous enverrons un code de réinitialisation.'),
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Color(0xFF64748B),
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  // Email field
-                  Text(
-                    tr('Adresse email'),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF374151),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _submit(),
-                    decoration: InputDecoration(
-                      hintText: 'exemple@email.com',
-                      hintStyle: const TextStyle(color: Color(0xFFADB5BD)),
-                      prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF6B7280)),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 16),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                            color: AppColor.kPrimary, width: 2),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFDC2626)),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                            color: Color(0xFFDC2626), width: 2),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return tr('Veuillez entrer votre email');
-                      }
-                      final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                      if (!emailRegex.hasMatch(value.trim())) {
-                        return tr('Format d\'email invalide');
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 32),
-                  // Submit button
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, state) {
-                      final isLoading = state is AuthLoading;
-                      return SizedBox(
-                        width: double.infinity,
-                        height: 54,
-                        child: ElevatedButton(
-                          onPressed: isLoading ? null : _submit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.kPrimary,
-                            disabledBackgroundColor:
-                                AppColor.kPrimary.withAlpha(128),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: isLoading
-                              ? const SizedBox(
-                                  width: 22,
-                                  height: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : Text(
-                                  tr('Envoyer le code'),
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  Center(
-                    child: TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(
-                        tr('Retour à la connexion'),
-                        style: TextStyle(
-                          color: AppColor.kPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+      child: EcranMotDePasse(
+        icone: Icons.lock_reset_rounded,
+        titre: tr('Mot de passe oublié ?'),
+        sousTitre: tr('Saisissez l\'adresse email de votre compte : nous vous enverrons un code pour choisir un nouveau mot de passe.'),
+        child: Form(
+          key: _formKey,
+          autovalidateMode: _soumis ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _email,
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.email],
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => _envoyer(),
+                inputFormatters: [LengthLimitingTextInputFormatter(150)],
+                decoration: InputDecoration(
+                  labelText: tr('Adresse email'),
+                  hintText: 'exemple@email.com',
+                  prefixIcon: const Icon(Icons.mail_outline_rounded),
+                ),
+                validator: email(),
               ),
-            ),
+              const SizedBox(height: 24),
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) => BoutonPrincipal(
+                  libelle: tr('Recevoir un code'),
+                  chargement: state is AuthLoading,
+                  onPressed: _envoyer,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(tr('Retour à la connexion')),
+              ),
+            ],
           ),
         ),
       ),
@@ -231,3 +103,85 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 }
 
+/// Mise en page commune aux deux étapes (email, puis code et nouveau mot de passe).
+class EcranMotDePasse extends StatelessWidget {
+  final IconData icone;
+  final String titre;
+  final String sousTitre;
+  final Widget child;
+  const EcranMotDePasse({
+    super.key,
+    required this.icone,
+    required this.titre,
+    required this.sousTitre,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColor.kWhite,
+      appBar: AppBar(backgroundColor: AppColor.kWhite, elevation: 0, scrolledUnderElevation: 0),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 84,
+                  height: 84,
+                  decoration: BoxDecoration(
+                    color: AppColor.kSecondaryLight,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Icon(icone, size: 42, color: AppColor.kPrimary),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(titre, textAlign: TextAlign.center, style: titreSection(24)),
+              const SizedBox(height: 8),
+              Text(
+                sousTitre,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(fontSize: 14, height: 1.5, color: AppColor.kGrayscale40),
+              ),
+              const SizedBox(height: 32),
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bouton plein de l'écran, avec indicateur pendant l'envoi.
+class BoutonPrincipal extends StatelessWidget {
+  final String libelle;
+  final bool chargement;
+  final VoidCallback onPressed;
+  const BoutonPrincipal({super.key, required this.libelle, required this.chargement, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: ElevatedButton(
+        onPressed: chargement ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColor.kPrimary,
+          disabledBackgroundColor: AppColor.kPrimary.withValues(alpha: 0.5),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+        child: chargement
+            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+            : Text(libelle, style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700)),
+      ),
+    );
+  }
+}

@@ -19,12 +19,15 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/auth/presentation/pages/splash_page.dart';
 import 'injection_container.dart' as di;
+import 'core/widgets/adaptation_ecran.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Le handler background FCM est enregistré dans FcmService.init() — pas ici.
   GoogleFonts.config.allowRuntimeFetching = false;
+  // Portrait sur téléphone, toutes orientations sur tablette
+  await AdaptationEcran.configurerOrientation();
 
   try {
     await Firebase.initializeApp();
@@ -41,7 +44,7 @@ void main() async {
 
   if (Platform.isAndroid) {
     await MediaStore.ensureInitialized();
-    MediaStore.appFolder = 'Yobnate Colis';
+    MediaStore.appFolder = 'Yobante Colis';
   }
 
   await di.init();
@@ -89,7 +92,7 @@ class _MyAppState extends State<MyApp> {
           builder: (context, langue, _) => MaterialApp(
             navigatorKey: _navigatorKey,
             debugShowCheckedModeBanner: false,
-            title: 'Yobnate Colis',
+            title: 'Yobante Colis',
             theme: AppTheme.light(),
             locale: langue.locale,
             localizationsDelegates: const [
@@ -101,6 +104,8 @@ class _MyAppState extends State<MyApp> {
             home: const SplashPage(),
             onGenerateRoute: AppRouter.onGenerateRoute,
             navigatorObservers: [_observateur],
+            // Taille de texte bornée et contenu centré sur tablette, pour tous les écrans
+            builder: (context, child) => AdaptationEcran(child: child ?? const SizedBox.shrink()),
           ),
         ),
       ),

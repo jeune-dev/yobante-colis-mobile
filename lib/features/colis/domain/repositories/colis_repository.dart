@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failure.dart';
 import '../entities/colis.dart';
 import '../entities/demande_expedition.dart';
+import '../../../../core/types/avec_message.dart';
 
 abstract class ColisRepository {
   Future<Either<Failure, Map<String, dynamic>>> getColis({String? statut, int page = 1, int limit = 20});
@@ -15,9 +16,9 @@ abstract class ColisRepository {
   });
 
   Future<Either<Failure, List<SuiviEvenement>>> getSuiviColis(String id);
-  Future<Either<Failure, Colis>> annulerColis(String id, {String? motif});
+  Future<Either<Failure, AvecMessage<Colis>>> annulerColis(String id, {String? motif});
 
   Future<Either<Failure, ResultatDeclaration>> accepterProposition(String id);
-  Future<Either<Failure, Colis>> refuserProposition(String id, {String? motif});
-  Future<Either<Failure, Colis>> modifierColis(String id, Map<String, dynamic> champs);
+  Future<Either<Failure, AvecMessage<Colis>>> refuserProposition(String id, {String? motif});
+  Future<Either<Failure, AvecMessage<Colis>>> modifierColis(String id, Map<String, dynamic> champs);
 }

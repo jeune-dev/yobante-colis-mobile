@@ -14,6 +14,7 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../widgets/password_text_field.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/validateurs.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -71,8 +72,11 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
+      // AuthBloc est partagé : les erreurs du mot de passe oublié (écrans ouverts
+      // par-dessus) ne doivent pas s'afficher ici en « Erreur de connexion »
+      listenWhen: (_, _) => ModalRoute.of(context)?.isCurrent ?? false,
       listener: (context, state) {
-        if (state is AuthFailure && state.message.contains('non confirmée')) {
+        if (state is AuthFailure && state.emailNonConfirme) {
           _compteNonConfirme(state.message);
           return;
         }
@@ -145,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                         if (v == null || v.trim().isEmpty) {
                           return tr('Email ou téléphone requis');
                         }
-                        if (!v.contains('@') && validerTelephone(v) != null) {
+                        if (v.contains('@') ? email()(v) != null : validerTelephone(v) != null) {
                           return tr('Email ou numéro de téléphone invalide');
                         }
                         return null;
@@ -166,7 +170,6 @@ class _LoginPageState extends State<LoginPage> {
                       hintText: '••••••••',
                       validator: (v) {
                         if (v == null || v.isEmpty) return tr('Mot de passe requis');
-                        if (v.length < 6) return tr('Minimum 6 caractères');
                         return null;
                       },
                     ),
@@ -175,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () => Navigator.of(context)
-                            .pushNamed(AppRouter.forgotPasswordRoute),
+                            .pushNamed(AppRouter.forgotPasswordRoute, arguments: _emailCtrl.text.trim()),
                         child: Text(
                           tr('Mot de passe oublié ?'),
                           style: GoogleFonts.plusJakartaSans(

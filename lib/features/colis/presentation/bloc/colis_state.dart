@@ -84,25 +84,29 @@ class PropositionAcceptee extends ColisState {
   List<Object?> get props => [resultat.colis];
 }
 
+// [message] : message du backend, affiché tel quel
 class PropositionRefusee extends ColisState {
   final Colis colis;
-  const PropositionRefusee(this.colis);
+  final String message;
+  const PropositionRefusee(this.colis, {this.message = ''});
   @override
-  List<Object?> get props => [colis];
+  List<Object?> get props => [colis, message];
 }
 
 class ColisModifie extends ColisState {
   final Colis colis;
-  const ColisModifie(this.colis);
+  final String message;
+  const ColisModifie(this.colis, {this.message = ''});
   @override
-  List<Object?> get props => [colis];
+  List<Object?> get props => [colis, message];
 }
 
 class ColisAnnule extends ColisState {
   final Colis colis;
-  const ColisAnnule(this.colis);
+  final String message;
+  const ColisAnnule(this.colis, {this.message = ''});
   @override
-  List<Object?> get props => [colis];
+  List<Object?> get props => [colis, message];
 }
 
 class ColisFailure extends ColisState {

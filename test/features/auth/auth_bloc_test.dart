@@ -11,9 +11,9 @@ import 'package:yobnate_colis/features/auth/presentation/bloc/auth_state.dart';
 
 class _FakeAuthRepository extends Fake implements AuthRepository {
   Either<Failure, User>? loginResult;
-  Either<Failure, void>? registerResult;
-  Either<Failure, void>? forgotResult;
-  Either<Failure, void>? resetResult;
+  Either<Failure, String>? registerResult;
+  Either<Failure, String>? forgotResult;
+  Either<Failure, String>? resetResult;
   bool logoutCalled = false;
 
   @override
@@ -21,7 +21,7 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
       loginResult!;
 
   @override
-  Future<Either<Failure, void>> register({
+  Future<Either<Failure, String>> register({
     required String nom,
     required String prenom,
     required String email,
@@ -40,11 +40,11 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
       registerResult!;
 
   @override
-  Future<Either<Failure, void>> forgotPassword(String email) async =>
+  Future<Either<Failure, String>> forgotPassword(String email) async =>
       forgotResult!;
 
   @override
-  Future<Either<Failure, void>> resetPassword(
+  Future<Either<Failure, String>> resetPassword(
           String email, String code, String newPassword) async =>
       resetResult!;
 
@@ -119,7 +119,7 @@ void main() {
 
   group('AuthBloc — RegisterRequested', () {
     test('succès → [AuthLoading, RegisterSuccess]', () async {
-      fakeRepo.registerResult = const Right(null);
+      fakeRepo.registerResult = const Right('Compte créé.');
       final bloc = AuthBloc(authRepository: fakeRepo);
 
       final states = await _collectStates(
@@ -174,7 +174,7 @@ void main() {
 
   group('AuthBloc — ForgotPasswordRequested', () {
     test('succès → [AuthLoading, ForgotPasswordSuccess]', () async {
-      fakeRepo.forgotResult = const Right(null);
+      fakeRepo.forgotResult = const Right('Si un compte existe, un email de réinitialisation a été envoyé.');
       final bloc = AuthBloc(authRepository: fakeRepo);
 
       final states = await _collectStates(

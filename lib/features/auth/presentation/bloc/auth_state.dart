@@ -17,13 +17,18 @@ class AuthSuccess extends AuthState {
 }
 
 class RegisterSuccess extends AuthState {
-  const RegisterSuccess();
+  final String message;
+  const RegisterSuccess({this.message = ''});
+  @override List<Object?> get props => [message];
 }
 
 class AuthFailure extends AuthState {
   final String message;
-  const AuthFailure({required this.message});
-  @override List<Object?> get props => [message];
+
+  /// Connexion refusée tant que l'adresse email n'est pas confirmée.
+  final bool emailNonConfirme;
+  const AuthFailure({required this.message, this.emailNonConfirme = false});
+  @override List<Object?> get props => [message, emailNonConfirme];
 }
 
 class ForgotPasswordSuccess extends AuthState {
@@ -32,4 +37,8 @@ class ForgotPasswordSuccess extends AuthState {
   @override List<Object?> get props => [message];
 }
 
-class ResetPasswordSuccess extends AuthState {}
+class ResetPasswordSuccess extends AuthState {
+  final String message;
+  const ResetPasswordSuccess({this.message = ''});
+  @override List<Object?> get props => [message];
+}

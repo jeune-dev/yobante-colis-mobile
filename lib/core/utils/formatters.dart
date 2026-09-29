@@ -50,7 +50,9 @@ String normaliserTelephone(String brut, {String paysParDefaut = 'SN'}) {
 String? validerTelephone(String? v) {
   if (v == null || v.trim().isEmpty) return tr('Numéro requis');
   final n = normaliserTelephone(v);
-  if (!RegExp(r'^\+(33\d{9}|221\d{9})$').hasMatch(n)) {
+  // Mêmes plages que le backend (libphonenumber) : France +33 suivi d'un chiffre
+  // de 1 à 9 ; Sénégal +221, mobiles en 7x et fixes en 3x
+  if (!RegExp(r'^\+(33[1-9]\d{8}|221[37]\d{8})$').hasMatch(n)) {
     return tr('Numéro français (+33) ou sénégalais (+221) attendu');
   }
   return null;

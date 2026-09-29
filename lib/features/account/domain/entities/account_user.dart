@@ -24,5 +24,7 @@ class AccountUser extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, email, role];
+  // Tous les champs affichés : sinon une deuxième modification du nom ou de la
+  // photo produisait un état « égal » au précédent et l'écran ne se redessinait pas.
+  List<Object?> get props => [id, nom, prenom, email, telephone, role, avatarUrl, isActive];
 }

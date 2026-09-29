@@ -6,7 +6,7 @@ class ChangePassword {
   final AccountRepository repository;
   ChangePassword(this.repository);
 
-  Future<Either<Failure, void>> call({
+  Future<Either<Failure, String>> call({
     required String oldPassword,
     required String newPassword,
   }) =>

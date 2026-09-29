@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../../core/config/env.dart';
 import '../../../../core/errors/api_error.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/fichier_upload.dart';
 
 /// Programme de parrainage du client connecté.
 class Parrainage {
@@ -99,14 +100,23 @@ class EspaceClientRemoteDataSource {
         return ProfilClient.fromJson(_data(res)['utilisateur'] as Map<String, dynamic>);
       });
 
-  Future<ProfilClient> modifierProfil(Map<String, dynamic> champs) => appelApi(() async {
+  /// Renvoie le profil à jour et le message du backend.
+  Future<({ProfilClient profil, String message})> modifierProfil(Map<String, dynamic> champs) =>
+      appelApi(() async {
         final res = await dio.put(Env.clientProfil, data: champs);
-        return ProfilClient.fromJson(_data(res)['utilisateur'] as Map<String, dynamic>);
+        return (
+          profil: ProfilClient.fromJson(_data(res)['utilisateur'] as Map<String, dynamic>),
+          message: messageApi(res),
+        );
       }, tr('Impossible d\'enregistrer le profil'));
 
-  Future<ProfilClient> modifierPreferences(Map<String, bool> preferences) => appelApi(() async {
+  Future<({ProfilClient profil, String message})> modifierPreferences(Map<String, bool> preferences) =>
+      appelApi(() async {
         final res = await dio.put(Env.clientPreferences, data: preferences);
-        return ProfilClient.fromJson(_data(res)['utilisateur'] as Map<String, dynamic>);
+        return (
+          profil: ProfilClient.fromJson(_data(res)['utilisateur'] as Map<String, dynamic>),
+          message: messageApi(res),
+        );
       }, tr('Impossible d\'enregistrer vos préférences'));
 
   Future<Parrainage> getParrainage() => appelApi(() async {
@@ -116,21 +126,21 @@ class EspaceClientRemoteDataSource {
 
   /// Dépose le justificatif NINEA / Kbis (image ou PDF) pour le tarif professionnel.
   Future<String> deposerJustificatif(String chemin) => appelApi(() async {
-        final form = FormData.fromMap({'justificatif': await MultipartFile.fromFile(chemin)});
+        final form = FormData.fromMap({'justificatif': await fichierMultipart(chemin, pdfAccepte: true)});
         final res = await dio.post(Env.clientJustificatifPro, data: form);
-        return res.data['message'] as String? ?? tr('Justificatif transmis.');
+        return messageApi(res);
       }, tr('Envoi du justificatif impossible'));
 
   /// Envoie un code à 6 chiffres par WhatsApp au numéro du compte.
   Future<String> demanderCodeTelephone() => appelApi(() async {
         final res = await dio.post(Env.clientTelephoneCode);
-        return res.data['message'] as String? ?? tr('Un code vous a été envoyé par WhatsApp.');
+        return messageApi(res);
       }, tr('Envoi du code impossible'));
 
   /// Vérifie le code reçu ; ouvre l'accès aux colis dont le compte est destinataire.
   Future<String> verifierTelephone(String code) => appelApi(() async {
         final res = await dio.post(Env.clientTelephoneVerifier, data: {'code': code});
-        return res.data['message'] as String? ?? tr('Votre numéro est vérifié.');
+        return messageApi(res);
       }, tr('Code invalide ou expiré'));
 
   /// Suppression définitive du compte (RGPD) : le mot de passe est redemandé.
@@ -139,7 +149,7 @@ class EspaceClientRemoteDataSource {
           'password': password,
           if (motif != null && motif.trim().isNotEmpty) 'motif': motif.trim(),
         });
-        return res.data['message'] as String? ?? tr('Votre compte a été supprimé.');
+        return messageApi(res);
       }, tr('Suppression du compte impossible'));
 
   /// Export des données personnelles (RGPD art. 20), tel que renvoyé par le backend.

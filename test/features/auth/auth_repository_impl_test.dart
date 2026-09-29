@@ -74,7 +74,7 @@ class _FakeAuthDataSource extends Fake implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> register({
+  Future<String> register({
     required String nom,
     required String prenom,
     required String email,
@@ -89,14 +89,14 @@ class _FakeAuthDataSource extends Fake implements AuthRemoteDataSource {
     String? numeroTvaIntracom,
     String? codePostal,
     String? codeParrainage,
-  }) async {}
+  }) async => 'Compte créé.';
 
   @override
-  Future<void> forgotPassword(String email) async {}
+  Future<String> forgotPassword(String email) async => '';
 
   @override
-  Future<void> resetPassword(
-      String email, String code, String newPassword) async {}
+  Future<String> resetPassword(
+      String email, String code, String newPassword) async => '';
 }
 
 // ── Données de test ───────────────────────────────────────────────────────────
