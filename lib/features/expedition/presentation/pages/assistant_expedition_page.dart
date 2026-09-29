@@ -1269,7 +1269,7 @@ class _AssistantState extends State<_Assistant> {
           icone: Icons.route_outlined,
           titre: tr('La suite'),
           message: switch (_categorie.paiement) {
-            'a_la_commande' => tr('Votre facture et le lien de paiement vous sont envoyés dès la validation.'),
+            'a_la_commande' => tr('Dès l\'envoi de votre demande, votre facture est émise et le lien de paiement s\'ouvre.'),
             'a_la_reception' =>
               tr('Nos équipes valident votre demande sous ${_config?.delaiEtudeHeures ?? 24} h. Vous paierez à la réception de votre colis.'),
             _ =>

@@ -912,4 +912,5 @@ const Map<String, String> traductionsEn = {
   'Renvoyer le code': 'Resend code',
   'Enregistrer le mot de passe': 'Save password',
   'Un caractère spécial': 'A special character',
+  'Dès l\'envoi de votre demande, votre facture est émise et le lien de paiement s\'ouvre.': 'As soon as you send your request, your invoice is issued and the payment link opens.',
 };

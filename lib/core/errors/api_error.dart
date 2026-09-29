@@ -19,7 +19,13 @@ String messageErreur(DioException e, [String defaut = 'Une erreur est survenue']
     final details = data['details'];
     if (details is List && details.isNotEmpty) return details.map((d) => '$d').join('\n');
     final message = data['message'];
-    if (message is String && message.isNotEmpty) return message;
+    if (message is String && message.isNotEmpty) {
+      // Erreur serveur : la référence de la requête permet de retrouver la cause
+      // exacte dans les journaux du backend
+      final reference = data['requestId'];
+      final statut = e.response?.statusCode ?? 0;
+      return statut >= 500 && reference is String && reference.isNotEmpty ? '$message (réf. $reference)' : message;
+    }
   }
   if (e.type == DioExceptionType.connectionError ||
       e.type == DioExceptionType.connectionTimeout ||
