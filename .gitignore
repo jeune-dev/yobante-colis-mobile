@@ -55,3 +55,6 @@ android/key.properties
 android/upload-keystore.jks
 *.jks
 *.keystore
+
+# Notes locales sur les endpoints (non versionnées)
+/env
