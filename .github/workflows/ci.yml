@@ -95,7 +95,7 @@ jobs:
             --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: yobante-colis-debug-${{ github.sha }}
           path: build/app/outputs/flutter-apk/app-debug.apk
