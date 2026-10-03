@@ -47,7 +47,7 @@ class _PointCollecte {
       );
 }
 
-/// Recherche de points de collecte/retrait Yobante Express — façon DHL
+/// Recherche de points de collecte/retrait Yobante Colis — façon DHL
 /// (« Trouver un point de service »), accessible sans connexion.
 class PointDeServicePage extends StatefulWidget {
   const PointDeServicePage({super.key});

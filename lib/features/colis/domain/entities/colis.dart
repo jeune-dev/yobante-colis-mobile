@@ -138,7 +138,7 @@ class LigneForfaitColis extends Equatable {
   List<Object?> get props => [libelle, quantite, montant];
 }
 
-/// Une expédition Yobante Express (corridor France ⇄ Sénégal).
+/// Une expédition Yobante Colis (corridor France ⇄ Sénégal).
 class Colis extends Equatable {
   final String id;
   final String reference;

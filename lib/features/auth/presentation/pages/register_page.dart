@@ -191,7 +191,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      tr('Rejoignez Yobante Express pour suivre vos envois'),
+                      tr('Rejoignez Yobante Colis pour suivre vos envois'),
                       style: GoogleFonts.plusJakartaSans(fontSize: 14, color: AppColor.kGrayscale40),
                     ),
                     const SizedBox(height: 28),

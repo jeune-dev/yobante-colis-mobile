@@ -290,8 +290,8 @@ class _Footer extends StatelessWidget {
           // Choix de la langue (français / anglais)
           const TuileLangue(compacte: true),
           const SizedBox(height: 14),
-          Text(tr('Yobante Express'), style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 12)),
-          Text(tr('© ${DateTime.now().year} Yobante Express. Tous droits réservés.'),
+          Text(tr('Yobante Colis'), style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 12)),
+          Text(tr('© ${DateTime.now().year} Yobante Colis. Tous droits réservés.'),
               style: GoogleFonts.plusJakartaSans(fontSize: 10, color: AppColor.kGrayscale40)),
         ],
       ),
@@ -299,20 +299,31 @@ class _Footer extends StatelessWidget {
   }
 }
 
+// Coordonnées publiques du support (identiques aux pages yobanterek.com).
+const _emailSupport = 'ballabeye.dev04@gmail.com';
+const _telephoneSupport = '+221 77 307 16 39';
+const _urlConfidentialite = 'https://yobanterek.com/regle-confidentialite';
+const _urlSuppressionCompte = 'https://yobanterek.com/suppression-compte';
+
+List<LienInfo> get _liensContact => [
+  LienInfo(_emailSupport, 'mailto:$_emailSupport', icone: Icons.mail_outline_rounded),
+  LienInfo(_telephoneSupport, 'tel:+221773071639', icone: Icons.phone_outlined),
+  LienInfo(tr('WhatsApp'), 'https://wa.me/221773071639', icone: Icons.chat_outlined),
+];
+
 List<StaticInfoSection> get _legal => [
-  StaticInfoSection(
-    titre: tr('Conditions générales de transport'),
-    corps: tr('Ce contenu est fourni à titre indicatif et doit être remplacé par les '
-        'conditions générales de transport réelles de Yobante Express avant mise en '
-        'production (responsabilité du transporteur, délais, exclusions, réserves à '
-        'la livraison, procédure de réclamation, litiges et juridiction compétente).'),
-  ),
   StaticInfoSection(
     titre: tr('Confidentialité des données'),
     corps: tr('Les données personnelles collectées (identité, coordonnées, adresses, '
         'contenu des expéditions) sont utilisées pour l\'exécution du contrat de '
-        'transport et ne sont pas cédées à des tiers hors obligations légales ou '
-        'douanières. À compléter avec la politique de confidentialité définitive.'),
+        'transport. Elles ne sont ni vendues ni utilisées à des fins publicitaires.'),
+    liens: [LienInfo(tr('Lire les règles de confidentialité'), _urlConfidentialite)],
+  ),
+  StaticInfoSection(
+    titre: tr('Suppression de votre compte'),
+    corps: tr('Vous pouvez supprimer votre compte depuis Réglages du compte, '
+        'ou en suivant la procédure décrite sur notre site.'),
+    liens: [LienInfo(tr('Procédure de suppression du compte'), _urlSuppressionCompte)],
   ),
 ];
 
@@ -320,29 +331,23 @@ List<StaticInfoSection> get _support => [
   StaticInfoSection(
     titre: tr('Nous contacter'),
     corps: tr('Pour toute question sur une expédition, une facture ou votre compte, '
-        'contactez le support Yobante Express. Coordonnées à renseigner : '
-        'téléphone, email, horaires d\'ouverture par pays (Sénégal / France).'),
-  ),
-  StaticInfoSection(
-    titre: tr('Questions fréquentes'),
-    corps: tr('Combien de temps conserve-t-on un colis en point de retrait ? '
-        'Comment modifier une adresse de livraison ? Comment suivre un colis sans '
-        'compte ? — section à enrichir avec les questions réellement posées par vos clients.'),
+        'contactez le support Yobante Colis.'),
+    liens: _liensContact,
   ),
 ];
 
 List<StaticInfoSection> get _fraude => [
   StaticInfoSection(
     titre: tr('Restez vigilant'),
-    corps: tr('Yobante Express ne vous demandera jamais vos identifiants, code de '
+    corps: tr('Yobante Colis ne vous demandera jamais vos identifiants, code de '
         'retrait ou informations bancaires par téléphone, SMS ou email non sollicité. '
-        'Ne communiquez votre code de retrait qu\'à un agent Yobante Express en point '
+        'Ne communiquez votre code de retrait qu\'à un agent Yobante Colis en point '
         'de service, et vérifiez toujours l\'expéditeur d\'un message avant d\'y répondre.'),
   ),
   StaticInfoSection(
     titre: tr('Signaler une tentative de fraude'),
     corps: tr('Si vous recevez une communication suspecte se présentant comme émanant '
-        'de Yobante Express, signalez-la au support avant toute action. '
-        'Coordonnées de signalement à renseigner.'),
+        'de Yobante Colis, signalez-la au support avant toute action.'),
+    liens: _liensContact,
   ),
 ];
