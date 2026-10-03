@@ -1,5 +1,32 @@
 name: yobante_colis
-description: "Yobante Colis — Application mobile de gestion de colis et livraisons."
+description: |
+  Yobante Colis est l'application d'envoi de colis entre la France et le Sénégal. Préparez votre expédition, faites enlever votre colis à domicile et suivez-le jusqu'à sa livraison, directement depuis votre téléphone.
+
+  ▸ UN DEVIS EN QUELQUES SECONDES
+  Indiquez la destination, le poids et le type de colis : le tarif s'affiche immédiatement. Consultez les tarifs, les services et les emballages disponibles avant de vous décider.
+
+  ▸ UNE EXPÉDITION GUIDÉE PAS À PAS
+  Renseignez l'expéditeur et le destinataire, ajoutez des photos de votre colis et même un message vocal pour le décrire. Retrouvez vos adresses habituelles dans votre carnet d'adresses.
+
+  ▸ ENLÈVEMENT À DOMICILE OU POINT DE COLLECTE
+  Choisissez un créneau pour qu'un agent vienne chercher votre colis chez vous, ou déposez-le dans l'un de nos points de collecte. Les tournées de collecte sont consultables dans l'application.
+
+  ▸ SUIVI DE VOS COLIS
+  Suivez chaque étape de l'acheminement, des colis que vous envoyez comme de ceux que vous recevez. Un simple numéro de suivi suffit pour consulter l'état d'un colis.
+
+  ▸ NOTIFICATIONS À CHAQUE ÉTAPE
+  Soyez prévenu dès que votre colis change d'étape : prise en charge, transit, arrivée, livraison.
+
+  ▸ DOCUMENTS ET PAIEMENTS
+  Téléchargez vos étiquettes, bordereaux et factures. Consultez vos paiements en cours et votre historique. Moyens de paiement acceptés : Orange Money, Wave, Free Money et carte bancaire.
+
+  ▸ UN SERVICE CLIENT À L'ÉCOUTE
+  Une question ou un problème ? Ouvrez une réclamation et échangez avec notre équipe depuis l'application. Une FAQ répond aussi aux questions les plus fréquentes.
+
+  ▸ VOS DONNÉES VOUS APPARTIENNENT
+  Connexion sécurisée, données protégées. Vous pouvez exporter vos données ou supprimer votre compte à tout moment depuis l'application.
+
+  Disponible en français et en anglais.
 publish_to: 'none'
 
 version: 1.0.0+1
