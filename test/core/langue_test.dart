@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yobnate_colis/core/i18n/langue.dart';
-import 'package:yobnate_colis/core/i18n/traductions_en.dart';
+import 'package:yobante_colis/core/i18n/langue.dart';
+import 'package:yobante_colis/core/i18n/traductions_en.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

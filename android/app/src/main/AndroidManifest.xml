@@ -10,8 +10,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"/>
 
-    <!-- Médias pour Android 13+ (API 33+) — uniquement images pour photo de profil/signature -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- Pas de READ_MEDIA_IMAGES : les photos (profil, colis, réclamations) sont
+         choisies avec image_picker, qui passe par le sélecteur de photos
+         d'Android 13+ et n'a besoin d'aucune permission. Google Play refuse
+         READ_MEDIA_IMAGES aux apps qui ne choisissent que quelques photos. -->
 
     <application
         android:label="Yobante Colis"
@@ -42,11 +44,6 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-
-        <!-- Accès au stockage externe sur Android 10 (API 29) -->
-        <meta-data
-            android:name="android.content.APP_RESTRICTIONS"
-            android:resource="@xml/file_provider_paths" />
 
         <!-- FileProvider requis par media_store_plus pour copier les fichiers temp -->
         <!-- VULN-M04 : FileProvider restreint aux chemins nécessaires -->

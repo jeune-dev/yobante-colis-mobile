@@ -23,7 +23,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.x'
+          flutter-version: '3.44.8' # même version que android-release.yml
           channel: stable
           cache: true
 
@@ -69,15 +69,25 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.x'
+          flutter-version: '3.44.8' # même version que android-release.yml
           channel: stable
           cache: true
 
       - name: Installer les dépendances
         run: flutter pub get
 
+      # Même secret que android-release.yml. Sans lui, Firebase est simplement
+      # désactivé dans ce build (voir android/app/build.gradle.kts) : un fichier
+      # vide ferait au contraire échouer la compilation.
       - name: Créer google-services.json depuis le secret
-        run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON_BASE64" ]; then
+            echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 --decode > android/app/google-services.json
+          else
+            echo "::warning::Secret GOOGLE_SERVICES_JSON_BASE64 absent : build sans Firebase."
+          fi
 
       - name: Build APK debug
         run: |

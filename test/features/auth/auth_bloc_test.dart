@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yobnate_colis/core/errors/failure.dart';
-import 'package:yobnate_colis/features/auth/domain/entities/user.dart';
-import 'package:yobnate_colis/features/auth/domain/repositories/auth_repository.dart';
-import 'package:yobnate_colis/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:yobnate_colis/features/auth/presentation/bloc/auth_event.dart';
-import 'package:yobnate_colis/features/auth/presentation/bloc/auth_state.dart';
+import 'package:yobante_colis/core/errors/failure.dart';
+import 'package:yobante_colis/features/auth/domain/entities/user.dart';
+import 'package:yobante_colis/features/auth/domain/repositories/auth_repository.dart';
+import 'package:yobante_colis/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:yobante_colis/features/auth/presentation/bloc/auth_event.dart';
+import 'package:yobante_colis/features/auth/presentation/bloc/auth_state.dart';
 
 // ── Faux dépôt ────────────────────────────────────────────────────────────────
 

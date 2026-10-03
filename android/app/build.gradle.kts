@@ -11,12 +11,30 @@ if (keystorePropertiesFile.exists()) {
 plugins {
     id("com.android.application")
     id("dev.flutter.flutter-gradle-plugin")
-    // Firebase — Google Services plugin
-    id("com.google.gms.google-services")
+}
+
+// Firebase (notifications push + suivi des crashs) — actifs UNIQUEMENT si
+// google-services.json est présent.
+//
+// Les plugins google-services/crashlytics font échouer le build quand le
+// fichier manque. En les conditionnant, le projet reste compilable sans
+// Firebase (Firebase.initializeApp() échoue alors proprement, voir main.dart)
+// et se câble tout seul dès que le fichier est déposé dans android/app/.
+//
+// Où l'obtenir : console Firebase > Paramètres du projet > Vos applications >
+// Android > google-services.json. Le nom de package doit correspondre à
+// applicationId ci-dessous : com.yobante.colis
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+    // Envoie le fichier de désobfuscation (mapping R8) à Crashlytics : sans
+    // lui, les plantages natifs de la version release sont illisibles.
+    apply(plugin = "com.google.firebase.crashlytics")
+} else {
+    logger.warn("[firebase] google-services.json absent — notifications push et Crashlytics natifs désactivés")
 }
 
 android {
-    namespace = "com.yobnate.yobnate_colis"
+    namespace = "com.yobante.colis"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -30,21 +48,25 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.yobnate.yobnate_colis"
-        minSdk = flutter.minSdkVersion   // Android 6.0 — couvre 99%+ des appareils actifs en 2026
+        // Identifiant DÉFINITIF sur Google Play : il ne peut plus changer une fois
+        // l'app publiée.
+        applicationId = "com.yobante.colis"
+        minSdk = flutter.minSdkVersion   // API 24 (Android 7.0) avec Flutter 3.44
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
     // D'ABORD signingConfigs
+    // storeFile est RELATIF au dossier android/ (rootProject.file), comme dans
+    // la CI (.github/workflows/android-release.yml) et le Fastfile.
     signingConfigs {
         val storeFilePath = keystoreProperties["storeFile"]?.toString()
-        if (storeFilePath != null && file(storeFilePath).exists()) {
+        if (storeFilePath != null && rootProject.file(storeFilePath).exists()) {
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"]?.toString()
                 keyPassword = keystoreProperties["keyPassword"]?.toString()
-                storeFile = file(storeFilePath)
+                storeFile = rootProject.file(storeFilePath)
                 storePassword = keystoreProperties["storePassword"]?.toString()
             }
         }
@@ -80,8 +102,9 @@ dependencies {
     // Firebase BoM — gère automatiquement les versions de tous les SDK Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
 
-    // Firebase Analytics (obligatoire avec google-services plugin)
-    implementation("com.google.firebase:firebase-analytics")
+    // Pas de firebase-analytics : l'app ne l'utilise pas, et il ajoute les
+    // permissions publicitaires AD_ID / ACCESS_ADSERVICES_* que Google Play
+    // oblige alors à déclarer (« identifiant publicitaire »).
 
     // Firebase Crashlytics — monitoring des crashes en production
     implementation("com.google.firebase:firebase-crashlytics")

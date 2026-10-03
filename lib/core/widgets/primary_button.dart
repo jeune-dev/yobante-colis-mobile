@@ -1,6 +1,6 @@
 ﻿
 
-import 'package:yobnate_colis/core/theme/app_color.dart';
+import 'package:yobante_colis/core/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';

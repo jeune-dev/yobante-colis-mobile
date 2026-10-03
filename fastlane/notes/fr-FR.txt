@@ -1,0 +1,6 @@
+Première version de Yobante Colis :
+- Créez une expédition de colis France ↔ Sénégal et obtenez un devis
+- Suivez vos colis étape par étape, y compris ceux que vous recevez
+- Planifiez un enlèvement à domicile
+- Factures, paiements et réclamations depuis l'application
+- Notifications à chaque étape de la livraison

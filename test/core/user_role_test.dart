@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yobnate_colis/core/config/user_role.dart';
+import 'package:yobante_colis/core/config/user_role.dart';
 
 void main() {
   group('UserRoleX.fromString', () {

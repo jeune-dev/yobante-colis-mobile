@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yobnate_colis/core/constants/categories.dart';
-import 'package:yobnate_colis/core/services/mesure_audience.dart';
-import 'package:yobnate_colis/core/services/version_service.dart';
-import 'package:yobnate_colis/features/adresses/data/adresses_remote_datasource.dart';
-import 'package:yobnate_colis/features/avis/data/avis_remote_datasource.dart';
-import 'package:yobnate_colis/features/enlevements/data/enlevements_remote_datasource.dart';
-import 'package:yobnate_colis/features/paiements/domain/entities/reglement.dart';
+import 'package:yobante_colis/core/constants/categories.dart';
+import 'package:yobante_colis/core/services/mesure_audience.dart';
+import 'package:yobante_colis/core/services/version_service.dart';
+import 'package:yobante_colis/features/adresses/data/adresses_remote_datasource.dart';
+import 'package:yobante_colis/features/avis/data/avis_remote_datasource.dart';
+import 'package:yobante_colis/features/enlevements/data/enlevements_remote_datasource.dart';
+import 'package:yobante_colis/features/paiements/domain/entities/reglement.dart';
 
 /// Lecture des réponses réelles du contrat d'API mobile (CONTRAT-API-MOBILE.md).
 void main() {

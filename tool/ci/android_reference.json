@@ -1,0 +1,20 @@
+{
+  "_lisez_moi": "Référence du contrôle de l'AAB (tool/ci/controle_aab.py). Voir docs/DEPLOIEMENT_ANDROID.md.",
+  "package": "com.yobante.colis",
+  "target_sdk_minimum": 35,
+  "target_sdk_recommande": 36,
+  "api_attendue": "api.yobanterek.com",
+  "croissance_taille_alerte_pct": 20,
+  "_permissions": "Permissions ACCEPTÉES (établies sur le build release local de la 1.0.0, manifeste fusionné). RECORD_AUDIO : message vocal du colis. READ/WRITE_EXTERNAL_STORAGE : limitées à Android 9 et moins (maxSdkVersion 28). Les autres viennent de Firebase Messaging. Une permission absente de cette liste déclenche un avertissement (le déploiement continue). Pour en accepter une nouvelle : l'ajouter ici, avec son origine dans le commit.",
+  "permissions": [
+    "android.permission.ACCESS_NETWORK_STATE",
+    "android.permission.INTERNET",
+    "android.permission.POST_NOTIFICATIONS",
+    "android.permission.READ_EXTERNAL_STORAGE",
+    "android.permission.RECORD_AUDIO",
+    "android.permission.WAKE_LOCK",
+    "android.permission.WRITE_EXTERNAL_STORAGE",
+    "com.google.android.c2dm.permission.RECEIVE",
+    "com.yobante.colis.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+  ]
+}

@@ -8,13 +8,13 @@ import 'dart:io';
 import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yobnate_colis/features/account/data/datasources/espace_client_remote_datasource.dart';
-import 'package:yobnate_colis/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:yobnate_colis/features/catalogue/data/catalogue_remote_datasource.dart';
-import 'package:yobnate_colis/features/catalogue/domain/catalogue_entities.dart';
-import 'package:yobnate_colis/features/colis/data/datasources/colis_remote_datasource.dart';
-import 'package:yobnate_colis/features/colis/domain/entities/demande_expedition.dart';
-import 'package:yobnate_colis/features/paiements/data/datasources/paiements_remote_datasource.dart';
+import 'package:yobante_colis/features/account/data/datasources/espace_client_remote_datasource.dart';
+import 'package:yobante_colis/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:yobante_colis/features/catalogue/data/catalogue_remote_datasource.dart';
+import 'package:yobante_colis/features/catalogue/domain/catalogue_entities.dart';
+import 'package:yobante_colis/features/colis/data/datasources/colis_remote_datasource.dart';
+import 'package:yobante_colis/features/colis/domain/entities/demande_expedition.dart';
+import 'package:yobante_colis/features/paiements/data/datasources/paiements_remote_datasource.dart';
 
 void main() {
   final url = Platform.environment['API_TEST_URL'];
@@ -40,7 +40,7 @@ void main() {
     }));
     catalogue = CatalogueRemoteDataSource(dio: dio);
     colis = ColisRemoteDataSourceImpl(dio: dio);
-    photo = File('${Directory.systemTemp.path}/yobnate_test_$suffixe.jpg')
+    photo = File('${Directory.systemTemp.path}/yobante_test_$suffixe.jpg')
       ..writeAsBytesSync([0xFF, 0xD8, 0xFF, 0xE0, 0, 16, 74, 70, 73, 70, 0, 1, 1, 0, 0, 1, 0xFF, 0xD9]);
   });
 

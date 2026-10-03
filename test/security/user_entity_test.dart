@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yobnate_colis/features/auth/data/models/user_model.dart';
-import 'package:yobnate_colis/features/auth/domain/entities/user.dart';
+import 'package:yobante_colis/features/auth/data/models/user_model.dart';
+import 'package:yobante_colis/features/auth/domain/entities/user.dart';
 
 /// VULN-L03 : Tests de sécurité — Entité User
 void main() {

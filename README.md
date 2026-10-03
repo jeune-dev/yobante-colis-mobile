@@ -48,15 +48,22 @@ flutter run --dart-define-from-file=dart_defines.json
 flutter build apk --release --dart-define-from-file=dart_defines.json
 ```
 
-## Variables d'environnement
+## Adresse de l'API
 
-Copier `dart_defines.json` (non versionné) et renseigner :
+Pas de fichier `.env` : dans une app mobile, l'adresse de l'API est **compilée
+dans l'application** (`lib/core/config/env.dart`).
 
-```json
-{
-  "API_BASE_URL": "https://yobnate-colis-back-a6p8.onrender.com"
-}
+- Par défaut (production) : `https://api.yobanterek.com` + préfixe `/api/v1`
+  → toutes les requêtes partent vers **`https://api.yobanterek.com/api/v1`**.
+- Pour viser un autre serveur (backend local, par exemple), passer
+  **l'origine seule, sans `/api/v1`** (le préfixe est ajouté automatiquement) :
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000
 ```
+
+`dart_defines.json` contient la valeur de production, pour
+`--dart-define-from-file=dart_defines.json`.
 
 ## Tests
 

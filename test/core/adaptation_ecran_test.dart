@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yobnate_colis/core/widgets/adaptation_ecran.dart';
+import 'package:yobante_colis/core/widgets/adaptation_ecran.dart';
 
 /// Rend [AdaptationEcran] sur un écran de [largeur] × 900, avec un facteur de
 /// texte [texte], et renvoie la largeur et le facteur de texte vus par l'enfant.

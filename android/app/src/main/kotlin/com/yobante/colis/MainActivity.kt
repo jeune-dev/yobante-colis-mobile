@@ -1,4 +1,4 @@
-package com.yobnate.yobnate_colis
+package com.yobante.colis
 
 import android.os.Bundle
 import android.view.WindowManager

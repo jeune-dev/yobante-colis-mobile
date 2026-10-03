@@ -1,6 +1,9 @@
 plugins {
     // Plugin Google Services — requis pour Firebase (google-services.json)
     id("com.google.gms.google-services") version "4.4.4" apply false
+    // Suivi des crashs — même conditionnement que google-services : appliqué
+    // seulement si google-services.json est présent (voir app/build.gradle.kts).
+    id("com.google.firebase.crashlytics") version "3.0.3" apply false
 }
 
 allprojects {

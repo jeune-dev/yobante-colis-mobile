@@ -1,0 +1,13 @@
+# Recherche de secrets (workflow android-release.yml, étape Sécurité).
+# Règles par défaut de Gitleaks, plus les exceptions justifiées ci-dessous.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Fichiers de verrouillage des dépendances : ils ne contiennent que des versions et des empreintes de contrôle (SHA-256 des paquets Dart, SHA-1 CocoaPods), publiques, que la règle generic-api-key prend pour des clés."
+paths = ['''(^|/)ios/Podfile\.lock$''', '''(^|/)pubspec\.lock$''']
+
+[[allowlists]]
+description = "Dossier interne de git (objets, configuration) : pas du code. Le checkout de GitHub Actions y écrit son jeton d'accès temporaire."
+paths = ['''(^|/)\.git/''']
