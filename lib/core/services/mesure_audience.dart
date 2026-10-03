@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../injection_container.dart';
@@ -48,7 +49,7 @@ class MesureAudience with WidgetsBindingObserver {
     return _visiteurId = id;
   }
 
-  String get _plateforme => Platform.isIOS ? 'ios' : Platform.isAndroid ? 'android' : 'web';
+  String get _plateforme => kIsWeb ? 'web' : Platform.isIOS ? 'ios' : Platform.isAndroid ? 'android' : 'web';
 
   void demarrer() {
     WidgetsBinding.instance.addObserver(this);

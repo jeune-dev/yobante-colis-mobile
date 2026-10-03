@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -63,7 +64,7 @@ class VersionService {
   /// Vérifie la version et affiche la boîte de dialogue adaptée. Sans réseau ou
   /// sans configuration côté serveur, l'application démarre normalement.
   static Future<void> verifier(BuildContext context) async {
-    if (!Platform.isAndroid && !Platform.isIOS) return;
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
     VersionPubliee? publiee;
     String actuelle;
     try {

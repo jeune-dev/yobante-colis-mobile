@@ -3,6 +3,8 @@
 /// (colis, factures, notifications, profil, villes) sont générées
 /// localement — voir demo_data.dart.
 ///
-/// Repasser à `false` pour revenir au flux réel (connexion + API backend)
-/// une fois la présentation validée.
-const bool kDemoMode = false;
+/// Désactivé par défaut (flux réel : connexion + API backend). Pour une
+/// présentation ou des captures d'écran Play Store :
+///   flutter run --dart-define=DEMO_MODE=true
+/// Valeur fixée à la compilation : un build de production ne l'active jamais.
+const bool kDemoMode = bool.fromEnvironment('DEMO_MODE');

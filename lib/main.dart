@@ -42,7 +42,8 @@ void main() async {
     debugPrint('Firebase non initialisé : $e');
   }
 
-  if (Platform.isAndroid) {
+  // kIsWeb d'abord : dans un navigateur, Platform.* lève une exception.
+  if (!kIsWeb && Platform.isAndroid) {
     await MediaStore.ensureInitialized();
     MediaStore.appFolder = 'Yobante Colis';
   }
