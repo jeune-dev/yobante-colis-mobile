@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/usecases/colis_usecases.dart';
 import 'colis_event.dart';
 import 'colis_state.dart';
+import '../../../../core/errors/failure.dart';
 
 class ColisBloc extends Bloc<ColisEvent, ColisState> {
   final GetColis getColis;
@@ -42,7 +43,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
     emit(ColisLoading());
     final result = await getColis(statut: event.statut, page: 1);
     result.fold(
-      (f) => emit(ColisFailure(f.errorMessage)),
+      (f) => emit(_echec(f)),
       (data) {
         final pagination = data['pagination'] as Map<String, dynamic>?;
         emit(ColisListLoaded(
@@ -60,7 +61,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
     if (current is! ColisListLoaded) return;
     final result = await getColis(statut: event.statut, page: event.page);
     result.fold(
-      (f) => emit(ColisFailure(f.errorMessage)),
+      (f) => emit(_echec(f)),
       (data) {
         final pagination = data['pagination'] as Map<String, dynamic>?;
         emit(ColisListLoaded(
@@ -77,7 +78,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
     emit(ColisLoading());
     final result = await getColisRecus(statut: event.statut, page: 1);
     result.fold(
-      (f) => emit(ColisFailure(f.errorMessage)),
+      (f) => emit(_echec(f)),
       (data) {
         final pagination = data['pagination'] as Map<String, dynamic>?;
         emit(ColisRecusLoaded(
@@ -95,7 +96,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
     if (current is! ColisRecusLoaded) return;
     final result = await getColisRecus(statut: event.statut, page: event.page);
     result.fold(
-      (f) => emit(ColisFailure(f.errorMessage)),
+      (f) => emit(_echec(f)),
       (data) {
         final pagination = data['pagination'] as Map<String, dynamic>?;
         emit(ColisRecusLoaded(
@@ -120,13 +121,13 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
   Future<void> _onLoadColisDetail(LoadColisDetail event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
     final result = await getColisDetail(event.id);
-    result.fold((f) => emit(ColisFailure(f.errorMessage)), (c) => emit(ColisDetailLoaded(c)));
+    result.fold((f) => emit(_echec(f)), (c) => emit(ColisDetailLoaded(c)));
   }
 
   Future<void> _onLoadSuiviColis(LoadSuiviColis event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
     final result = await getSuiviColis(event.id);
-    result.fold((f) => emit(ColisFailure(f.errorMessage)), (h) => emit(SuiviColisLoaded(h)));
+    result.fold((f) => emit(_echec(f)), (h) => emit(SuiviColisLoaded(h)));
   }
 
   Future<void> _onCreerColis(CreerColisRequested event, Emitter<ColisState> emit) async {
@@ -151,7 +152,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
 
     final result = await uploadFuture;
     result.fold(
-      (f) => emit(ColisFailure(f.errorMessage)),
+      (f) => emit(_echec(f)),
       (resultat) => emit(ColisCreated(resultat)),
     );
   }
@@ -159,24 +160,26 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
   Future<void> _onAnnulerColis(AnnulerColisRequested event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
     final result = await annulerColis(event.id, motif: event.motif);
-    result.fold((f) => emit(ColisFailure(f.errorMessage)), (r) => emit(ColisAnnule(r.valeur, message: r.message)));
+    result.fold((f) => emit(_echec(f)), (r) => emit(ColisAnnule(r.valeur, message: r.message)));
   }
 
   Future<void> _onAccepterProposition(AccepterPropositionRequested event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
     final result = await repondreProposition.accepter(event.id);
-    result.fold((f) => emit(ColisFailure(f.errorMessage)), (r) => emit(PropositionAcceptee(r)));
+    result.fold((f) => emit(_echec(f)), (r) => emit(PropositionAcceptee(r)));
   }
 
   Future<void> _onRefuserProposition(RefuserPropositionRequested event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
     final result = await repondreProposition.refuser(event.id, motif: event.motif);
-    result.fold((f) => emit(ColisFailure(f.errorMessage)), (r) => emit(PropositionRefusee(r.valeur, message: r.message)));
+    result.fold((f) => emit(_echec(f)), (r) => emit(PropositionRefusee(r.valeur, message: r.message)));
   }
 
   Future<void> _onModifierColis(ModifierColisRequested event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
     final result = await modifierColis(event.id, event.champs);
-    result.fold((f) => emit(ColisFailure(f.errorMessage)), (r) => emit(ColisModifie(r.valeur, message: r.message)));
+    result.fold((f) => emit(_echec(f)), (r) => emit(ColisModifie(r.valeur, message: r.message)));
   }
+
+  ColisFailure _echec(Failure f) => ColisFailure(f.errorMessage, code: f is ServerFailure ? f.code : null);
 }

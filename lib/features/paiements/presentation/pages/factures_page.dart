@@ -135,9 +135,24 @@ class _FacturesViewState extends State<_FacturesView> {
                         const SizedBox(height: 8),
                         Text(tr('Transport : ${formaterMontant(f.montantTransport, f.devise)}'),
                             style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
+                        if (f.montantSurcharges > 0)
+                          Text(tr('Surcharges : ${formaterMontant(f.montantSurcharges, f.devise)}'),
+                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
+                        if (f.montantAssurance > 0)
+                          Text(tr('Assurance : ${formaterMontant(f.montantAssurance, f.devise)}'),
+                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
                         if (f.remise > 0)
                           Text(tr('Remise : -${formaterMontant(f.remise, f.devise)}'),
                               style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kSucces)),
+                        if (f.montantHt > 0)
+                          Text(tr('Total HT : ${formaterMontant(f.montantHt, f.devise)}'),
+                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
+                        if (f.montantTva > 0)
+                          Text(tr('TVA : ${formaterMontant(f.montantTva, f.devise)}'),
+                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
+                        if (f.montantDroitsDouane > 0)
+                          Text(tr('Droits de douane : ${formaterMontant(f.montantDroitsDouane, f.devise)}'),
+                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
                         const SizedBox(height: 4),
                         Text(tr('Total TTC : ${formaterMontant(f.montantTotal, f.devise)}'),
                             style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700)),

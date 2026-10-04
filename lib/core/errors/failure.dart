@@ -17,7 +17,9 @@ abstract class Failure {
 }
 
 class ServerFailure extends Failure {
-  const ServerFailure(super.errorMessage);
+  /// Code stable de l'erreur côté backend (voir [ServerException.code]).
+  final String? code;
+  const ServerFailure(super.errorMessage, {this.code});
 }
 
 /// Email non confirmé : l'écran de connexion propose de renvoyer le lien.

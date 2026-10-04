@@ -58,14 +58,5 @@ android/upload-keystore.jks
 
 # Notes locales sur les endpoints (non versionnées)
 /env
-
-# Ancienne configuration Firebase (identifiant com.yobnate.yobnate_colis,
-# abandonné) et toute variante locale de google-services.json.
-android/app/google-services*.json
-
-# Secrets convertis pour GitHub (docs/DEPLOIEMENT_ANDROID.md)
-*.b64.txt
-
-# Fastlane
-android/fastlane/report.xml
-android/fastlane/README.md
+# Adresse du backend local, propre à chaque poste
+dart_defines.local.json

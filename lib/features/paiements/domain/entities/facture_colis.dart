@@ -7,6 +7,13 @@ class FactureColis extends Equatable {
   final double montantTransport;
   final double remise;
   final double montantTotal;
+
+  /// Détail du montant, tel que facturé par le backend (0 si absent).
+  final double montantSurcharges;
+  final double montantAssurance;
+  final double montantHt;
+  final double montantTva;
+  final double montantDroitsDouane;
   final String statut;
   final String dateEmission;
   final String? dateLimitePaiement;
@@ -27,6 +34,11 @@ class FactureColis extends Equatable {
     this.montantPaye = 0,
     this.lienPaiement,
     this.colisReference,
+    this.montantSurcharges = 0,
+    this.montantAssurance = 0,
+    this.montantHt = 0,
+    this.montantTva = 0,
+    this.montantDroitsDouane = 0,
   });
 
   double get soldeDu => (montantTotal - montantPaye).clamp(0, double.infinity).toDouble();

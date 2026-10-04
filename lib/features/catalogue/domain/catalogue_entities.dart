@@ -367,6 +367,11 @@ class OffreDevis extends Equatable {
   final double tva;
   final double remise;
   final double creditParrainage;
+  final double surcharges;
+  final double assurance;
+
+  /// Droits et taxes avancés (DDP uniquement) ; 0 en DAP.
+  final double droitsDouane;
   final bool surDevis;
   final String modeTarification;
   final String? message;
@@ -385,6 +390,9 @@ class OffreDevis extends Equatable {
     this.tva = 0,
     this.remise = 0,
     this.creditParrainage = 0,
+    this.surcharges = 0,
+    this.assurance = 0,
+    this.droitsDouane = 0,
     this.surDevis = false,
     this.modeTarification = 'poids',
     this.message,
@@ -408,6 +416,9 @@ class OffreDevis extends Equatable {
       tva: _d(m['tva']),
       remise: _d(m['remiseContractuelle']) + _d(m['remiseParrainage']),
       creditParrainage: _d(m['creditParrainage']),
+      surcharges: _d(m['surcharges']),
+      assurance: _d(m['assurance']),
+      droitsDouane: _d(m['droitsDouane']),
       surDevis: j['surDevis'] as bool? ?? false,
       modeTarification: j['modeTarification'] as String? ?? 'poids',
       message: j['messageTarification'] as String?,

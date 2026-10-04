@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failure.dart';
+import '../../../../core/services/fcm_service.dart';
 import '../../../../core/services/token_service.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -98,8 +99,9 @@ class AuthRepositoryImpl implements AuthRepository {
     final rt = await tokenService.getRefreshToken();
     final at = await tokenService.getToken();
     if ((rt != null && rt.isNotEmpty) || (at != null && at.isNotEmpty)) {
-      await remoteDataSource.logout(rt ?? '', accessToken: at);
+      await remoteDataSource.logout(rt ?? '', accessToken: at, deviceToken: await FcmService.tokenActuel());
     }
+    await FcmService.oublierToken();
     await tokenService.clearToken();
     await secureStorage.delete(key: 'user_id');
     await secureStorage.delete(key: 'user_role');

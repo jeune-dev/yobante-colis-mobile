@@ -68,7 +68,7 @@ class _FakeAuthDataSource extends Fake implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> logout(String refreshToken, {String? accessToken}) async {
+  Future<void> logout(String refreshToken, {String? accessToken, String? deviceToken}) async {
     logoutCalled = true;
     logoutAccessToken = accessToken;
   }

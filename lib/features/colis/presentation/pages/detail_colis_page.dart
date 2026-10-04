@@ -149,6 +149,16 @@ class _Detail extends StatelessWidget {
             if (c.valeurDeclaree > 0) LigneInfo(tr('Valeur estimée'), formaterMontant(c.valeurDeclaree, c.deviseValeur)),
             if (c.poidsFactureKg > 0) LigneInfo(tr('Poids'), '${c.poidsFactureKg} kg'),
             LigneInfo(tr('Nombre de colis'), '${c.nbPieces}'),
+            if (c.typeContenu != 'document')
+              LigneInfo(tr('Nature'), tr(_naturesEnvoi[c.typeContenu] ?? c.typeContenu)),
+            if (c.fragile) LigneInfo(tr('Fragile'), tr('Oui')),
+            if (c.assuranceSouscrite) LigneInfo(tr('Assurance'), tr('Souscrite')),
+            if (c.typeContenu != 'document') ...[
+              LigneInfo(tr('Payé par'), c.payeur == 'destinataire' ? tr('Le destinataire') : tr('L\'expéditeur')),
+              LigneInfo(tr('Droits de douane'), c.incoterm == 'DDP' ? tr('Inclus (DDP)') : tr('Payés à l\'arrivée (DAP)')),
+            ],
+            if (c.referenceClient != null && c.referenceClient!.isNotEmpty)
+              LigneInfo(tr('Votre référence'), c.referenceClient!),
           ]),
           const SizedBox(height: 14),
           CarteSection(titre: tr('Remise du colis'), icone: iconesModeDepot[c.modeDepot] ?? Icons.inventory, children: [
@@ -165,10 +175,14 @@ class _Detail extends StatelessWidget {
           const SizedBox(height: 14),
           CarteSection(titre: tr('Destinataire'), icone: Icons.person_pin_circle_outlined, children: [
             LigneInfo(tr('Nom'), c.destinataireNom),
+            if (c.destinataireEntreprise != null && c.destinataireEntreprise!.isNotEmpty)
+              LigneInfo(tr('Entreprise'), c.destinataireEntreprise!),
             LigneInfo(tr('Téléphone'), c.destinataireTelephone),
             LigneInfo(tr('Ville'), c.villeArrivee?.nom ?? '—'),
             if (c.pointRetrait != null) LigneInfo(tr('Point de retrait'), c.pointRetrait!.nom),
             if (c.adresseLivraison != null && c.adresseLivraison!.isNotEmpty) LigneInfo(tr('Adresse'), c.adresseLivraison!),
+            if (c.codePostalArrivee != null && c.codePostalArrivee!.isNotEmpty)
+              LigneInfo(tr('Code postal'), c.codePostalArrivee!),
             if (c.destinataireQuartier != null) LigneInfo(tr('Quartier'), c.destinataireQuartier!),
             if (c.destinataireArrondissement != null) LigneInfo(tr('Arrondissement'), c.destinataireArrondissement!),
             if (c.destinataireDepartement != null) LigneInfo(tr('Département'), c.destinataireDepartement!),
@@ -509,3 +523,12 @@ class _EnTete extends StatelessWidget {
     );
   }
 }
+
+/// Libellés des natures d'envoi renvoyées par le backend.
+const _naturesEnvoi = {
+  'marchandise': 'Marchandise',
+  'cadeau': 'Cadeau',
+  'effets_personnels': 'Effets personnels',
+  'echantillon': 'Échantillon',
+  'retour': 'Retour de marchandise',
+};

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../core/routes/app_shell_key.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../colis/presentation/pages/colis_liste_page.dart';
 import '../../../colis/presentation/pages/recus_colis_page.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 
 /// Onglet « Mes envois » façon DHL : colis envoyés et colis reçus.
 class EnvoisPage extends StatelessWidget {
@@ -16,10 +16,7 @@ class EnvoisPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColor.kBackground,
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => appShellScaffoldKey.currentState?.openDrawer(),
-          ),
+          leading: const BoutonMenuOuRetour(),
           title: Text(tr('Mes envois')),
           bottom: TabBar(
             indicatorColor: AppColor.kSecondary,

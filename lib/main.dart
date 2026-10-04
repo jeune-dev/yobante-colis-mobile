@@ -10,6 +10,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:toastification/toastification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
+import 'core/config/env.dart';
+import 'core/services/token_service.dart';
 import 'core/i18n/langue.dart';
 import 'core/routes/app_router.dart';
 import 'core/services/auth_event_bus.dart';
@@ -50,6 +53,10 @@ void main() async {
 
   await di.init();
   LangueApp.instance.initialiser(di.sl<SharedPreferences>());
+  LangueApp.instance.enregistrerDansProfil = (langue) async {
+    if (!await di.sl<TokenService>().isAuthenticated) return;
+    await di.sl<Dio>().put(Env.clientProfil, data: {'langue': langue.code});
+  };
   MesureAudience.instance.demarrer();
   runApp(const MyApp());
 }

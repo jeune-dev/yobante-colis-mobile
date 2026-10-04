@@ -50,6 +50,16 @@ class ConfirmationExpeditionPage extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: AppColor.kBackground,
+        // Fin du parcours : la croix ramène à l'accueil (comme le geste retour)
+        appBar: AppBar(
+          backgroundColor: AppColor.kBackground,
+          automaticallyImplyLeading: false,
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: tr('Fermer'),
+            onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.clientRoute, (_) => false),
+          ),
+        ),
         body: SafeArea(
           child: ListView(padding: const EdgeInsets.all(24), children: [
             const SizedBox(height: 16),

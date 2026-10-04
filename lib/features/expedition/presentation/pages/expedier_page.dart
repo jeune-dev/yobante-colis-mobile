@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/categories.dart';
 import '../../../../core/routes/app_router.dart';
-import '../../../../core/routes/app_shell_key.dart';
 import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/ui_kit.dart';
@@ -10,6 +9,7 @@ import '../../../catalogue/presentation/pages/nos_tarifs_page.dart';
 import '../../../devis/presentation/pages/devis_page.dart';
 import 'assistant_expedition_page.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 
 /// Onglet « Expédier » : choix de la catégorie, puis parcours d'expédition
 /// (connecté) ou simulation de tarif (sans compte).
@@ -60,10 +60,7 @@ class ExpedierPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.kBackground,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => appShellScaffoldKey.currentState?.openDrawer(),
-        ),
+        leading: const BoutonMenuOuRetour(),
         title: Text(tr('Expédier')),
       ),
       body: ListView(padding: const EdgeInsets.all(20), children: [

@@ -4,12 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/env.dart';
 import '../../../../core/errors/api_error.dart';
-import '../../../../core/routes/app_shell_key.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/shimmer_list.dart';
 import '../../../../injection_container.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 
 class _PointCollecte {
   final String id;
@@ -115,10 +115,7 @@ class _PointDeServicePageState extends State<PointDeServicePage> {
     return Scaffold(
       backgroundColor: AppColor.kBackground,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => appShellScaffoldKey.currentState?.openDrawer(),
-        ),
+        leading: const BoutonMenuOuRetour(),
         title: Text(tr('Point de service')),
       ),
       body: Column(

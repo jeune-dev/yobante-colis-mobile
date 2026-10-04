@@ -111,7 +111,10 @@ class ColisAnnule extends ColisState {
 
 class ColisFailure extends ColisState {
   final String message;
-  const ColisFailure(this.message);
+
+  /// Code stable du backend, quand l'échec en porte un.
+  final String? code;
+  const ColisFailure(this.message, {this.code});
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }

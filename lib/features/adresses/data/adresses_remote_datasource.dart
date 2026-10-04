@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../../core/config/env.dart';
 import '../../../core/errors/api_error.dart';
 import '../../../core/i18n/langue.dart';
+import '../../../core/utils/pagination.dart';
 
 /// Carnet d'adresses du client (`/client/adresses`) : expéditeurs et
 /// destinataires habituels, réutilisables lors d'une expédition.
@@ -101,15 +102,12 @@ class AdressesRemoteDataSource {
       AdresseCarnet.fromJson(res.data['data']['adresse'] as Map<String, dynamic>);
 
   Future<List<AdresseCarnet>> getAdresses({String? type, String? pays, String? search}) => appelApi(() async {
-        final res = await dio.get(Env.clientAdresses, queryParameters: {
-          'limit': 100,
+        final adresses = await chargerToutesLesPages(dio, Env.clientAdresses, 'adresses', parametres: {
           'type': ?type,
           'pays': ?pays,
           if (search != null && search.isNotEmpty) 'search': search,
         });
-        return (res.data['data']['adresses'] as List? ?? [])
-            .map((a) => AdresseCarnet.fromJson(a as Map<String, dynamic>))
-            .toList();
+        return adresses.map(AdresseCarnet.fromJson).toList();
       }, tr('Impossible de charger votre carnet d\'adresses'));
 
   Future<AdresseCarnet> getAdresse(String id) =>

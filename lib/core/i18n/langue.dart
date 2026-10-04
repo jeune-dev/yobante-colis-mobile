@@ -31,6 +31,18 @@ class LangueApp extends ValueNotifier<Langue> {
   static const _cle = 'langue_app';
   SharedPreferences? _prefs;
 
+  /// Enregistre la langue dans le profil du client connecté (branché au démarrage) :
+  /// le serveur envoie alors les notifications push dans cette langue.
+  Future<void> Function(Langue langue)? enregistrerDansProfil;
+
+  /// À appeler après la connexion : la langue choisie avant de se connecter
+  /// est reportée sur le compte. Sans effet en cas d'échec.
+  Future<void> synchroniserProfil() async {
+    try {
+      await enregistrerDansProfil?.call(value);
+    } catch (_) {}
+  }
+
   /// Au premier lancement, la langue du téléphone est reprise si elle est proposée.
   void initialiser(SharedPreferences prefs) {
     _prefs = prefs;
@@ -46,6 +58,7 @@ class LangueApp extends ValueNotifier<Langue> {
     if (langue == value) return;
     value = langue;
     await _prefs?.setString(_cle, langue.code);
+    synchroniserProfil();
     // Tous les écrans ouverts sont redessinés dans la nouvelle langue, sans
     // perdre la navigation ni les saisies en cours.
     void reconstruire(Element e) {

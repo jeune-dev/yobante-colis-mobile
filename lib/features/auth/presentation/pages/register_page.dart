@@ -142,6 +142,8 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      // Barre fixe : le retour reste accessible tout au long du formulaire
+      appBar: AppBar(backgroundColor: Colors.white, elevation: 0, scrolledUnderElevation: 0),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess || state is RegisterSuccess) {
@@ -167,20 +169,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Container(
-                        height: 44,
-                        width: 44,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4))],
-                        ),
-                        child: const Icon(Icons.arrow_back_ios_new, size: 18),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
                     Center(
                       child: Image.asset('assets/images/logo_yobante_icon.png', width: 100, fit: BoxFit.contain),
                     ),

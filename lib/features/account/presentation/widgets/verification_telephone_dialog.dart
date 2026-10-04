@@ -53,16 +53,16 @@ class _VerificationTelephoneDialogState extends State<_VerificationTelephoneDial
   }
 
   Future<void> _demanderCode() => _executer(() async {
-        final message = await _source.demanderCodeTelephone();
+        final envoi = await _source.demanderCodeTelephone();
         if (!mounted) return;
         // Numéro déjà vérifié côté serveur : rien d'autre à faire
-        if (message.contains('déjà vérifié')) {
-          Navigator.of(context).pop(message);
+        if (envoi.dejaVerifie) {
+          Navigator.of(context).pop(envoi.message);
           return;
         }
         setState(() {
           _codeEnvoye = true;
-          _info = message;
+          _info = envoi.message;
         });
       });
 

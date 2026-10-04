@@ -41,29 +41,34 @@ lib/
 # Installer les dépendances
 flutter pub get
 
-# Lancer en développement
+# Lancer en développement, sur le backend local (npm run dev sur le Mac)
+flutter run --dart-define-from-file=dart_defines.local.json
+
+# Lancer en développement sur la production
 flutter run --dart-define-from-file=dart_defines.json
 
-# Build release Android
+# Build release Android (production)
 flutter build apk --release --dart-define-from-file=dart_defines.json
 ```
 
-## Adresse de l'API
+Sans `--dart-define-from-file`, `flutter run` vise le backend local et
+`flutter build` la production (voir `lib/core/config/env.dart`).
 
-Pas de fichier `.env` : dans une app mobile, l'adresse de l'API est **compilée
-dans l'application** (`lib/core/config/env.dart`).
+## Variables d'environnement
 
-- Par défaut (production) : `https://api.yobanterek.com` + préfixe `/api/v1`
-  → toutes les requêtes partent vers **`https://api.yobanterek.com/api/v1`**.
-- Pour viser un autre serveur (backend local, par exemple), passer
-  **l'origine seule, sans `/api/v1`** (le préfixe est ajouté automatiquement) :
+| Fichier | API | Usage |
+|---|---|---|
+| `dart_defines.json` | `https://api.yobanterek.com` | builds publiés, tests sur la production |
+| `dart_defines.local.json` (non versionné) | `http://<IP du Mac>:3000` | développement sur le backend local |
 
-```bash
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000
+`dart_defines.local.json` contient l'adresse du Mac sur le Wi-Fi (`ipconfig getifaddr en0`),
+joignable par l'iPhone, le simulateur et l'émulateur :
+
+```json
+{
+  "API_BASE_URL": "http://192.168.1.11:3000"
+}
 ```
-
-`dart_defines.json` contient la valeur de production, pour
-`--dart-define-from-file=dart_defines.json`.
 
 ## Tests
 

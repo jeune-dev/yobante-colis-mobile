@@ -209,6 +209,9 @@ class Colis extends Equatable {
   /// `documents`, `colis_moyen` ou `colis_xxl`.
   final String categorie;
   final String? typeDocument;
+
+  /// Référence interne saisie par le client à la commande.
+  final String? referenceClient;
   final String? etatMarchandise;
   final String? destinataireQuartier;
   final String? destinataireArrondissement;
@@ -292,6 +295,7 @@ class Colis extends Equatable {
     required this.createdAt,
     this.categorie = 'colis_moyen',
     this.typeDocument,
+    this.referenceClient,
     this.etatMarchandise,
     this.destinataireQuartier,
     this.destinataireArrondissement,

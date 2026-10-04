@@ -46,7 +46,7 @@ class CarteOffre extends StatelessWidget {
               ]),
             ),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              if (offre.surDevis) Text('estimation', style: texteDiscret(10)),
+              if (offre.surDevis) Text(tr('estimation'), style: texteDiscret(10)),
               Text(formaterMontant(offre.total, offre.devise),
                   style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 16, color: AppColor.kPrimary)),
             ]),
@@ -56,12 +56,21 @@ class CarteOffre extends StatelessWidget {
                   color: selectionnee ? AppColor.kPrimary : AppColor.kGrayscale40),
             ],
           ]),
-          if (offre.lignesForfait.isNotEmpty || offre.annexes.isNotEmpty || offre.remise > 0) ...[
+          if (offre.lignesForfait.isNotEmpty ||
+              offre.annexes.isNotEmpty ||
+              offre.remise > 0 ||
+              offre.surcharges > 0 ||
+              offre.assurance > 0 ||
+              offre.droitsDouane > 0) ...[
             const Divider(height: 22),
             ...offre.lignesForfait.map((l) => _ligne(
                 '${l.libelle}${l.quantite > 1 ? ' × ${l.quantite}' : ''}${l.prixAPartirDe ? tr(' (à partir de)') : ''}',
                 formaterMontant(l.montant, l.devise ?? offre.devise))),
             ...offre.annexes.map((l) => _ligne(tr('${l.libelle} (HT)'), formaterMontant(l.montant, offre.devise))),
+            if (offre.surcharges > 0) _ligne(tr('Surcharges (HT)'), formaterMontant(offre.surcharges, offre.devise)),
+            if (offre.assurance > 0) _ligne(tr('Assurance'), formaterMontant(offre.assurance, offre.devise)),
+            if (offre.droitsDouane > 0)
+              _ligne(tr('Droits et taxes de douane'), formaterMontant(offre.droitsDouane, offre.devise)),
             if (offre.remise > 0) _ligne(tr('Remise'), '− ${formaterMontant(offre.remise, offre.devise)}', vert: true),
             if (offre.creditParrainage > 0)
               _ligne(tr('Crédit parrainage'), '− ${formaterMontant(offre.creditParrainage, offre.devise)}', vert: true),

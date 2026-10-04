@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/config/env.dart';
+import 'core/i18n/langue.dart';
 import 'core/demo/demo_account_repository.dart';
 import 'core/demo/demo_colis_repository.dart';
 import 'core/demo/demo_config.dart';
@@ -124,6 +125,8 @@ Future<void> init() async {
         if (kDebugMode) debugPrint('[REQ] ${options.method} ${options.path}');
         // Identifiant anonyme de l'installation (conversion simulation → commande)
         options.headers['X-Visiteur-Id'] = MesureAudience.instance.visiteurId;
+        // Le backend renvoie ses messages dans la langue de l'application
+        options.headers['Accept-Language'] = LangueApp.instance.value.code;
         // Envoi de fichiers (jusqu'à 10 photos de 10 Mo) : délais adaptés aux
         // réseaux mobiles lents, au lieu des 30 s des requêtes ordinaires
         if (options.data is FormData) {

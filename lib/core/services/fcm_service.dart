@@ -74,6 +74,26 @@ class FcmService {
     _tokenRefreshSub = _messaging.onTokenRefresh.listen((_) => uploadToken());
   }
 
+  /// Jeton push de ce téléphone (null sans Firebase ou en cas d'échec).
+  static Future<String?> tokenActuel() async {
+    if (!_firebasePret) return null;
+    try {
+      return await _messaging.getToken();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// À la déconnexion : le jeton est invalidé auprès de Firebase, ce téléphone ne
+  /// reçoit plus les push du compte, même si le serveur n'a pas pu être prévenu.
+  /// Un nouveau jeton est créé à la prochaine connexion.
+  static Future<void> oublierToken() async {
+    if (!_firebasePret) return;
+    try {
+      await _messaging.deleteToken();
+    } catch (_) {}
+  }
+
   /// Envoie le token FCM au backend (best-effort).
   /// Public — appelé aussi depuis AuthBloc juste après un login réussi,
   /// sans avoir besoin de BuildContext.

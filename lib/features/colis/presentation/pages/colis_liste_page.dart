@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/categories.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/routes/app_shell_key.dart';
 import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/empty_state.dart';
@@ -17,6 +16,7 @@ import '../bloc/colis_event.dart';
 import '../bloc/colis_state.dart';
 import '../widgets/statut_badge.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 
 class ColisListePage extends StatelessWidget {
   /// Vrai quand la liste est affichée dans l'onglet « Mes envois » (sans barre d'application propre).
@@ -69,10 +69,7 @@ class _ColisListeViewState extends State<_ColisListeView> {
       appBar: widget.integre
           ? null
           : AppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () => appShellScaffoldKey.currentState?.openDrawer(),
-              ),
+              leading: const BoutonMenuOuRetour(),
               title: Text(tr('Envoyés')),
               actions: [
                 if (widget.isAuth)

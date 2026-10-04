@@ -26,6 +26,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (user) async {
         emit(AuthSuccess(user: user));
         FcmService.uploadToken().catchError((_) {});
+        LangueApp.instance.synchroniserProfil();
       },
     );
   }

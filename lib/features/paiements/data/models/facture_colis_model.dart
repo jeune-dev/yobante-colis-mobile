@@ -15,6 +15,11 @@ class FactureColisModel extends FactureColis {
     super.montantPaye,
     super.lienPaiement,
     super.colisReference,
+    super.montantSurcharges,
+    super.montantAssurance,
+    super.montantHt,
+    super.montantTva,
+    super.montantDroitsDouane,
   });
 
   /// Les montants DECIMAL arrivent en chaîne depuis PostgreSQL (« 54.32 »).
@@ -27,6 +32,11 @@ class FactureColisModel extends FactureColis {
     // Le backend nomme le fret « montantFret » ; « montantTransport » reste accepté (mode démo)
     montantTransport: _d(j['montantFret'] ?? j['montantTransport']),
     remise: _d(j['remise']),
+    montantSurcharges: _d(j['montantSurcharges']),
+    montantAssurance: _d(j['montantAssurance']),
+    montantHt: _d(j['montantHt']),
+    montantTva: _d(j['montantTva']),
+    montantDroitsDouane: _d(j['montantDroitsDouane']),
     montantTotal: _d(j['montantTotal']),
     statut: j['statut'] as String? ?? '',
     dateEmission: j['dateEmission'] as String? ?? '',

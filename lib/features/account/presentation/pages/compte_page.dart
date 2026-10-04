@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/routes/app_router.dart';
-import '../../../../core/routes/app_shell_key.dart';
 import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/ui_kit.dart';
@@ -23,6 +22,7 @@ import 'profil_page.dart';
 import 'reglages_compte_page.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/i18n/selecteur_langue.dart';
+import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 
 /// Onglet « Compte » : espace personnel (profil, factures, parrainage,
 /// réglages) et services (tarifs, collecte, contact WhatsApp).
@@ -56,10 +56,7 @@ class _ComptePageState extends State<ComptePage> {
     return Scaffold(
       backgroundColor: AppColor.kBackground,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => appShellScaffoldKey.currentState?.openDrawer(),
-        ),
+        leading: const BoutonMenuOuRetour(),
         title: Text(tr('Compte')),
       ),
       body: _connecte == null

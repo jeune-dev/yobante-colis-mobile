@@ -223,7 +223,7 @@ class _AvisPublicsState extends State<_AvisPublics> {
             const SizedBox(width: 12),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               _Etoiles(s.noteMoyenne, taille: 20),
-              Text('${s.total} avis', style: texteDiscret(13)),
+              Text(tr('${s.total} avis'), style: texteDiscret(13)),
             ]),
           ]),
           const SizedBox(height: 12),

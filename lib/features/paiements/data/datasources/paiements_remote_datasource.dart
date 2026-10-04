@@ -5,6 +5,7 @@ import '../../../../core/errors/exceptions.dart';
 import '../models/facture_colis_model.dart';
 import '../../domain/entities/reglement.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/utils/pagination.dart';
 
 abstract class PaiementsRemoteDataSource {
   Future<List<FactureColisModel>> getFactures();
@@ -27,10 +28,9 @@ class PaiementsRemoteDataSourceImpl implements PaiementsRemoteDataSource {
   @override
   Future<List<FactureColisModel>> getFactures() async {
     try {
-      // Pas de pagination à l'écran : la page maximale autorisée par l'API (100)
-      final res = await dio.get(Env.clientFactures, queryParameters: {'limit': 100});
-      final list = res.data['data']['factures'] as List? ?? [];
-      return list.map((e) => FactureColisModel.fromJson(e as Map<String, dynamic>)).toList();
+      // Pas de pagination à l'écran : toutes les pages sont chargées
+      final list = await chargerToutesLesPages(dio, Env.clientFactures, 'factures');
+      return list.map(FactureColisModel.fromJson).toList();
     } on DioException catch (e) {
       throw ServerException(message: messageErreur(e, tr('Erreur lors du chargement des factures')));
     }

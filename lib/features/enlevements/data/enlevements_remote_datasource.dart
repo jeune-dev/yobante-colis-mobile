@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../../core/config/env.dart';
 import '../../../core/errors/api_error.dart';
 import '../../../core/i18n/langue.dart';
+import '../../../core/utils/pagination.dart';
 
 /// Demandes d'enlèvement à domicile du client (`/client/enlevements`).
 
@@ -144,13 +145,10 @@ class EnlevementsRemoteDataSource {
       }, tr('Impossible de charger les créneaux'));
 
   Future<List<DemandeEnlevement>> getDemandes({bool? enCours}) => appelApi(() async {
-        final res = await dio.get(Env.clientEnlevements, queryParameters: {
-          'limit': 100,
+        final demandes = await chargerToutesLesPages(dio, Env.clientEnlevements, 'demandes', parametres: {
           if (enCours != null) 'enCours': '$enCours',
         });
-        return (res.data['data']['demandes'] as List? ?? [])
-            .map((d) => DemandeEnlevement.fromJson(d as Map<String, dynamic>))
-            .toList();
+        return demandes.map(DemandeEnlevement.fromJson).toList();
       }, tr('Impossible de charger vos enlèvements'));
 
   Future<DemandeEnlevement> getDemande(String id) =>

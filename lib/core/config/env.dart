@@ -1,11 +1,23 @@
+import 'package:flutter/foundation.dart';
+
 class Env {
   Env._();
 
+  static const String _apiProduction = 'https://api.yobanterek.com';
+
+  /// Backend lancé sur le Mac de développement (`npm run dev`), joignable par
+  /// l'iPhone, le simulateur iOS et l'émulateur Android sur le même Wi-Fi.
+  /// À mettre à jour si l'adresse du Mac change (`ipconfig getifaddr en0`).
+  static const String _apiLocale = 'http://192.168.1.11:3000';
+
+  /// API utilisée par l'application :
+  /// - `--dart-define=API_BASE_URL=…` s'il est fourni ;
+  /// - sinon le backend local en mode debug (`flutter run`) ;
+  /// - sinon la production (`flutter build`, versions publiées).
   static String get baseUrl {
     const v = String.fromEnvironment('API_BASE_URL');
-    // Par défaut : API de production (HTTPS). Pour un backend local, passer
-    // --dart-define=API_BASE_URL=http://10.0.2.2:3000 (émulateur Android).
-    return v.isEmpty ? 'https://api.yobanterek.com' : v;
+    if (v.isNotEmpty) return v;
+    return kDebugMode ? _apiLocale : _apiProduction;
   }
 
   /// Préfixe versionné recommandé par le contrat d'API (les chemins sans préfixe restent servis).

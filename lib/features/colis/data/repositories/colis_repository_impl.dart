@@ -15,7 +15,7 @@ class ColisRepositoryImpl implements ColisRepository {
     try {
       return Right(await appel());
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(e.message, code: e.code));
     }
   }
 

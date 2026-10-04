@@ -1,6 +1,10 @@
 class ServerException implements Exception {
   final String message;
-  const ServerException({required this.message});
+
+  /// Code stable renvoyé par le backend (ex. TELEPHONE_NON_VERIFIE) : le message
+  /// est traduit selon la langue, le code ne change jamais.
+  final String? code;
+  const ServerException({required this.message, this.code});
   @override
   String toString() => 'ServerException: $message';
 }

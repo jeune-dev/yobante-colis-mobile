@@ -93,6 +93,19 @@ class DemandeExpedition extends Equatable {
   final List<ContenuDeclare> contenu;
   final Map<String, int> emballages;
 
+  /// Nature de l'envoi (marchandise, cadeau, échantillon…) : conditionne la douane
+  /// et les services proposés. Forcé à « document » par le backend en catégorie 1.
+  final String typeContenu;
+  final bool fragile;
+  final bool assuranceSouscrite;
+
+  /// DAP : droits réglés par le destinataire ; DDP : avancés par Yobante et facturés.
+  final String incoterm;
+
+  /// Qui règle l'expédition : la devise de facturation suit son pays.
+  final String payeur;
+  final String? referenceClient;
+
   // Remise du colis
   final String modeDepot;
   final String? pointCollecteDepartId;
@@ -104,16 +117,21 @@ class DemandeExpedition extends Equatable {
 
   // Expéditeur
   final String expediteurNom;
+  final String? expediteurEntreprise;
   final String expediteurTelephone;
   final String? expediteurEmail;
+  final String? numeroEori;
+  final String? numeroNinea;
 
   // Destinataire
   final String destinataireNom;
+  final String? destinataireEntreprise;
   final String destinataireTelephone;
   final String? destinataireEmail;
   final String modeLivraison;
   final String? pointRetraitId;
   final String? adresseLivraison;
+  final String? codePostalArrivee;
   final String? instructionsLivraison;
   final String? destinataireQuartier;
   final String? destinataireArrondissement;
@@ -138,6 +156,12 @@ class DemandeExpedition extends Equatable {
     this.poidsKg,
     this.contenu = const [],
     this.emballages = const {},
+    this.typeContenu = 'marchandise',
+    this.fragile = false,
+    this.assuranceSouscrite = false,
+    this.incoterm = 'DAP',
+    this.payeur = 'expediteur',
+    this.referenceClient,
     this.modeDepot = 'point_collecte',
     this.pointCollecteDepartId,
     this.adresseDepart,
@@ -146,14 +170,19 @@ class DemandeExpedition extends Equatable {
     this.tourneeCollecteId,
     this.infosCollecte = const {},
     this.expediteurNom = '',
+    this.expediteurEntreprise,
     this.expediteurTelephone = '',
     this.expediteurEmail,
+    this.numeroEori,
+    this.numeroNinea,
     this.destinataireNom = '',
+    this.destinataireEntreprise,
     this.destinataireTelephone = '',
     this.destinataireEmail,
     this.modeLivraison = 'livraison_domicile',
     this.pointRetraitId,
     this.adresseLivraison,
+    this.codePostalArrivee,
     this.instructionsLivraison,
     this.destinataireQuartier,
     this.destinataireArrondissement,
@@ -181,6 +210,11 @@ class DemandeExpedition extends Equatable {
         'modeLivraison': modeLivraison,
         if (valeurDeclaree > 0) 'valeurDeclaree': valeurDeclaree,
         'deviseValeur': deviseValeur,
+        'typeContenu': typeContenu,
+        'fragile': fragile,
+        'assuranceSouscrite': assuranceSouscrite,
+        'incoterm': incoterm,
+        'payeur': payeur,
       };
 
   /// Champs du formulaire multipart de déclaration (POST /client/colis).
@@ -217,6 +251,17 @@ class DemandeExpedition extends Equatable {
       'destinataireDepartement': texte(destinataireDepartement),
       'destinatairePointRepere': texte(destinatairePointRepere),
       'deviseValeur': deviseValeur,
+      'typeContenu': typeContenu,
+      'fragile': fragile ? 'true' : 'false',
+      'assuranceSouscrite': assuranceSouscrite ? 'true' : 'false',
+      'incoterm': incoterm,
+      'payeur': payeur,
+      'referenceClient': texte(referenceClient),
+      'expediteurEntreprise': texte(expediteurEntreprise),
+      'destinataireEntreprise': texte(destinataireEntreprise),
+      'numeroEori': texte(numeroEori),
+      'numeroNinea': texte(numeroNinea),
+      'codePostalArrivee': modeLivraison == 'livraison_domicile' ? texte(codePostalArrivee) : null,
       'conditionsAcceptees': conditionsAcceptees ? 'true' : 'false',
     };
     // Obligatoire pour la catégorie 2 (colis moyen), même à 0
@@ -261,6 +306,12 @@ class DemandeExpedition extends Equatable {
         poidsKg: poidsKg,
         contenu: contenu,
         emballages: emballages,
+        typeContenu: typeContenu,
+        fragile: fragile,
+        assuranceSouscrite: assuranceSouscrite,
+        incoterm: incoterm,
+        payeur: payeur,
+        referenceClient: referenceClient,
         modeDepot: modeDepot,
         pointCollecteDepartId: pointCollecteDepartId,
         adresseDepart: adresseDepart,
@@ -269,14 +320,19 @@ class DemandeExpedition extends Equatable {
         tourneeCollecteId: tourneeCollecteId,
         infosCollecte: infosCollecte,
         expediteurNom: expediteurNom,
+        expediteurEntreprise: expediteurEntreprise,
         expediteurTelephone: expediteurTelephone,
         expediteurEmail: expediteurEmail,
+        numeroEori: numeroEori,
+        numeroNinea: numeroNinea,
         destinataireNom: destinataireNom,
+        destinataireEntreprise: destinataireEntreprise,
         destinataireTelephone: destinataireTelephone,
         destinataireEmail: destinataireEmail,
         modeLivraison: modeLivraison,
         pointRetraitId: pointRetraitId,
         adresseLivraison: adresseLivraison,
+        codePostalArrivee: codePostalArrivee,
         instructionsLivraison: instructionsLivraison,
         destinataireQuartier: destinataireQuartier,
         destinataireArrondissement: destinataireArrondissement,
@@ -286,7 +342,8 @@ class DemandeExpedition extends Equatable {
       );
 
   @override
-  List<Object?> get props => [categorie, villeDepartId, villeArriveeId, serviceId, articles, pieces, poidsKg];
+  List<Object?> get props =>
+      [categorie, villeDepartId, villeArriveeId, serviceId, articles, pieces, poidsKg, typeContenu, incoterm, payeur];
 }
 
 /// Résultat d'une déclaration : l'expédition créée et ce que le client doit

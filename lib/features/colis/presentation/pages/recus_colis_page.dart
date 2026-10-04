@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/routes/app_router.dart';
-import '../../../../core/routes/app_shell_key.dart';
 import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/empty_state.dart';
@@ -18,6 +17,7 @@ import '../bloc/colis_state.dart';
 import '../widgets/statut_badge.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 
 /// Onglet « Reçus » : expéditions dont l'utilisateur connecté est le
 /// destinataire (rapprochées côté backend par numéro de téléphone).
@@ -61,10 +61,7 @@ class _RecusView extends StatelessWidget {
       appBar: integre
           ? null
           : AppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () => appShellScaffoldKey.currentState?.openDrawer(),
-              ),
+              leading: const BoutonMenuOuRetour(),
               title: Text(tr('Reçus')),
             ),
       body: !isAuth
@@ -79,8 +76,9 @@ class _RecusView extends StatelessWidget {
               builder: (context, state) {
                 if (state is ColisLoading) return const ShimmerList();
                 if (state is ColisFailure) {
-                  // Le backend exige la preuve de possession du numéro (code WhatsApp)
-                  if (state.message.contains('numéro de téléphone')) {
+                  // Le backend exige la preuve de possession du numéro (code WhatsApp).
+                  // Le texte n'est consulté que pour un backend antérieur aux codes d'erreur.
+                  if (state.code == 'TELEPHONE_NON_VERIFIE' || state.message.contains('numéro de téléphone')) {
                     return EmptyState(
                       icon: Icons.verified_user_outlined,
                       title: tr('Vérifiez votre numéro'),

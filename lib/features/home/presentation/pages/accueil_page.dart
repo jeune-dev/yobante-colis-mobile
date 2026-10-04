@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/routes/app_router.dart';
-import '../../../../core/routes/app_shell_key.dart';
 import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/utils/formatters.dart';
@@ -20,6 +19,7 @@ import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../points_collecte/presentation/pages/point_de_service_page.dart';
 import '../../../tracking/presentation/pages/tracking_page.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 
 /// Onglet d'accueil façon DHL : suivi en accès libre, messages de
 /// l'administrateur (annonces, prochaine collecte), raccourcis et envois en cours.
@@ -85,10 +85,7 @@ class _AccueilPageState extends State<AccueilPage> {
     return Scaffold(
       backgroundColor: AppColor.kBackground,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => appShellScaffoldKey.currentState?.openDrawer(),
-        ),
+        leading: const BoutonMenuOuRetour(),
         actions: [
           if (_connecte)
             IconButton(

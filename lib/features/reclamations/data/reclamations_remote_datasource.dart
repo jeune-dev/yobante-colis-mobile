@@ -4,6 +4,7 @@ import '../../../core/config/env.dart';
 import '../../../core/errors/api_error.dart';
 import '../../../core/i18n/langue.dart';
 import '../../../core/utils/fichier_upload.dart';
+import '../../../core/utils/pagination.dart';
 
 /// Service après-vente : réclamations du client connecté (perte, avarie,
 /// retard…) instruites par le support à travers un fil de messages.
@@ -147,11 +148,9 @@ class ReclamationsRemoteDataSource {
 
   Map<String, dynamic> _data(Response res) => res.data['data'] as Map<String, dynamic>;
 
-  Future<List<Reclamation>> getReclamations({int page = 1, int limit = 50}) => appelApi(() async {
-        final res = await dio.get(Env.clientReclamations, queryParameters: {'page': page, 'limit': limit});
-        return (_data(res)['reclamations'] as List? ?? [])
-            .map((r) => Reclamation.fromJson(r as Map<String, dynamic>))
-            .toList();
+  Future<List<Reclamation>> getReclamations() => appelApi(() async {
+        final reclamations = await chargerToutesLesPages(dio, Env.clientReclamations, 'reclamations');
+        return reclamations.map(Reclamation.fromJson).toList();
       }, tr('Impossible de charger vos réclamations'));
 
   Future<Reclamation> getReclamation(String id) => appelApi(() async {

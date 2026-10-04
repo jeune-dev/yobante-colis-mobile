@@ -132,9 +132,16 @@ class EspaceClientRemoteDataSource {
       }, tr('Envoi du justificatif impossible'));
 
   /// Envoie un code à 6 chiffres par WhatsApp au numéro du compte.
-  Future<String> demanderCodeTelephone() => appelApi(() async {
+  /// [dejaVerifie] : le numéro l'était déjà, aucun code n'a été envoyé.
+  Future<({String message, bool dejaVerifie})> demanderCodeTelephone() => appelApi(() async {
         final res = await dio.post(Env.clientTelephoneCode);
-        return messageApi(res);
+        final message = messageApi(res);
+        final data = res.data is Map ? res.data['data'] : null;
+        return (
+          message: message,
+          // Le texte n'est consulté que pour un backend antérieur au drapeau
+          dejaVerifie: (data is Map && data['dejaVerifie'] == true) || message.contains('déjà vérifié'),
+        );
       }, tr('Envoi du code impossible'));
 
   /// Vérifie le code reçu ; ouvre l'accès aux colis dont le compte est destinataire.
