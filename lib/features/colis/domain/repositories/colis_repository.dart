@@ -2,11 +2,12 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failure.dart';
 import '../entities/colis.dart';
 import '../entities/demande_expedition.dart';
+import '../entities/filtres_colis.dart';
 import '../../../../core/types/avec_message.dart';
 
 abstract class ColisRepository {
-  Future<Either<Failure, Map<String, dynamic>>> getColis({String? statut, int page = 1, int limit = 20});
-  Future<Either<Failure, Map<String, dynamic>>> getColisRecus({String? statut, int page = 1, int limit = 20});
+  Future<Either<Failure, Map<String, dynamic>>> getColis({String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20});
+  Future<Either<Failure, Map<String, dynamic>>> getColisRecus({String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20});
   Future<Either<Failure, Colis>> getColisDetail(String id);
 
   Future<Either<Failure, ResultatDeclaration>> creerColis(

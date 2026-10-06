@@ -3,6 +3,7 @@ import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failure.dart';
 import '../../domain/entities/colis.dart';
 import '../../domain/entities/demande_expedition.dart';
+import '../../domain/entities/filtres_colis.dart';
 import '../../domain/repositories/colis_repository.dart';
 import '../datasources/colis_remote_datasource.dart';
 import '../../../../core/types/avec_message.dart';
@@ -20,12 +21,12 @@ class ColisRepositoryImpl implements ColisRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getColis({String? statut, int page = 1, int limit = 20}) =>
-      _executer(() => remote.getColis(statut: statut, page: page, limit: limit));
+  Future<Either<Failure, Map<String, dynamic>>> getColis({String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) =>
+      _executer(() => remote.getColis(statut: statut, filtres: filtres, page: page, limit: limit));
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getColisRecus({String? statut, int page = 1, int limit = 20}) =>
-      _executer(() => remote.getColisRecus(statut: statut, page: page, limit: limit));
+  Future<Either<Failure, Map<String, dynamic>>> getColisRecus({String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) =>
+      _executer(() => remote.getColisRecus(statut: statut, filtres: filtres, page: page, limit: limit));
 
   @override
   Future<Either<Failure, Colis>> getColisDetail(String id) => _executer(() => remote.getColisDetail(id));

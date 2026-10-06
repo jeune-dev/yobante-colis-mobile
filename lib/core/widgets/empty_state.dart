@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_color.dart';
 
 /// Widget état vide réutilisable pour toutes les pages liste.
 ///
@@ -26,7 +27,8 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = accentColor ?? Colors.black87;
+    // Bleu de la marque par défaut : bouton, pastille et icône assortis au thème
+    final color = accentColor ?? AppColor.kPrimary;
 
     final content = Column(
       mainAxisSize: MainAxisSize.min,
@@ -46,7 +48,7 @@ class EmptyState extends StatelessWidget {
           style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1A1A2E),
+            color: AppColor.kGrayscaleDark100,
             letterSpacing: -0.3,
           ),
           textAlign: TextAlign.center,
@@ -56,7 +58,7 @@ class EmptyState extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             subtitle,
-            style: TextStyle(fontSize: 13, color: Colors.grey[400], height: 1.5),
+            style: const TextStyle(fontSize: 13, color: AppColor.kGrayscale40, height: 1.5),
             textAlign: TextAlign.center,
           ),
         ),

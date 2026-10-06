@@ -45,6 +45,7 @@ import 'features/catalogue/data/catalogue_remote_datasource.dart';
 // Réclamations, adresses, enlèvements, avis
 import 'features/reclamations/data/reclamations_remote_datasource.dart';
 import 'features/adresses/data/adresses_remote_datasource.dart';
+import 'features/contact/data/contact_remote_datasource.dart';
 import 'features/enlevements/data/enlevements_remote_datasource.dart';
 import 'features/avis/data/avis_remote_datasource.dart';
 
@@ -241,6 +242,7 @@ Future<void> init() async {
 
   // ── CARNET D'ADRESSES, ENLÈVEMENTS, AVIS ───────────────────────────────────
   sl.registerLazySingleton(() => AdressesRemoteDataSource(dio: sl()));
+  sl.registerLazySingleton(() => ContactRemoteDataSource(dio: sl()));
   sl.registerLazySingleton(() => EnlevementsRemoteDataSource(dio: sl()));
   sl.registerLazySingleton(() => AvisRemoteDataSource(dio: sl()));
 

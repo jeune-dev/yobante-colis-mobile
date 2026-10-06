@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import '../config/env.dart';
 import 'exceptions.dart';
 import '../i18n/langue.dart';
 
@@ -38,6 +40,12 @@ String messageErreur(DioException e, [String? defaut]) {
   if (e.type == DioExceptionType.connectionError ||
       e.type == DioExceptionType.connectionTimeout ||
       e.type == DioExceptionType.receiveTimeout) {
+    // Backend lancé sur le Mac (dart_defines.local.json) : on dit lequel est injoignable
+    if (kDebugMode && Env.estBackendLocal) {
+      return 'Serveur de développement injoignable (${Env.baseUrl}). '
+          'Lancez le backend (npm run dev), vérifiez que le téléphone est sur le même Wi-Fi, '
+          'ou relancez sans --dart-define-from-file pour utiliser la production.';
+    }
     return tr('Connexion au serveur impossible. Vérifiez votre accès internet.');
   }
   return defaut ?? tr('Une erreur est survenue');

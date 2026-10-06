@@ -5,6 +5,7 @@ import 'auth_event.dart';
 import 'auth_state.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/errors/failure.dart';
+import '../../../../core/services/compteur_notifications.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
@@ -24,9 +25,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     await result.fold(
       (f) async => emit(AuthFailure(message: f.errorMessage, emailNonConfirme: f is EmailNonConfirmeFailure)),
       (user) async {
+        // La langue du compte s'applique avant d'afficher l'accueil
+        await LangueApp.instance.apresConnexion(user.langue);
         emit(AuthSuccess(user: user));
         FcmService.uploadToken().catchError((_) {});
-        LangueApp.instance.synchroniserProfil();
       },
     );
   }
@@ -34,8 +36,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onRegister(RegisterRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     final result = await authRepository.register(
-      nom: event.nom, prenom: event.prenom, email: event.email,
-      motDePasse: event.motDePasse, telephone: event.telephone,
+      nom: event.nom,
+      prenom: event.prenom,
+      email: event.email,
+      motDePasse: event.motDePasse,
+      telephone: event.telephone,
       pays: event.pays,
       villeId: event.villeId,
       adresse: event.adresse,
@@ -70,13 +75,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  Future<void> _onLogout(LogoutRequested _, Emitter<AuthState> emit) async {
+  Future<void> _onLogout(LogoutRequested event, Emitter<AuthState> emit) async {
+    CompteurNotifications.instance.arreter();
     emit(AuthLoading());
-    try {
-      await authRepository.logout();
-      emit(AuthInitial());
-    } catch (e) {
-      emit(AuthFailure(message: tr('Erreur lors de la déconnexion : $e')));
-    }
+    // La session locale est toujours effacée (voir AuthRepositoryImpl.logout) :
+    // l'utilisateur repart sur l'accueil en invité, même hors ligne.
+    await authRepository.logout();
+    emit(LogoutSuccess(ouvrirConnexion: event.ouvrirConnexion));
+    emit(AuthInitial());
   }
 }

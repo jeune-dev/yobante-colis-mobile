@@ -20,6 +20,7 @@ import 'core/services/mesure_audience.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
+import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/auth/presentation/pages/splash_page.dart';
 import 'injection_container.dart' as di;
 import 'core/widgets/adaptation_ecran.dart';
@@ -54,8 +55,12 @@ void main() async {
   await di.init();
   LangueApp.instance.initialiser(di.sl<SharedPreferences>());
   LangueApp.instance.enregistrerDansProfil = (langue) async {
-    if (!await di.sl<TokenService>().isAuthenticated) return;
+    if (!await di.sl<TokenService>().isAuthenticated) return false;
+    // Le compte n'enregistre que les langues connues du backend (400 sinon) : un
+    // autre choix reste sur le téléphone, en attente, et prime à la connexion.
+    if (!Env.languesDuCompte.contains(langue.code)) return false;
     await di.sl<Dio>().put(Env.clientProfil, data: {'langue': langue.code});
+    return true;
   };
   MesureAudience.instance.demarrer();
   runApp(const MyApp());
@@ -73,14 +78,17 @@ class _MyAppState extends State<MyApp> {
   final _observateur = ObservateurAudience();
   late final StreamSubscription<void> _logoutSub;
 
+  /// Plusieurs requêtes en 401 simultanées ne déclenchent qu'une déconnexion.
+  bool _deconnexionForcee = false;
+
   @override
   void initState() {
     super.initState();
     _logoutSub = AuthEventBus.instance.onLogout.listen((_) {
-      if (mounted) {
-        di.sl<AuthBloc>().add(LogoutRequested());
-        _navigatorKey.currentState?.pushNamedAndRemoveUntil(AppRouter.loginRoute, (_) => false);
-      }
+      // La navigation suit LogoutSuccess (voir build) : accueil, puis connexion
+      if (!mounted || _deconnexionForcee) return;
+      _deconnexionForcee = true;
+      di.sl<AuthBloc>().add(const LogoutRequested(ouvrirConnexion: true));
     });
   }
 
@@ -94,26 +102,40 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [BlocProvider(create: (_) => di.sl<AuthBloc>())],
-      child: ToastificationWrapper(
-        child: ValueListenableBuilder<Langue>(
-          valueListenable: LangueApp.instance,
-          builder: (context, langue, _) => MaterialApp(
-            navigatorKey: _navigatorKey,
-            debugShowCheckedModeBanner: false,
-            title: 'Yobante Colis',
-            theme: AppTheme.light(),
-            locale: langue.locale,
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: [for (final l in Langue.values) l.locale],
-            home: const SplashPage(),
-            onGenerateRoute: AppRouter.onGenerateRoute,
-            navigatorObservers: [_observateur],
-            // Taille de texte bornée et contenu centré sur tablette, pour tous les écrans
-            builder: (context, child) => AdaptationEcran(child: child ?? const SizedBox.shrink()),
+      child: BlocListener<AuthBloc, AuthState>(
+        bloc: di.sl<AuthBloc>(),
+        listenWhen: (_, state) => state is LogoutSuccess,
+        listener: (_, state) {
+          // Déconnexion, quelle qu'en soit l'origine : la pile est vidée pour que
+          // plus aucun écran ne garde les données du compte, et l'utilisateur
+          // repart sur l'accueil en invité (il peut s'y reconnecter).
+          _deconnexionForcee = false;
+          final nav = _navigatorKey.currentState;
+          if (nav == null) return;
+          nav.pushNamedAndRemoveUntil(AppRouter.clientRoute, (_) => false);
+          if ((state as LogoutSuccess).ouvrirConnexion) nav.pushNamed(AppRouter.loginRoute);
+        },
+        child: ToastificationWrapper(
+          child: ValueListenableBuilder<Langue>(
+            valueListenable: LangueApp.instance,
+            builder: (context, langue, _) => MaterialApp(
+              navigatorKey: _navigatorKey,
+              debugShowCheckedModeBanner: false,
+              title: 'Yobante Colis',
+              theme: AppTheme.light(),
+              locale: langue.locale,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: [for (final l in Langue.values) l.locale],
+              home: const SplashPage(),
+              onGenerateRoute: AppRouter.onGenerateRoute,
+              navigatorObservers: [_observateur],
+              // Taille de texte bornée et contenu centré sur tablette, pour tous les écrans
+              builder: (context, child) => AdaptationEcran(child: child ?? const SizedBox.shrink()),
+            ),
           ),
         ),
       ),

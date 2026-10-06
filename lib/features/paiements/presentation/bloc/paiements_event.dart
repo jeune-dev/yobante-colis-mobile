@@ -7,7 +7,11 @@ abstract class PaiementsEvent extends Equatable {
 }
 
 class LoadFactures extends PaiementsEvent {
-  const LoadFactures();
+  final String? statut;
+  final bool impayees;
+  const LoadFactures({this.statut, this.impayees = false});
+  @override
+  List<Object?> get props => [statut, impayees];
 }
 
 class LoadFactureDetail extends PaiementsEvent {

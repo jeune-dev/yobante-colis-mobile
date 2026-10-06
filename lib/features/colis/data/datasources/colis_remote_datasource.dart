@@ -4,13 +4,16 @@ import '../../../../core/errors/api_error.dart';
 import '../models/colis_model.dart';
 import '../../domain/entities/colis.dart';
 import '../../domain/entities/demande_expedition.dart';
+import '../../domain/entities/filtres_colis.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/utils/fichier_upload.dart';
 import '../../../../core/types/avec_message.dart';
 
 abstract class ColisRemoteDataSource {
-  Future<Map<String, dynamic>> getColis({String? statut, int page = 1, int limit = 20});
-  Future<Map<String, dynamic>> getColisRecus({String? statut, int page = 1, int limit = 20});
+  Future<Map<String, dynamic>> getColis(
+      {String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20});
+  Future<Map<String, dynamic>> getColisRecus(
+      {String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20});
   Future<ColisModel> getColisDetail(String id);
 
   /// Déclare une expédition (multipart : champs + photos du colis).
@@ -55,18 +58,20 @@ class ColisRemoteDataSourceImpl implements ColisRemoteDataSource {
   Map<String, dynamic> _data(Response res) => res.data['data'] as Map<String, dynamic>;
 
   @override
-  Future<Map<String, dynamic>> getColis({String? statut, int page = 1, int limit = 20}) =>
+  Future<Map<String, dynamic>> getColis(
+          {String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) =>
       appelApi(() async {
-        final params = <String, dynamic>{'page': page, 'limit': limit};
+        final params = <String, dynamic>{...filtres.versRequete(), 'page': page, 'limit': limit};
         if (statut != null) params['statut'] = statut;
         final res = await dio.get(Env.clientColis, queryParameters: params);
         return _parseListe(_data(res));
       }, tr('Erreur serveur'));
 
   @override
-  Future<Map<String, dynamic>> getColisRecus({String? statut, int page = 1, int limit = 20}) =>
+  Future<Map<String, dynamic>> getColisRecus(
+          {String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) =>
       appelApi(() async {
-        final params = <String, dynamic>{'page': page, 'limit': limit};
+        final params = <String, dynamic>{...filtres.versRequete(recus: true), 'page': page, 'limit': limit};
         if (statut != null) params['statut'] = statut;
         final res = await dio.get(Env.clientColisRecus, queryParameters: params);
         return _parseListe(_data(res));

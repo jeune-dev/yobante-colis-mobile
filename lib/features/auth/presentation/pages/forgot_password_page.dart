@@ -8,10 +8,10 @@ import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/utils/validateurs.dart';
 import '../../../../core/widgets/toast_notif.dart';
-import '../../../../core/widgets/ui_kit.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../widgets/mise_en_page_auth.dart';
 
 /// Étape 1 : l'utilisateur saisit son email, le backend envoie un code à 6 chiffres.
 ///
@@ -62,7 +62,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       child: EcranMotDePasse(
         icone: Icons.lock_reset_rounded,
         titre: tr('Mot de passe oublié ?'),
-        sousTitre: tr('Saisissez l\'adresse email de votre compte : nous vous enverrons un code pour choisir un nouveau mot de passe.'),
+        sousTitre: tr(
+          'Saisissez l\'adresse email de votre compte : nous vous enverrons un code pour choisir un nouveau mot de passe.',
+        ),
         child: Form(
           key: _formKey,
           autovalidateMode: _soumis ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
@@ -91,10 +93,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(tr('Retour à la connexion')),
-              ),
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(tr('Retour à la connexion'))),
             ],
           ),
         ),
@@ -119,40 +118,14 @@ class EcranMotDePasse extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColor.kWhite,
-      appBar: AppBar(backgroundColor: AppColor.kWhite, elevation: 0, scrolledUnderElevation: 0),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 84,
-                  height: 84,
-                  decoration: BoxDecoration(
-                    color: AppColor.kSecondaryLight,
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: Icon(icone, size: 42, color: AppColor.kPrimary),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(titre, textAlign: TextAlign.center, style: titreSection(24)),
-              const SizedBox(height: 8),
-              Text(
-                sousTitre,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.plusJakartaSans(fontSize: 14, height: 1.5, color: AppColor.kGrayscale40),
-              ),
-              const SizedBox(height: 32),
-              child,
-            ],
-          ),
-        ),
-      ),
+    return MiseEnPageAuth(
+      icone: icone,
+      titre: titre,
+      sousTitre: sousTitre,
+      enfants: [
+        CarteAuth(child: child),
+        const SizedBox(height: 24),
+      ],
     );
   }
 }
@@ -179,7 +152,11 @@ class BoutonPrincipal extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         child: chargement
-            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+              )
             : Text(libelle, style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700)),
       ),
     );

@@ -22,6 +22,14 @@ Map<String, String> get kTypesReclamation => {
   'autre': tr('Autre'),
 };
 
+/// Priorités acceptées par le backend (« normale » par défaut).
+Map<String, String> get kPrioritesReclamation => {
+  'basse': tr('Basse'),
+  'normale': tr('Normale'),
+  'haute': tr('Haute'),
+  'critique': tr('Critique'),
+};
+
 Map<String, String> get kStatutsReclamation => {
   'ouverte': tr('Ouverte'),
   'en_cours': tr('En cours de traitement'),
@@ -148,8 +156,14 @@ class ReclamationsRemoteDataSource {
 
   Map<String, dynamic> _data(Response res) => res.data['data'] as Map<String, dynamic>;
 
-  Future<List<Reclamation>> getReclamations() => appelApi(() async {
-        final reclamations = await chargerToutesLesPages(dio, Env.clientReclamations, 'reclamations');
+  /// Filtres appliqués par le backend : [ouvertes] (non clôturées), [statut], [type].
+  Future<List<Reclamation>> getReclamations({bool ouvertes = false, String? statut, String? type}) =>
+      appelApi(() async {
+        final reclamations = await chargerToutesLesPages(dio, Env.clientReclamations, 'reclamations', parametres: {
+          if (ouvertes) 'ouvertes': 'true',
+          'statut': ?statut,
+          'type': ?type,
+        });
         return reclamations.map(Reclamation.fromJson).toList();
       }, tr('Impossible de charger vos réclamations'));
 
@@ -167,6 +181,7 @@ class ReclamationsRemoteDataSource {
     String? colisId,
     double? montantReclame,
     String? devise,
+    String? priorite,
     List<String> piecesPaths = const [],
   }) =>
       appelApi(() async {
@@ -177,6 +192,7 @@ class ReclamationsRemoteDataSource {
           'colisId': ?colisId,
           if (montantReclame != null && montantReclame > 0) 'montantReclame': '$montantReclame',
           'devise': ?devise,
+          'priorite': ?priorite,
         });
         for (final chemin in piecesPaths) {
           form.files.add(MapEntry('pieces', await fichierMultipart(chemin, pdfAccepte: true)));

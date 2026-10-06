@@ -24,6 +24,18 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
   List<Reclamation>? _reclamations;
   String? _erreur;
 
+  /// Filtre appliqué par le backend : « ouvertes » ou un statut précis.
+  String _filtre = 'toutes';
+  String? _type;
+
+  static Map<String, String> get _filtres => {
+        'toutes': tr('Toutes'),
+        'ouvertes': tr('En cours'),
+        'resolue': tr('Résolues'),
+        'rejetee': tr('Rejetées'),
+        'cloturee': tr('Clôturées'),
+      };
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +45,11 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
   Future<void> _charger() async {
     setState(() => _erreur = null);
     try {
-      final liste = await _source.getReclamations();
+      final liste = await _source.getReclamations(
+        ouvertes: _filtre == 'ouvertes',
+        statut: _filtre == 'toutes' || _filtre == 'ouvertes' ? null : _filtre,
+        type: _type,
+      );
       if (mounted) setState(() => _reclamations = liste);
     } on ServerException catch (e) {
       if (mounted) setState(() => _erreur = e.message);
@@ -52,6 +68,44 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
     _charger();
   }
 
+  void _filtrer({String? filtre, String? type, bool effacerType = false}) {
+    setState(() {
+      _filtre = filtre ?? _filtre;
+      _type = effacerType ? null : type ?? _type;
+      _reclamations = null;
+    });
+    _charger();
+  }
+
+  Widget _barreFiltres() => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+        child: Row(children: [
+          ..._filtres.entries.map((e) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(e.value),
+                  selected: _filtre == e.key,
+                  onSelected: (_) => _filtrer(filtre: e.key),
+                ),
+              )),
+          PopupMenuButton<String?>(
+            tooltip: tr('Motif'),
+            onSelected: (t) => t == null ? _filtrer(effacerType: true) : _filtrer(type: t),
+            itemBuilder: (_) => [
+              PopupMenuItem<String?>(value: null, child: Text(tr('Tous les motifs'))),
+              ...kTypesReclamation.entries.map((e) => PopupMenuItem<String?>(value: e.key, child: Text(e.value))),
+            ],
+            child: Chip(
+              avatar: const Icon(Icons.filter_alt_outlined, size: 18),
+              label: Text(_type == null ? tr('Tous les motifs') : kTypesReclamation[_type] ?? _type!),
+            ),
+          ),
+        ]),
+      );
+
+  bool get _filtrage => _filtre != 'toutes' || _type != null;
+
   @override
   Widget build(BuildContext context) {
     final liste = _reclamations;
@@ -63,7 +117,15 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
         icon: const Icon(Icons.add),
         label: Text(tr('Nouvelle réclamation')),
       ),
-      body: _erreur != null
+      body: Column(children: [
+        _barreFiltres(),
+        Expanded(child: _contenu(liste)),
+      ]),
+    );
+  }
+
+  Widget _contenu(List<Reclamation>? liste) {
+    return _erreur != null
           ? EmptyState(
               icon: Icons.error_outline,
               title: tr('Erreur'),
@@ -73,6 +135,14 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
             )
           : liste == null
               ? const ShimmerList()
+              : liste.isEmpty && _filtrage
+                  ? EmptyState(
+                      icon: Icons.search_off_rounded,
+                      title: tr('Aucun résultat'),
+                      subtitle: tr('Aucune réclamation ne correspond à ces critères.'),
+                      actionLabel: tr('Effacer les filtres'),
+                      onAction: () => _filtrer(filtre: 'toutes', effacerType: true),
+                    )
               : liste.isEmpty
                   ? EmptyState(
                       icon: Icons.support_agent_outlined,
@@ -88,8 +158,7 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
                         separatorBuilder: (_, _) => const SizedBox(height: 12),
                         itemBuilder: (_, i) => _CarteReclamation(reclamation: liste[i], onTap: () => _ouvrir(liste[i])),
                       ),
-                    ),
-    );
+                    );
   }
 }
 

@@ -32,6 +32,7 @@ class _NouvelleReclamationPageState extends State<NouvelleReclamationPage> {
   final _description = TextEditingController();
   final _montant = TextEditingController();
   String _type = 'avarie';
+  String _priorite = 'normale';
   Colis? _colis;
   List<Colis> _mesColis = const [];
   final List<String> _pieces = [];
@@ -78,6 +79,7 @@ class _NouvelleReclamationPageState extends State<NouvelleReclamationPage> {
         colisId: _colis?.id,
         montantReclame: montant,
         devise: montant != null && montant > 0 ? (_colis?.devise ?? 'EUR') : null,
+        priorite: _priorite,
         piecesPaths: _pieces,
       );
       if (!mounted) return;
@@ -112,6 +114,15 @@ class _NouvelleReclamationPageState extends State<NouvelleReclamationPage> {
                     .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                     .toList(),
                 onChanged: (v) => setState(() => _type = v ?? _type),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _priorite,
+                decoration: InputDecoration(labelText: tr('Urgence')),
+                items: kPrioritesReclamation.entries
+                    .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+                    .toList(),
+                onChanged: (v) => setState(() => _priorite = v ?? _priorite),
               ),
               const SizedBox(height: 12),
               if (widget.colis != null)

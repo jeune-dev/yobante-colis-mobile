@@ -13,11 +13,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final TokenService tokenService;
   final FlutterSecureStorage secureStorage;
 
-  AuthRepositoryImpl({
-    required this.remoteDataSource,
-    required this.tokenService,
-    required this.secureStorage,
-  });
+  AuthRepositoryImpl({required this.remoteDataSource, required this.tokenService, required this.secureStorage});
 
   @override
   Future<Either<Failure, User>> login(String email, String password) async {
@@ -39,8 +35,11 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, String>> register({
-    required String nom, required String prenom,
-    required String email, required String motDePasse, required String telephone,
+    required String nom,
+    required String prenom,
+    required String email,
+    required String motDePasse,
+    required String telephone,
     String pays = 'SN',
     String? villeId,
     String? adresse,
@@ -53,7 +52,11 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       final message = await remoteDataSource.register(
-        nom: nom, prenom: prenom, email: email, motDePasse: motDePasse, telephone: telephone,
+        nom: nom,
+        prenom: prenom,
+        email: email,
+        motDePasse: motDePasse,
+        telephone: telephone,
         pays: pays,
         villeId: villeId,
         adresse: adresse,
@@ -98,8 +101,12 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> logout() async {
     final rt = await tokenService.getRefreshToken();
     final at = await tokenService.getToken();
+    // Révocation côté serveur au mieux : une erreur réseau ne doit pas laisser
+    // l'utilisateur connecté sur le téléphone.
     if ((rt != null && rt.isNotEmpty) || (at != null && at.isNotEmpty)) {
-      await remoteDataSource.logout(rt ?? '', accessToken: at, deviceToken: await FcmService.tokenActuel());
+      try {
+        await remoteDataSource.logout(rt ?? '', accessToken: at);
+      } catch (_) {}
     }
     await FcmService.oublierToken();
     await tokenService.clearToken();

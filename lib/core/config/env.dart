@@ -1,28 +1,27 @@
-import 'package:flutter/foundation.dart';
-
 class Env {
   Env._();
 
-  static const String _apiProduction = 'https://api.yobanterek.com';
-
-  /// Backend lancé sur le Mac de développement (`npm run dev`), joignable par
-  /// l'iPhone, le simulateur iOS et l'émulateur Android sur le même Wi-Fi.
-  /// À mettre à jour si l'adresse du Mac change (`ipconfig getifaddr en0`).
-  static const String _apiLocale = 'http://192.168.1.11:3000';
+  /// API de production : utilisée par défaut, en debug (`flutter run`) comme en release.
+  static const String apiProduction = 'https://api.yobanterek.com';
 
   /// API utilisée par l'application :
-  /// - `--dart-define=API_BASE_URL=…` s'il est fourni ;
-  /// - sinon le backend local en mode debug (`flutter run`) ;
-  /// - sinon la production (`flutter build`, versions publiées).
+  /// - `--dart-define=API_BASE_URL=…` s'il est fourni (ex. backend lancé sur le Mac,
+  ///   via `--dart-define-from-file=dart_defines.local.json`) ;
+  /// - sinon la production.
   static String get baseUrl {
     const v = String.fromEnvironment('API_BASE_URL');
-    if (v.isNotEmpty) return v;
-    return kDebugMode ? _apiLocale : _apiProduction;
+    return v.isNotEmpty ? v : apiProduction;
   }
+
+  /// Vrai quand l'application vise un autre backend que la production (développement local).
+  static bool get estBackendLocal => baseUrl != apiProduction;
 
   /// Préfixe versionné recommandé par le contrat d'API (les chemins sans préfixe restent servis).
   static const String prefixeApi = '/api/v1';
   static String get apiUrl => '$baseUrl$prefixeApi';
+
+  /// Langues que le backend accepte sur le compte (`PUT /client/profil`, champ `langue`).
+  static const Set<String> languesDuCompte = {'fr'};
 
   // ── AUTH ──────────────────────────────────────────────────────────────────
   static const String authRegister   = '/auth/register';
@@ -33,6 +32,7 @@ class Env {
   static const String authReset      = '/auth/reset-password';
   static const String authChangePass = '/auth/change-password';
   static const String authResendVerification = '/auth/resend-verification';
+  static const String authVerifyEmail = '/auth/verify-email';
 
   // ── CLIENT — COLIS ────────────────────────────────────────────────────────
   static const String clientColis      = '/client/colis';
@@ -104,6 +104,7 @@ class Env {
   // ── PUBLIC — VERSION DE L'APPLICATION / FAQ ───────────────────────────────
   static const String appVersion = '/app-version';
   static const String publicFaq  = '/public/faq';
+  static const String publicDemandesContact = '/public/demandes-contact';
 
   // ── CLIENT — NOTIFICATIONS ────────────────────────────────────────────────
   static const String clientNotifications   = '/client/notifications';
@@ -121,7 +122,7 @@ class Env {
   static const String clientPaiementsMethodes = '/client/paiements/methodes';
 
   // ── PUBLIC — SUIVI / VILLES / DEVIS (aucune authentification requise) ─────
-  static String publicSuivi(String reference) => '/public/suivi/$reference';
+  static String publicSuivi(String reference) => '/public/suivi/${Uri.encodeComponent(reference)}';
   static const String publicVilles = '/public/villes';
   static const String publicDevis  = '/public/devis';
   static const String clientDevis  = '/client/colis/devis';

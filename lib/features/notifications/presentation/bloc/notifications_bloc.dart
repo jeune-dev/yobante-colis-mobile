@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/notification_app.dart';
 import '../../domain/repositories/notifications_repository.dart';
+import '../../../../core/services/compteur_notifications.dart';
 
 // Events
 abstract class NotificationsEvent extends Equatable {
@@ -59,6 +60,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     final countFuture = repo.getNonLuesCount();
     final result = await listFuture;
     final countResult = await countFuture;
+    countResult.fold((_) {}, CompteurNotifications.instance.definir);
     result.fold(
       (f) => emit(NotificationsFailure(f.errorMessage)),
       (list) => emit(NotificationsLoaded(
@@ -77,11 +79,14 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
 
   Future<void> _onMarquerLue(MarquerLue event, Emitter<NotificationsState> emit) async {
+    // Ouverture d'une notification non lue : -1 tout de suite sur les pastilles
+    CompteurNotifications.instance.notificationLue();
     await repo.marquerLue(event.id);
     add(const LoadNotifications());
   }
 
   Future<void> _onMarquerToutesLues(MarquerToutesLues _, Emitter<NotificationsState> emit) async {
+    CompteurNotifications.instance.toutesLues();
     await repo.marquerToutesLues();
     add(const LoadNotifications());
   }
@@ -92,6 +97,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     final courant = state;
     if (courant is NotificationsLoaded) {
       final supprimee = courant.notifications.where((n) => n.id == event.id);
+      if (supprimee.any((n) => !n.isRead)) CompteurNotifications.instance.notificationLue();
       emit(NotificationsLoaded(
         notifications: courant.notifications.where((n) => n.id != event.id).toList(),
         nonLues: courant.nonLues - supprimee.where((n) => !n.isRead).length,

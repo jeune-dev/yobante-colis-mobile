@@ -3,6 +3,9 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Message vocal décrivant le colis (POST /client/colis/:id/vocal) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Points de service proches (GET /public/points-collecte?latitude=…) -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <!-- Stockage pour Android ≤ 9 (API 28) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"

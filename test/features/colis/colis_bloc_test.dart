@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yobante_colis/core/errors/failure.dart';
 import 'package:yobante_colis/features/colis/domain/entities/colis.dart';
 import 'package:yobante_colis/features/colis/domain/entities/demande_expedition.dart';
+import 'package:yobante_colis/features/colis/domain/entities/filtres_colis.dart';
 import 'package:yobante_colis/features/colis/domain/repositories/colis_repository.dart';
 import 'package:yobante_colis/features/colis/domain/usecases/colis_usecases.dart';
 import 'package:yobante_colis/features/colis/presentation/bloc/colis_bloc.dart';
@@ -22,6 +23,7 @@ class _FakeColisRepository extends Fake implements ColisRepository {
   @override
   Future<Either<Failure, Map<String, dynamic>>> getColis({
     String? statut,
+    FiltresColis filtres = const FiltresColis(),
     int page = 1,
     int limit = 20,
   }) async =>
@@ -30,6 +32,7 @@ class _FakeColisRepository extends Fake implements ColisRepository {
   @override
   Future<Either<Failure, Map<String, dynamic>>> getColisRecus({
     String? statut,
+    FiltresColis filtres = const FiltresColis(),
     int page = 1,
     int limit = 20,
   }) async =>
@@ -315,6 +318,7 @@ class _FakeColisRepositoryWithCapture extends Fake
   @override
   Future<Either<Failure, Map<String, dynamic>>> getColis({
     String? statut,
+    FiltresColis filtres = const FiltresColis(),
     int page = 1,
     int limit = 20,
   }) async =>
@@ -323,6 +327,7 @@ class _FakeColisRepositoryWithCapture extends Fake
   @override
   Future<Either<Failure, Map<String, dynamic>>> getColisRecus({
     String? statut,
+    FiltresColis filtres = const FiltresColis(),
     int page = 1,
     int limit = 20,
   }) async =>

@@ -1,6 +1,6 @@
 {
-    "name": "yobante_colis",
-    "short_name": "yobante_colis",
+    "name": "Yobante Colis",
+    "short_name": "Yobante Colis",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -209,6 +209,9 @@ class Annonce extends Equatable {
   final String? lienLibelle;
   final String? imageUrl;
 
+  /// `accueil`, `banniere` ou `popup` : une annonce « popup » s'affiche en fenêtre.
+  final String emplacement;
+
   const Annonce({
     required this.id,
     required this.titre,
@@ -217,7 +220,10 @@ class Annonce extends Equatable {
     this.lienUrl,
     this.lienLibelle,
     this.imageUrl,
+    this.emplacement = 'accueil',
   });
+
+  bool get estPopup => emplacement == 'popup';
 
   factory Annonce.fromJson(Map<String, dynamic> j) => Annonce(
         id: j['id'] as String,
@@ -227,6 +233,7 @@ class Annonce extends Equatable {
         lienUrl: j['lienUrl'] as String?,
         lienLibelle: j['lienLibelle'] as String?,
         imageUrl: j['imageUrl'] as String?,
+        emplacement: j['emplacement'] as String? ?? 'accueil',
       );
 
   @override

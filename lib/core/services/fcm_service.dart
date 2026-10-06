@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../config/env.dart';
 import '../routes/app_router.dart';
@@ -11,6 +12,7 @@ import 'package:toastification/toastification.dart';
 import '../widgets/toast_notif.dart';
 import 'token_service.dart';
 import 'ouverture_notification.dart';
+import 'compteur_notifications.dart';
 
 /// Handler background/terminated — doit être une fonction top-level
 @pragma('vm:entry-point')
@@ -45,15 +47,17 @@ class FcmService {
     // 3. Handler message quand l'app est au premier plan
     _foregroundSub?.cancel();
     _foregroundSub = FirebaseMessaging.onMessage.listen((message) {
+      CompteurNotifications.instance.nouvelleNotification();
       // Application ouverte : Android n'affiche pas la notification, on la présente dans l'app
       final notif = message.notification;
       if (notif == null || !context.mounted) return;
-      showToast(context, notif.title ?? 'Yobante', notif.body ?? '', ToastificationType.info);
+      showToast(context, notif.title ?? 'Yobante Colis', notif.body ?? '', ToastificationType.info);
     });
 
     // 4. Handler tap sur notif quand l'app était en arrière-plan
     _openedAppSub?.cancel();
     _openedAppSub = FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      CompteurNotifications.instance.rafraichir();
       if (context.mounted) _handleNotificationTap(context, message.data);
     });
 
@@ -74,16 +78,6 @@ class FcmService {
     _tokenRefreshSub = _messaging.onTokenRefresh.listen((_) => uploadToken());
   }
 
-  /// Jeton push de ce téléphone (null sans Firebase ou en cas d'échec).
-  static Future<String?> tokenActuel() async {
-    if (!_firebasePret) return null;
-    try {
-      return await _messaging.getToken();
-    } catch (_) {
-      return null;
-    }
-  }
-
   /// À la déconnexion : le jeton est invalidé auprès de Firebase, ce téléphone ne
   /// reçoit plus les push du compte, même si le serveur n'a pas pu être prévenu.
   /// Un nouveau jeton est créé à la prochaine connexion.
@@ -98,7 +92,8 @@ class FcmService {
   /// Public — appelé aussi depuis AuthBloc juste après un login réussi,
   /// sans avoir besoin de BuildContext.
   static Future<void> uploadToken() async {
-    if (!_firebasePret) return;
+    // Le backend n'enregistre que les plateformes « ios » et « android »
+    if (kIsWeb || !_firebasePret) return;
     try {
       final token = await _messaging.getToken();
       if (token == null) return;

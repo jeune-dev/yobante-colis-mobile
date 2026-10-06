@@ -160,13 +160,14 @@ void main() {
   });
 
   group('AuthBloc — LogoutRequested', () {
-    test('→ [AuthLoading, AuthInitial] et appelle repo.logout()', () async {
+    test('→ [AuthLoading, LogoutSuccess, AuthInitial] et appelle repo.logout()', () async {
       final bloc = AuthBloc(authRepository: fakeRepo);
 
-      final states = await _collectStates(bloc, LogoutRequested());
+      final states = await _collectStates(bloc, const LogoutRequested(ouvrirConnexion: true));
 
       expect(states[0], isA<AuthLoading>());
-      expect(states[1], isA<AuthInitial>());
+      expect(states[1], const LogoutSuccess(ouvrirConnexion: true));
+      expect(states[2], isA<AuthInitial>());
       expect(fakeRepo.logoutCalled, true);
       await bloc.close();
     });

@@ -24,6 +24,9 @@ class _NosTarifsPageState extends State<NosTarifsPage> {
   String _mode = 'maritime';
   late Future<(List<ArticleTarif>, ConfigurationPublique)> _donnees;
 
+  /// Services d'expédition (aérien, maritime…) et leurs délais (`GET /public/services`).
+  late final Future<List<ServiceExpedition>> _services = _source.getServices();
+
   @override
   void initState() {
     super.initState();
@@ -32,7 +35,7 @@ class _NosTarifsPageState extends State<NosTarifsPage> {
 
   void _charger() {
     _donnees = Future.wait([
-      _source.getTarifs(modeTransport: _mode, paysDepart: 'FR'),
+      _source.getTarifs(modeTransport: _mode, paysDepart: 'FR', paysArrivee: 'SN'),
       _source.getConfiguration(),
     ]).then((r) => (r[0] as List<ArticleTarif>, r[1] as ConfigurationPublique));
   }
@@ -105,6 +108,33 @@ class _NosTarifsPageState extends State<NosTarifsPage> {
                 ),
               );
             }),
+            FutureBuilder<List<ServiceExpedition>>(
+              future: _services,
+              builder: (context, snap) {
+                final services = snap.data ?? const <ServiceExpedition>[];
+                if (services.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: CarteSection(
+                    titre: tr('Nos services'),
+                    icone: Icons.local_shipping_outlined,
+                    children: services
+                        .map((s) => ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(s.estAerien ? Icons.flight : Icons.directions_boat_outlined,
+                                  color: AppColor.kPrimary),
+                              title: Text(s.nom, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+                              subtitle: Text([
+                                if (s.description != null && s.description!.isNotEmpty) s.description!,
+                                if (s.delaiMinJours != null || s.delaiMaxJours != null)
+                                  tr('Délai : ${s.delaiMinJours ?? s.delaiMaxJours}–${s.delaiMaxJours ?? s.delaiMinJours} jours'),
+                              ].join('\n')),
+                            ))
+                        .toList(),
+                  ),
+                );
+              },
+            ),
             if (config.colissimoActive && config.grilleColissimo.isNotEmpty)
               CarteSection(
                 titre: tr('Étiquette Colissimo (HT)'),

@@ -11,9 +11,9 @@ class PaiementsBloc extends Bloc<PaiementsEvent, PaiementsState> {
     on<LoadFactureDetail>(_onLoadDetail);
   }
 
-  Future<void> _onLoadFactures(LoadFactures _, Emitter<PaiementsState> emit) async {
+  Future<void> _onLoadFactures(LoadFactures event, Emitter<PaiementsState> emit) async {
     emit(PaiementsLoading());
-    final result = await paiementsRepository.getFactures();
+    final result = await paiementsRepository.getFactures(statut: event.statut, impayees: event.impayees);
     result.fold(
       (f) => emit(PaiementsFailure(f.errorMessage)),
       (factures) => emit(FacturesLoaded(factures)),

@@ -467,57 +467,122 @@ class _EnTete extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final blanc70 = AppColor.kWhite.withValues(alpha: 0.7);
+    Widget point(Color couleur) =>
+        Container(width: 10, height: 10, decoration: BoxDecoration(color: couleur, shape: BoxShape.circle));
+    // Carte bleu marine : l'essentiel du suivi d'un coup d'œil
     return Container(
-      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColor.kWhite,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 12)],
+        color: AppColor.kPrimary,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [BoxShadow(color: AppColor.kPrimary.withValues(alpha: 0.25), blurRadius: 20, offset: const Offset(0, 8))],
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          PastilleCategorie(numero: categorie.numero, libelle: categorie.libelle),
-          const Spacer(),
-          StatutBadge(statut: colis.statut),
-        ]),
-        const SizedBox(height: 12),
-        Row(children: [
-          Expanded(
-            child: SelectableText(colis.reference,
-                style: GoogleFonts.plusJakartaSans(fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(children: [
+        // Carré jaune du pictogramme, en filigrane
+        Positioned(
+          right: -24,
+          top: -24,
+          child: Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              color: AppColor.kSecondary.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(20),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.copy_rounded, size: 20),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: colis.reference));
-              showToast(context, tr('Copié'), tr('Numéro de suivi copié.'), ToastificationType.success);
-            },
-          ),
-        ]),
-        const SizedBox(height: 8),
-        Row(children: [
-          const Icon(Icons.trip_origin, size: 16, color: AppColor.kPrimary),
-          const SizedBox(width: 6),
-          Expanded(child: Text(colis.villeDepart?.nom ?? '—', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600))),
-          const Icon(Icons.arrow_forward, size: 16, color: AppColor.kGrayscale40),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(colis.villeArrivee?.nom ?? '—',
-                textAlign: TextAlign.end, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
-          ),
-        ]),
-        if (colis.dateLivraisonEstimee != null) ...[
-          const SizedBox(height: 8),
-          Text(tr('Livraison estimée : ${formaterDate(colis.dateLivraisonEstimee)}'), style: texteDiscret()),
-        ],
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () => Navigator.of(context).pushNamed(AppRouter.suiviColisRoute, arguments: colis.id),
-            icon: const Icon(Icons.timeline),
-            label: Text(tr('Voir toutes les étapes')),
-          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              PastilleCategorie(numero: categorie.numero, libelle: categorie.libelle),
+              const Spacer(),
+              Container(
+                decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(20)),
+                child: StatutBadge(statut: colis.statut),
+              ),
+            ]),
+            const SizedBox(height: 16),
+            Text(tr('Numéro de suivi'), style: GoogleFonts.plusJakartaSans(fontSize: 12, color: blanc70)),
+            Row(children: [
+              Expanded(
+                child: SelectableText(
+                  colis.reference,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                    color: AppColor.kWhite,
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: tr('Copier'),
+                icon: const Icon(Icons.copy_rounded, size: 20, color: AppColor.kWhite),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: colis.reference));
+                  showToast(context, tr('Copié'), tr('Numéro de suivi copié.'), ToastificationType.success);
+                },
+              ),
+            ]),
+            const SizedBox(height: 14),
+            // Trajet
+            Row(children: [
+              point(AppColor.kWhite),
+              Expanded(child: Divider(color: AppColor.kWhite.withValues(alpha: 0.3), thickness: 1.5)),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(color: AppColor.kSecondary, shape: BoxShape.circle),
+                child: const Icon(Icons.local_shipping_rounded, size: 16, color: AppColor.kPrimary),
+              ),
+              Expanded(child: Divider(color: AppColor.kWhite.withValues(alpha: 0.3), thickness: 1.5)),
+              point(AppColor.kSecondary),
+            ]),
+            const SizedBox(height: 8),
+            Row(children: [
+              Expanded(
+                child: Text(colis.villeDepart?.nom ?? '—',
+                    style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700, color: AppColor.kWhite)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(colis.villeArrivee?.nom ?? '—',
+                    textAlign: TextAlign.end,
+                    style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700, color: AppColor.kWhite)),
+              ),
+            ]),
+            if (colis.dateLivraisonEstimee != null) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColor.kWhite.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  const Icon(Icons.event_available_rounded, size: 16, color: AppColor.kSecondary),
+                  const SizedBox(width: 8),
+                  Text(tr('Livraison estimée : ${formaterDate(colis.dateLivraisonEstimee)}'),
+                      style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w600, color: AppColor.kWhite)),
+                ]),
+              ),
+            ],
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.of(context).pushNamed(AppRouter.suiviColisRoute, arguments: colis.id),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.kSecondary,
+                  foregroundColor: AppColor.kPrimary,
+                  minimumSize: const Size(0, 46),
+                ),
+                icon: const Icon(Icons.timeline_rounded, size: 20),
+                label: Text(tr('Voir toutes les étapes')),
+              ),
+            ),
+          ]),
         ),
       ]),
     );

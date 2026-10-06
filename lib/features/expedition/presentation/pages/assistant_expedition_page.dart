@@ -37,6 +37,8 @@ class PreremplissageExpedition {
   final double? poidsKg;
   final String? modeDepot;
   final String? tourneeId;
+  final bool fragile;
+  final bool marchandiseDangereuse;
   const PreremplissageExpedition({
     this.categorie,
     this.versSenegal = true,
@@ -46,6 +48,8 @@ class PreremplissageExpedition {
     this.poidsKg,
     this.modeDepot,
     this.tourneeId,
+    this.fragile = false,
+    this.marchandiseDangereuse = false,
   });
 }
 
@@ -69,12 +73,19 @@ class _PieceSaisie {
   final longueur = TextEditingController();
   final largeur = TextEditingController();
   final hauteur = TextEditingController();
+  String typeEmballage = 'carton';
 
   double? _n(TextEditingController c) => double.tryParse(c.text.trim().replaceAll(',', '.'));
   PieceDeclaree? versPiece() {
     final p = _n(poids);
     if (p == null || p <= 0) return null;
-    return PieceDeclaree(poidsKg: p, longueurCm: _n(longueur), largeurCm: _n(largeur), hauteurCm: _n(hauteur));
+    return PieceDeclaree(
+      poidsKg: p,
+      longueurCm: _n(longueur),
+      largeurCm: _n(largeur),
+      hauteurCm: _n(hauteur),
+      typeEmballage: typeEmballage,
+    );
   }
 
   bool get dimensionsCompletes => _n(longueur) != null && _n(largeur) != null && _n(hauteur) != null;
@@ -96,6 +107,62 @@ class _PieceSaisie {
     longueur.dispose();
     largeur.dispose();
     hauteur.dispose();
+  }
+}
+
+/// Ligne de l'inventaire douanier en cours de saisie.
+class _LigneDouaneSaisie {
+  final designation = TextEditingController();
+  final quantite = TextEditingController(text: '1');
+  final valeurUnitaire = TextEditingController();
+  final codeSh = TextEditingController();
+  final poidsNet = TextEditingController();
+  final paysOrigine = TextEditingController();
+  final marque = TextEditingController();
+  String unite = 'piece';
+
+  double? _n(TextEditingController c) => double.tryParse(c.text.trim().replaceAll(',', '.'));
+
+  bool get vide => [designation, valeurUnitaire, codeSh, poidsNet, paysOrigine, marque]
+      .every((c) => c.text.trim().isEmpty);
+
+  /// Mêmes règles que le schéma `articlesDouane` du backend.
+  String? get erreur {
+    if (vide) return null;
+    if (designation.text.trim().length < 2) return tr('Inventaire : précisez la désignation de chaque article.');
+    if ((_n(quantite) ?? 0) <= 0) return tr('Inventaire : quantité invalide.');
+    if ((_n(valeurUnitaire) ?? -1) < 0) return tr('Inventaire : indiquez la valeur unitaire de chaque article.');
+    final sh = codeSh.text.trim();
+    if (sh.isNotEmpty && !RegExp(r'^\d{6,10}$').hasMatch(sh)) {
+      return tr('Inventaire : le code SH compte 6 à 10 chiffres.');
+    }
+    if (poidsNet.text.trim().isNotEmpty && (_n(poidsNet) ?? -1) < 0) return tr('Inventaire : poids net invalide.');
+    final pays = paysOrigine.text.trim();
+    if (pays.isNotEmpty && !RegExp(r'^[A-Za-z]{2}$').hasMatch(pays)) {
+      return tr('Inventaire : le pays d\'origine s\'écrit en deux lettres (FR, CN…).');
+    }
+    return null;
+  }
+
+  ContenuDeclare? versContenu(String? etat) {
+    if (vide || erreur != null) return null;
+    return ContenuDeclare(
+      designation: designation.text.trim(),
+      quantite: _n(quantite) ?? 1,
+      unite: unite,
+      valeurUnitaire: _n(valeurUnitaire) ?? 0,
+      etat: etat,
+      codeSh: codeSh.text.trim(),
+      poidsNetKg: _n(poidsNet),
+      paysOrigine: paysOrigine.text.trim(),
+      marque: marque.text.trim(),
+    );
+  }
+
+  void dispose() {
+    for (final c in [designation, quantite, valeurUnitaire, codeSh, poidsNet, paysOrigine, marque]) {
+      c.dispose();
+    }
   }
 }
 
@@ -144,7 +211,9 @@ class _AssistantState extends State<_Assistant> {
   final Map<String, int> _qtesEmballages = {};
   String _typeContenu = 'marchandise';
   bool _fragile = false;
+  bool _dangereuse = false;
   bool _assurance = false;
+  final List<_LigneDouaneSaisie> _inventaire = [];
 
   // ── Étape 3 : remise du colis ──────────────────────────────────────────────
   String? _modeDepot;
@@ -213,6 +282,8 @@ class _AssistantState extends State<_Assistant> {
     }
     _modeDepot = p.modeDepot;
     _tourneeId = p.tourneeId;
+    _fragile = p.fragile;
+    _dangereuse = p.marchandiseDangereuse;
     _initialiser();
   }
 
@@ -248,7 +319,7 @@ class _AssistantState extends State<_Assistant> {
     try {
       final articles = _categorie.code == 'documents'
           ? <ArticleTarif>[]
-          : await _catalogue.getTarifs(categorie: _categorie.code, paysDepart: _paysDepart);
+          : await _catalogue.getTarifs(categorie: _categorie.code, paysDepart: _paysDepart, paysArrivee: _paysArrivee);
       final emballages = _categorie.code == 'documents'
           ? <Emballage>[]
           : await _catalogue.getEmballages(categorie: _categorie.code);
@@ -340,6 +411,9 @@ class _AssistantState extends State<_Assistant> {
     for (final p in _pieces) {
       p.dispose();
     }
+    for (final l in _inventaire) {
+      l.dispose();
+    }
     super.dispose();
   }
 
@@ -374,9 +448,13 @@ class _AssistantState extends State<_Assistant> {
       deviseValeur: _paysDepart == 'FR' ? 'EUR' : 'XOF',
       articles: articles,
       pieces: pieces,
+      contenu: _categorie.code == 'documents'
+          ? const []
+          : _inventaire.map((l) => l.versContenu(_etat)).whereType<ContenuDeclare>().toList(),
       emballages: Map.of(_qtesEmballages),
       typeContenu: _categorie.code == 'documents' ? 'document' : _typeContenu,
       fragile: _categorie.code != 'documents' && _fragile,
+      marchandiseDangereuse: _categorie.code != 'documents' && _dangereuse,
       assuranceSouscrite: _categorie.code != 'documents' && _assurance,
       incoterm: _categorie.code == 'documents' ? 'DAP' : _incoterm,
       payeur: _categorie.code == 'documents' ? 'expediteur' : _payeur,
@@ -432,6 +510,11 @@ class _AssistantState extends State<_Assistant> {
         }
         final limitePiece = _pieces.map((p) => p.erreurLimites).whereType<String>().firstOrNull;
         if (limitePiece != null) return limitePiece;
+        if (_categorie.code != 'documents') {
+          final erreurInventaire = _inventaire.map((l) => l.erreur).whereType<String>().firstOrNull;
+          if (erreurInventaire != null) return erreurInventaire;
+          if (_inventaire.where((l) => !l.vide).length > 50) return tr('Inventaire : 50 articles au maximum.');
+        }
         if (_valeur.text.trim().isNotEmpty && _valeurSaisie == null) return tr('Valeur estimée invalide.');
         if ((_valeurSaisie ?? 0) > 50000000) return tr('Valeur estimée trop élevée.');
         if (_categorie.code != 'documents' && _assurance && (_valeurSaisie ?? 0) <= 0) {
@@ -897,11 +980,20 @@ class _AssistantState extends State<_Assistant> {
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
+          title: Text(tr('Marchandise dangereuse')),
+          subtitle: Text(tr('Batteries, parfums, aérosols, produits inflammables… (contrôle et supplément éventuels)')),
+          value: _dangereuse,
+          onChanged: (v) => setState(() => _dangereuse = v),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
           title: Text(tr('Assurer mon envoi')),
           subtitle: Text(tr('Calculée sur la valeur estimée, ajoutée au devis')),
           value: _assurance,
           onChanged: (v) => setState(() => _assurance = v),
         ),
+        const SizedBox(height: 12),
+        ..._saisieInventaire(),
       ],
       const SizedBox(height: 20),
       Text(c == 'documents' ? tr('Photo de l\'enveloppe') : tr('Photos du colis'), style: titreSection()),
@@ -990,6 +1082,15 @@ class _AssistantState extends State<_Assistant> {
               ],
             ),
             if (!dimensionsObligatoires) Text(tr('Dimensions facultatives'), style: texteDiscret(11)),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              initialValue: p.typeEmballage,
+              decoration: InputDecoration(labelText: tr('Emballage'), prefixIcon: const Icon(Icons.all_inbox_outlined)),
+              items: kTypesEmballage.entries
+                  .map((e) => DropdownMenuItem(value: e.key, child: Text(tr(e.value))))
+                  .toList(),
+              onChanged: (v) => setState(() => p.typeEmballage = v ?? 'carton'),
+            ),
           ],
         ),
       );
@@ -1010,6 +1111,100 @@ class _AssistantState extends State<_Assistant> {
           ),
       ],
     ),
+  ];
+
+  /// Inventaire détaillé du contenu, repris dans la déclaration en douane et la
+  /// facture commerciale (facultatif : le backend se contente sinon de la description).
+  List<Widget> _saisieInventaire() => [
+    Text(tr('Inventaire du contenu (douane)'), style: titreSection()),
+    const SizedBox(height: 4),
+    Text(
+      tr('Facultatif : détaillez les articles pour accélérer le dédouanement et la facture commerciale.'),
+      style: texteDiscret(12),
+    ),
+    const SizedBox(height: 8),
+    ...List.generate(_inventaire.length, (i) {
+      final l = _inventaire[i];
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: CarteSection(
+          titre: tr('Article ${i + 1}'),
+          icone: Icons.list_alt_outlined,
+          action: IconButton(
+            icon: const Icon(Icons.delete_outline, color: AppColor.kErreur),
+            onPressed: () => setState(() => _inventaire.removeAt(i).dispose()),
+          ),
+          children: [
+            ChampTexte(controller: l.designation, label: tr('Désignation'), maxLength: 255),
+            Row(
+              children: [
+                Expanded(
+                  child: ChampTexte(
+                    controller: l.quantite,
+                    label: tr('Quantité'),
+                    clavier: const TextInputType.numberWithOptions(decimal: true),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: DropdownButtonFormField<String>(
+                      initialValue: l.unite,
+                      decoration: InputDecoration(labelText: tr('Unité')),
+                      items: kUnitesDouane.entries
+                          .map((e) => DropdownMenuItem(value: e.key, child: Text(tr(e.value))))
+                          .toList(),
+                      onChanged: (v) => setState(() => l.unite = v ?? 'piece'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            ChampTexte(
+              controller: l.valeurUnitaire,
+              label: tr('Valeur unitaire (${_paysDepart == 'FR' ? '€' : 'FCFA'})'),
+              clavier: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: ChampTexte(
+                    controller: l.codeSh,
+                    label: tr('Code SH (facultatif)'),
+                    clavier: TextInputType.number,
+                    maxLength: 10,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ChampTexte(
+                    controller: l.poidsNet,
+                    label: tr('Poids net kg (facultatif)'),
+                    clavier: const TextInputType.numberWithOptions(decimal: true),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: ChampTexte(controller: l.paysOrigine, label: tr('Pays d\'origine (FR, CN…)'), maxLength: 2),
+                ),
+                const SizedBox(width: 8),
+                Expanded(child: ChampTexte(controller: l.marque, label: tr('Marque (facultatif)'), maxLength: 80)),
+              ],
+            ),
+          ],
+        ),
+      );
+    }),
+    if (_inventaire.length < 50)
+      TextButton.icon(
+        onPressed: () => setState(() => _inventaire.add(_LigneDouaneSaisie())),
+        icon: const Icon(Icons.add),
+        label: Text(tr('Ajouter un article')),
+      ),
   ];
 
   List<Widget> _etapeRemise() {
@@ -1199,7 +1394,7 @@ class _AssistantState extends State<_Assistant> {
         if (_config?.colissimoActive == true && _paysDepart == 'FR')
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(tr('Acheter l\'étiquette Colissimo avec Yobante')),
+            title: Text(tr('Acheter l\'étiquette Colissimo avec Yobante Colis')),
             subtitle: Text(tr('Tarif selon le poids, ajouté au devis')),
             value: _colissimo,
             onChanged: (v) => setState(() => _colissimo = v),
@@ -1416,6 +1611,8 @@ class _AssistantState extends State<_Assistant> {
             if (_categorie.code != 'documents') ...[
               LigneInfo(tr('Nature'), tr(_naturesEnvoi[demande.typeContenu] ?? demande.typeContenu)),
               if (demande.fragile) LigneInfo(tr('Fragile'), tr('Oui')),
+              if (demande.marchandiseDangereuse) LigneInfo(tr('Marchandise dangereuse'), tr('Oui')),
+              if (demande.contenu.isNotEmpty) LigneInfo(tr('Inventaire douane'), tr('${demande.contenu.length} article(s)')),
               LigneInfo(tr('Assurance'), demande.assuranceSouscrite ? tr('Oui') : tr('Non')),
               LigneInfo(tr('Payé par'), demande.payeur == 'destinataire' ? tr('Le destinataire') : tr('L\'expéditeur')),
             ],

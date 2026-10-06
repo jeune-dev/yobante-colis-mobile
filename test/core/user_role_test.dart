@@ -15,6 +15,12 @@ void main() {
       expect(UserRoleX.fromString('super_admin'), UserRole.superAdmin);
     });
 
+    test('parse les rôles de terrain', () {
+      expect(UserRoleX.fromString('coursier'), UserRole.coursier);
+      expect(UserRoleX.fromString('agent_point'), UserRole.agentPoint);
+      expect(UserRole.coursier.isPersonnelTerrain && !UserRole.coursier.isAdmin, isTrue);
+    });
+
     test('valeur inconnue retourne unknown', () {
       expect(UserRoleX.fromString('xyz'), UserRole.unknown);
     });

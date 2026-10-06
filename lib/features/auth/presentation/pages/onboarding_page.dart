@@ -21,99 +21,100 @@ class OnboardingPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.kBackground,
       body: SafeArea(
-        // Défilement si l'écran est trop petit (ou le clavier ouvert) ; sinon
-        // IntrinsicHeight garde la répartition des Spacer sur toute la hauteur.
-        child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Column(
-                  children: [
-                    const Spacer(flex: 2),
-                    // Logo
-                    Image.asset(
-                      'assets/images/logo_yobante_icon.png',
-                      width: 160,
-                    ),
-                    const SizedBox(height: 40),
-                    Text(
-                      tr('Yobante Colis'),
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700,
-                        color: AppColor.kGrayscaleDark100,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      tr(
-                        'Envoyez et suivez vos colis\npartout au Sénégal, simplement.',
-                      ),
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 16,
-                        color: AppColor.kGrayscale40,
-                        height: 1.6,
-                      ),
-                    ),
-                    const Spacer(flex: 3),
-                    // Features rapides
-                    _FeatureRow(
-                      icon: Icons.track_changes_rounded,
-                      text: tr('Suivi en temps réel de vos envois'),
-                    ),
-                    const SizedBox(height: 14),
-                    _FeatureRow(
-                      icon: Icons.receipt_long_rounded,
-                      text: tr('Factures et paiements en un clic'),
-                    ),
-                    const SizedBox(height: 14),
-                    _FeatureRow(
-                      icon: Icons.notifications_active_rounded,
-                      text: tr('Notifications à chaque étape'),
-                    ),
-                    const Spacer(flex: 2),
-                    PrimaryButton(
-                      text: tr('Créer un compte'),
-                      onTap: () {
-                        _markSeen();
-                        Navigator.of(
-                          context,
-                        ).pushNamed(AppRouter.registerRoute);
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    SecondaryButton(
-                      text: tr('Se connecter'),
-                      onTap: () {
-                        _markSeen();
-                        Navigator.of(context).pushNamed(AppRouter.loginRoute);
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        _markSeen();
-                        Navigator.of(
-                          context,
-                        ).pushReplacementNamed(AppRouter.clientRoute);
-                      },
-                      child: Text(
-                        tr('Continuer sans compte'),
-                        style: GoogleFonts.plusJakartaSans(
-                          color: AppColor.kGrayscale40,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              // Présentation : centrée dans l'espace restant, défilable si l'écran est très petit
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Logo proportionné à la hauteur disponible (petits écrans)
+                    final tailleLogo = (constraints.maxHeight * 0.22).clamp(72.0, 140.0);
+                    return SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 16),
+                            Image.asset('assets/images/logo_yobante_icon.png', width: tailleLogo),
+                            const SizedBox(height: 24),
+                            Text(
+                              tr('Yobante Colis'),
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: AppColor.kGrayscaleDark100,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              tr('Envoyez et suivez vos colis\npartout au Sénégal, simplement.'),
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 15,
+                                color: AppColor.kGrayscale40,
+                                height: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+                            _FeatureRow(
+                              icon: Icons.track_changes_rounded,
+                              text: tr('Suivi en temps réel de vos envois'),
+                            ),
+                            const SizedBox(height: 12),
+                            _FeatureRow(icon: Icons.receipt_long_rounded, text: tr('Factures et paiements en un clic')),
+                            const SizedBox(height: 12),
+                            _FeatureRow(
+                              icon: Icons.notifications_active_rounded,
+                              text: tr('Notifications à chaque étape'),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                    );
+                  },
                 ),
               ),
-            ),
+              // Actions : toujours visibles en bas de l'écran
+              const SizedBox(height: 12),
+              PrimaryButton(
+                text: tr('Créer un compte'),
+                onTap: () {
+                  _markSeen();
+                  Navigator.of(context).pushNamed(AppRouter.registerRoute);
+                },
+              ),
+              const SizedBox(height: 12),
+              SecondaryButton(
+                text: tr('Se connecter'),
+                onTap: () {
+                  _markSeen();
+                  Navigator.of(context).pushNamed(AppRouter.loginRoute);
+                },
+              ),
+              const SizedBox(height: 4),
+              TextButton(
+                onPressed: () {
+                  _markSeen();
+                  Navigator.of(context).pushReplacementNamed(AppRouter.clientRoute);
+                },
+                child: Text(
+                  tr('Continuer sans compte'),
+                  style: GoogleFonts.plusJakartaSans(
+                    color: AppColor.kPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    decoration: TextDecoration.underline,
+                    decorationColor: AppColor.kPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
           ),
         ),
       ),

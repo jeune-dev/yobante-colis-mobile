@@ -8,7 +8,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:toastification/toastification.dart';
 import '../../../../core/errors/exceptions.dart';
-import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../core/widgets/ui_kit.dart';
@@ -119,7 +118,7 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
       final dossier = await getTemporaryDirectory();
       final fichier = File('${dossier.path}/mes-donnees-yobante.json');
       await fichier.writeAsString(const JsonEncoder.withIndent('  ').convert(export));
-      await SharePlus.instance.share(ShareParams(files: [XFile(fichier.path)], title: tr('Mes données Yobante')));
+      await SharePlus.instance.share(ShareParams(files: [XFile(fichier.path)], title: tr('Mes données Yobante Colis')));
     } on ServerException catch (e) {
       if (mounted) showToast(context, tr('Erreur'), e.message, ToastificationType.error);
     } catch (_) {
@@ -154,6 +153,7 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
             TextField(
               controller: motif,
               maxLines: 2,
+              maxLength: 500,
               decoration: InputDecoration(labelText: tr('Motif (facultatif)')),
             ),
           ]),
@@ -178,9 +178,8 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
     try {
       final message = await _source.supprimerCompte(password: password, motif: raison);
       if (!mounted) return;
-      context.read<AuthBloc>().add(LogoutRequested());
       showToast(context, tr('Compte supprimé'), message, ToastificationType.success);
-      Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.clientRoute, (_) => false);
+      context.read<AuthBloc>().add(const LogoutRequested());
     } on ServerException catch (e) {
       if (mounted) showToast(context, tr('Erreur'), e.message, ToastificationType.error);
     } finally {
@@ -260,6 +259,12 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
                     title: Text(tr('Emails')),
                     value: p.notificationsEmail,
                     onChanged: (v) => _preference('notificationsEmail', v),
+                  ),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(tr('SMS')),
+                    value: p.notificationsSms,
+                    onChanged: (v) => _preference('notificationsSms', v),
                   ),
                 ]),
                 const SizedBox(height: 16),

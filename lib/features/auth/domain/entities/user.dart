@@ -12,6 +12,9 @@ class User extends Equatable {
   final String? accessToken;
   final String? refreshToken;
 
+  /// Langue choisie par l'utilisateur et enregistrée sur son compte (« fr » ou « en »).
+  final String? langue;
+
   const User({
     required this.id,
     required this.nom,
@@ -23,6 +26,7 @@ class User extends Equatable {
     this.isActive = true,
     this.accessToken,
     this.refreshToken,
+    this.langue,
   });
 
   String get fullName => '$prenom $nom';

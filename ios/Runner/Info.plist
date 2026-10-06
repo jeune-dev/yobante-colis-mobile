@@ -28,6 +28,16 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Yobante Colis peut utiliser l'appareil photo pour prendre une photo de profil.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- Développement : backend HTTP du Mac sur le réseau local (la production reste en HTTPS) -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Yobante Colis se connecte au serveur de développement sur votre réseau local.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Yobante Colis utilise votre position pour trouver les points de service les plus proches.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Yobante Colis utilise le micro pour enregistrer un message vocal décrivant votre colis.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

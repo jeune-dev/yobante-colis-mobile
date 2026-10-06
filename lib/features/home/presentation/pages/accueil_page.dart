@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
@@ -12,6 +13,7 @@ import '../../../catalogue/domain/catalogue_entities.dart';
 import '../../../catalogue/presentation/pages/nos_tarifs_page.dart';
 import '../../../catalogue/presentation/pages/tournees_collecte_page.dart';
 import '../../../colis/domain/entities/colis.dart';
+import '../../../colis/domain/entities/filtres_colis.dart';
 import '../../../colis/domain/usecases/colis_usecases.dart';
 import '../../../colis/presentation/widgets/statut_badge.dart';
 import '../../../devis/presentation/pages/devis_page.dart';
@@ -20,6 +22,7 @@ import '../../../points_collecte/presentation/pages/point_de_service_page.dart';
 import '../../../tracking/presentation/pages/tracking_page.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/widgets/bouton_menu_ou_retour.dart';
+import '../../../../core/widgets/pastille_notifications.dart';
 
 /// Onglet d'accueil façon DHL : suivi en accès libre, messages de
 /// l'administrateur (annonces, prochaine collecte), raccourcis et envois en cours.
@@ -60,22 +63,60 @@ class _AccueilPageState extends State<AccueilPage> {
           _contenu = contenu;
           _config = config;
         });
+        _afficherPopup(contenu.annonces.where((a) => a.estPopup));
       }
     } catch (_) {
       // Accueil dégradé : le suivi et les raccourcis restent disponibles
     }
     if (_connecte) {
-      final resultat = await sl<GetColis>()(limit: 5);
+      // Le backend ne renvoie que les envois non terminés
+      final resultat = await sl<GetColis>()(filtres: const FiltresColis(enCours: true), limit: 3);
       resultat.fold((_) {}, (data) {
         final liste = (data['colis'] as List).cast<Colis>();
-        if (mounted) {
-          setState(() => _enCours = liste
-              .where((c) => !['livre', 'recupere', 'retourne', 'annule', 'refuse'].contains(c.statut))
-              .take(3)
-              .toList());
-        }
+        if (mounted) setState(() => _enCours = liste);
       });
     }
+  }
+
+  /// Annonces « popup » : chacune s'affiche une seule fois sur ce téléphone.
+  Future<void> _afficherPopup(Iterable<Annonce> popups) async {
+    final prefs = sl<SharedPreferences>();
+    final annonce = popups.where((a) => prefs.getBool('annonce_vue_${a.id}') != true).firstOrNull;
+    if (annonce == null || !mounted) return;
+    await prefs.setBool('annonce_vue_${annonce.id}', true);
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(annonce.titre),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (annonce.imageUrl != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(annonce.imageUrl!, errorBuilder: (_, _, _) => const SizedBox.shrink()),
+                ),
+              ),
+            Text(annonce.message),
+          ],
+        ),
+        actions: [
+          if (annonce.lienUrl != null)
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                ouvrirLien(context, annonce.lienUrl);
+              },
+              child: Text(annonce.lienLibelle ?? tr('En savoir plus')),
+            ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(tr('Fermer'))),
+        ],
+      ),
+    );
   }
 
   void _ouvrir(Widget page) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
@@ -89,7 +130,7 @@ class _AccueilPageState extends State<AccueilPage> {
         actions: [
           if (_connecte)
             IconButton(
-              icon: const Icon(Icons.notifications_none_rounded),
+              icon: const PastilleNotifications(child: Icon(Icons.notifications_none_rounded)),
               onPressed: () => _ouvrir(const NotificationsPage()),
             ),
           // Pictogramme de la marque, aligné à droite de la barre
@@ -98,9 +139,9 @@ class _AccueilPageState extends State<AccueilPage> {
             child: Image.asset(
               'assets/images/logo_yobante_icon.png',
               height: 32,
-              semanticLabel: 'Yobante',
+              semanticLabel: 'Yobante Colis',
               errorBuilder: (_, _, _) =>
-                  Text('Yobante', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+                  Text('Yobante Colis', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
             ),
           ),
         ],
@@ -128,7 +169,7 @@ class _AccueilPageState extends State<AccueilPage> {
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               ..._contenu.tournees.map(_banniereTournee),
-              ..._contenu.annonces.map(_banniereAnnonce),
+              ..._contenu.annonces.where((a) => !a.estPopup).map(_banniereAnnonce),
               Text(tr('Que souhaitez-vous faire ?'), style: titreSection()),
               const SizedBox(height: 12),
               // Hauteur des tuiles suivant la taille du texte (réglage d'accessibilité),
@@ -148,7 +189,7 @@ class _AccueilPageState extends State<AccueilPage> {
                   _Raccourci(Icons.home_work_outlined, tr('Collecte\nà domicile'), () => _ouvrir(const TourneesCollectePage())),
                   _Raccourci(Icons.storefront_outlined, tr('Points de\nservice'), () => _ouvrir(const PointDeServicePage())),
                   _Raccourci(Icons.chat_outlined, tr('WhatsApp'),
-                      () => ouvrirWhatsapp(context, numero: _config?.whatsappContact, message: tr('Bonjour Yobante,'))),
+                      () => ouvrirWhatsapp(context, numero: _config?.whatsappContact, message: tr('Bonjour Yobante Colis,'))),
                 ],
               )),
               if (_enCours.isNotEmpty) ...[

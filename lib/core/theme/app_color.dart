@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Palette tirée du pictogramme Yobante : bleu marine #053D8F et jaune #F6C537.
+/// Palette tirée du pictogramme Yobante Colis : bleu marine #053D8F et jaune #F6C537.
 /// Les autres teintes en sont des déclinaisons (plus claires ou plus foncées),
 /// à l'exception du rouge et du vert réservés aux erreurs et aux succès.
 class AppColor {
@@ -22,6 +22,8 @@ class AppColor {
   // ── États (messages, pastilles de statut) ──────────────────────────────────
   static const Color kSucces = Color(0xFF1E8E4E);
   static const Color kErreur = Color(0xFFC62828);
+  static const Color kSuccesLight = Color(0xFFE6F4EC);
+  static const Color kErreurLight = Color(0xFFFBEAEA);
 
   /// Attente, action requise : jaune foncé de la marque (lisible sur fond blanc).
   static const Color kAlerte = kSecondaryDark;

@@ -48,6 +48,8 @@ class _DevisPageState extends State<DevisPage> {
   final Map<String, int> _quantites = {};
   bool _parGrille = true;
   String _modeDepot = 'point_collecte';
+  bool _fragile = false;
+  bool _dangereuse = false;
 
   bool _calcul = false;
   String? _erreur;
@@ -92,7 +94,8 @@ class _DevisPageState extends State<DevisPage> {
       return;
     }
     try {
-      final articles = await _source.getTarifs(categorie: _categorie.code, paysDepart: _versSenegal ? 'FR' : 'SN');
+      final articles = await _source.getTarifs(
+          categorie: _categorie.code, paysDepart: _versSenegal ? 'FR' : 'SN', paysArrivee: _versSenegal ? 'SN' : 'FR');
       if (!mounted) return;
       setState(() {
         _articles = articles;
@@ -123,6 +126,8 @@ class _DevisPageState extends State<DevisPage> {
           ? [PieceDeclaree(poidsKg: poids, longueurCm: _n(_longueur), largeurCm: _n(_largeur), hauteurCm: _n(_hauteur))]
           : const [],
       modeDepot: _modeDepot,
+      fragile: _categorie.code != 'documents' && _fragile,
+      marchandiseDangereuse: _categorie.code != 'documents' && _dangereuse,
     );
   }
 
@@ -182,6 +187,8 @@ class _DevisPageState extends State<DevisPage> {
           articles: Map.of(_quantites)..removeWhere((_, q) => q == 0),
           poidsKg: _parGrille ? null : _n(_poids),
           modeDepot: _modeDepot,
+          fragile: _fragile,
+          marchandiseDangereuse: _dangereuse,
         ),
       ),
     ));
@@ -282,13 +289,28 @@ class _DevisPageState extends State<DevisPage> {
                 runSpacing: 8,
                 children: _categorie.modesDepot
                     .map((m) => ChoiceChip(
-                          avatar: Icon(iconesModeDepot[m], size: 18),
+                          avatar: Icon(iconesModeDepot[m],
+                              size: 18, color: _modeDepot == m ? AppColor.kWhite : AppColor.kPrimary),
                           label: Text(libellesModeDepot[m] ?? m),
                           selected: _modeDepot == m,
                           onSelected: (_) => setState(() => _modeDepot = m),
                         ))
                     .toList(),
               ),
+              if (_categorie.code != 'documents') ...[
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(tr('Colis fragile')),
+                  value: _fragile,
+                  onChanged: (v) => setState(() => _fragile = v),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(tr('Marchandise dangereuse')),
+                  value: _dangereuse,
+                  onChanged: (v) => setState(() => _dangereuse = v),
+                ),
+              ],
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _calcul ? null : _calculer,

@@ -73,25 +73,20 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     final resultat = await sl<AuthRepository>().forgotPassword(widget.email);
     if (!mounted) return;
     setState(() => _renvoiEnCours = false);
-    resultat.fold(
-      (f) => showToast(context, tr('Erreur'), f.errorMessage, ToastificationType.error),
-      (message) {
-        _code.clear();
-        _demarrerAttente();
-        if (message.isNotEmpty) showToast(context, tr('Email envoyé'), message, ToastificationType.success);
-      },
-    );
+    resultat.fold((f) => showToast(context, tr('Erreur'), f.errorMessage, ToastificationType.error), (message) {
+      _code.clear();
+      _demarrerAttente();
+      if (message.isNotEmpty) showToast(context, tr('Email envoyé'), message, ToastificationType.success);
+    });
   }
 
   void _valider() {
     setState(() => _soumis = true);
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
-    context.read<AuthBloc>().add(ResetPasswordRequested(
-          email: widget.email,
-          otpRecu: _code.text.trim(),
-          newPassword: _nouveau.text,
-        ));
+    context.read<AuthBloc>().add(
+      ResetPasswordRequested(email: widget.email, otpRecu: _code.text.trim(), newPassword: _nouveau.text),
+    );
   }
 
   @override
@@ -141,9 +136,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   icon: _renvoiEnCours
                       ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.refresh_rounded, size: 18),
-                  label: Text(
-                    _attente > 0 ? tr('Renvoyer le code dans $_attente s') : tr('Renvoyer le code'),
-                  ),
+                  label: Text(_attente > 0 ? tr('Renvoyer le code dans $_attente s') : tr('Renvoyer le code')),
                 ),
               ),
               const SizedBox(height: 8),
@@ -203,10 +196,7 @@ class _CarteEmail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
-      decoration: BoxDecoration(
-        color: AppColor.kBackground,
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: BoxDecoration(color: AppColor.kBackground, borderRadius: BorderRadius.circular(14)),
       child: Row(
         children: [
           const Icon(Icons.mail_outline_rounded, size: 20, color: AppColor.kPrimary),
@@ -233,17 +223,22 @@ class _Criteres extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget critere(String libelle, bool ok) => Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Row(children: [
-            Icon(ok ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                size: 16, color: ok ? AppColor.kSucces : AppColor.kGrayscale40),
-            const SizedBox(width: 8),
-            Text(
-              libelle,
-              style: GoogleFonts.plusJakartaSans(fontSize: 12, color: ok ? AppColor.kSucces : AppColor.kGrayscale40),
-            ),
-          ]),
-        );
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(
+            ok ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            size: 16,
+            color: ok ? AppColor.kSucces : AppColor.kGrayscale40,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            libelle,
+            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: ok ? AppColor.kSucces : AppColor.kGrayscale40),
+          ),
+        ],
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

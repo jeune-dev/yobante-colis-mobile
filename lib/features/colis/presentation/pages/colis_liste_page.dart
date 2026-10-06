@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import '../../../../core/constants/categories.dart';
 import '../../../../core/routes/app_router.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/shimmer_list.dart';
 import '../../../../injection_container.dart';
-import '../../domain/entities/colis.dart';
 import '../bloc/colis_bloc.dart';
 import '../bloc/colis_event.dart';
 import '../bloc/colis_state.dart';
-import '../widgets/statut_badge.dart';
+import '../../domain/entities/filtres_colis.dart';
+import '../widgets/filtres_colis_widgets.dart';
+import '../widgets/carte_colis.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 
@@ -56,10 +53,36 @@ class _ColisListeView extends StatefulWidget {
 
 class _ColisListeViewState extends State<_ColisListeView> {
   String? _filtreStatut;
+  FiltresColis _filtres = const FiltresColis();
+
+  bool get _filtrage => _filtreStatut != null || _filtres.actif;
 
   void _recharger() {
     if (!widget.isAuth) return;
-    context.read<ColisBloc>().add(LoadColis(statut: _filtreStatut));
+    context.read<ColisBloc>().add(LoadColis(statut: _filtreStatut, filtres: _filtres));
+  }
+
+  Future<void> _ouvrirFiltres() async {
+    final choix = await choisirFiltresColis(context, statut: _filtreStatut, filtres: _filtres);
+    if (choix == null || !mounted) return;
+    setState(() {
+      _filtreStatut = choix.statut;
+      _filtres = choix.filtres;
+    });
+    _recharger();
+  }
+
+  void _rechercher(String reference) {
+    setState(() => _filtres = _filtres.copyWith(reference: reference));
+    _recharger();
+  }
+
+  void _effacerFiltres() {
+    setState(() {
+      _filtreStatut = null;
+      _filtres = const FiltresColis();
+    });
+    _recharger();
   }
 
   @override
@@ -71,13 +94,6 @@ class _ColisListeViewState extends State<_ColisListeView> {
           : AppBar(
               leading: const BoutonMenuOuRetour(),
               title: Text(tr('Envoyés')),
-              actions: [
-                if (widget.isAuth)
-                  IconButton(
-                    icon: const Icon(Icons.filter_list_rounded),
-                    onPressed: _showFiltreDialog,
-                  ),
-              ],
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.of(context)
@@ -96,7 +112,17 @@ class _ColisListeViewState extends State<_ColisListeView> {
               actionLabel: tr('Se connecter'),
               onAction: () => Navigator.of(context).pushNamed(AppRouter.loginRoute),
             )
-          : BlocBuilder<ColisBloc, ColisState>(
+          : Column(
+              children: [
+                BarreFiltresColis(filtresActifs: _filtrage, onRecherche: _rechercher, onFiltres: _ouvrirFiltres),
+                Expanded(child: _liste()),
+              ],
+            ),
+    );
+  }
+
+  Widget _liste() {
+    return BlocBuilder<ColisBloc, ColisState>(
         builder: (context, state) {
           if (state is ColisLoading) return const ShimmerList();
           if (state is ColisFailure) {
@@ -109,6 +135,15 @@ class _ColisListeViewState extends State<_ColisListeView> {
             );
           }
           if (state is ColisListLoaded) {
+            if (state.colis.isEmpty && _filtrage) {
+              return EmptyState(
+                icon: Icons.search_off_rounded,
+                title: tr('Aucun résultat'),
+                subtitle: tr('Aucune expédition ne correspond à ces critères.'),
+                actionLabel: tr('Effacer les filtres'),
+                onAction: _effacerFiltres,
+              );
+            }
             if (state.colis.isEmpty) {
               return EmptyState(
                 icon: Icons.inventory_2_outlined,
@@ -135,7 +170,7 @@ class _ColisListeViewState extends State<_ColisListeView> {
                       child: Center(
                         child: OutlinedButton(
                           onPressed: () => context.read<ColisBloc>().add(
-                            LoadMoreColis(statut: _filtreStatut, page: nextPage),
+                            LoadMoreColis(statut: _filtreStatut, filtres: _filtres, page: nextPage),
                           ),
                           child: Text(tr('Charger plus')),
                         ),
@@ -143,7 +178,7 @@ class _ColisListeViewState extends State<_ColisListeView> {
                     );
                   }
                   return RepaintBoundary(
-                    child: _ColisCard(
+                    child: CarteColis(
                       colis: state.colis[i],
                       onTap: () => Navigator.of(context).pushNamed(
                         AppRouter.detailColisRoute,
@@ -157,116 +192,6 @@ class _ColisListeViewState extends State<_ColisListeView> {
           }
           return const SizedBox.shrink();
         },
-      ),
-    );
-  }
-
-  void _showFiltreDialog() {
-    final statuts = [null, 'en_attente_validation', 'devis_propose', 'en_attente', 'en_transit', 'en_douane', 'arrive', 'livre', 'annule'];
-    final labels  = ['Tous', tr('En cours d\'étude'), tr('Proposition reçue'), tr('En attente de remise'), tr('En transit'), tr('En dédouanement'), tr('Arrivé'), tr('Livré'), tr('Annulé')];
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 16),
-          Text(tr('Filtrer par statut'), style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 16)),
-          const SizedBox(height: 8),
-          ...List.generate(statuts.length, (i) => ListTile(
-            title: Text(labels[i]),
-            trailing: _filtreStatut == statuts[i] ? const Icon(Icons.check, color: AppColor.kSucces) : null,
-            onTap: () {
-              Navigator.pop(context);
-              setState(() => _filtreStatut = statuts[i]);
-              context.read<ColisBloc>().add(LoadColis(statut: statuts[i]));
-            },
-          )),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-}
-
-class _ColisCard extends StatelessWidget {
-  static DateFormat get _fmt => formatDate();
-
-  final Colis colis;
-  final VoidCallback onTap;
-  const _ColisCard({required this.colis, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColor.kWhite,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(colis.reference,
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 14)),
-                ),
-                StatutBadge(statut: colis.statut),
-              ],
-            ),
-            const SizedBox(height: 10),
-            _InfoRow(icon: Icons.person_outline, label: tr('Destinataire'), value: colis.destinataireNom),
-            const SizedBox(height: 6),
-            _InfoRow(
-              icon: Icons.location_on_outlined,
-              label: tr('Trajet'),
-              value: '${colis.villeDepart?.nom ?? '—'} → ${colis.villeArrivee?.nom ?? '—'}',
-            ),
-            const SizedBox(height: 6),
-            _InfoRow(
-              icon: CategorieColis.parCode(colis.categorie).icone,
-              label: tr('Catégorie'),
-              value: CategorieColis.parCode(colis.categorie).libelle,
-            ),
-            const SizedBox(height: 6),
-            _InfoRow(
-              icon: Icons.payments_outlined,
-              label: tr('Montant'),
-              value: colis.montantEnAttente ? tr('Proposé après étude') : formaterMontant(colis.montantTotal, colis.devise),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              tr('Créé le ${_fmt.format(colis.createdAt)}'),
-              style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  const _InfoRow({required this.icon, required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 14, color: AppColor.kGrayscale40),
-        const SizedBox(width: 6),
-        Text('$label : ', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40)),
-        Expanded(child: Text(value, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w600))),
-      ],
-    );
+      );
   }
 }

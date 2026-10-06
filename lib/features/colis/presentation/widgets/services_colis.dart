@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:toastification/toastification.dart';
 import '../../../../core/config/env.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../../../core/utils/validateurs.dart' as v;
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/widgets/document_page.dart';
 import '../../../../core/widgets/toast_notif.dart';
@@ -157,12 +159,19 @@ class _AbonnementSuiviState extends State<_AbonnementSuivi> {
   }
 
   Future<void> _envoyer() async {
-    final destination = _destination.text.trim();
-    if (destination.isEmpty) {
+    final saisie = _destination.text.trim();
+    if (saisie.isEmpty) {
       showToast(context, tr('Destination requise'),
           _canal == 'email' ? tr('Saisissez une adresse email.') : tr('Saisissez un numéro de téléphone.'), ToastificationType.warning);
       return;
     }
+    // Même contrôle que le backend : email valide, ou numéro France / Sénégal
+    final erreur = _canal == 'email' ? v.email()(saisie) : validerTelephone(saisie);
+    if (erreur != null) {
+      showToast(context, tr('Destination invalide'), erreur, ToastificationType.warning);
+      return;
+    }
+    final destination = _canal == 'email' ? saisie : normaliserTelephone(saisie);
     setState(() => _envoi = true);
     try {
       final message = await sl<ColisRemoteDataSource>()

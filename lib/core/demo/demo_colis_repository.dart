@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../errors/failure.dart';
 import '../../features/colis/domain/entities/colis.dart';
 import '../../features/colis/domain/entities/demande_expedition.dart';
+import '../../features/colis/domain/entities/filtres_colis.dart';
 import '../../features/colis/domain/repositories/colis_repository.dart';
 import '../../features/villes/domain/entities/ville.dart';
 import 'demo_data.dart';
@@ -13,11 +14,15 @@ class DemoColisRepository implements ColisRepository {
   static const _statutsOrdre = ['en_attente', 'en_preparation', 'en_transit', 'arrive', 'disponible_retrait', 'livre'];
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getColis({String? statut, int page = 1, int limit = 20}) async {
+  Future<Either<Failure, Map<String, dynamic>>> getColis(
+      {String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) async {
     await Future.delayed(const Duration(milliseconds: 400));
-    final filtered = statut == null || statut.isEmpty
-        ? DemoData.colis
-        : DemoData.colis.where((c) => c.statut == statut).toList();
+    final reference = filtres.reference?.trim().toLowerCase() ?? '';
+    final filtered = DemoData.colis
+        .where((c) => statut == null || statut.isEmpty || c.statut == statut)
+        .where((c) => reference.isEmpty || c.reference.toLowerCase().contains(reference))
+        .where((c) => filtres.categorie == null || c.categorie == filtres.categorie)
+        .toList();
     return Right({
       'colis': List<Colis>.from(filtered),
       'pagination': {'page': 1, 'totalPages': 1, 'hasNextPage': false},
@@ -25,7 +30,8 @@ class DemoColisRepository implements ColisRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getColisRecus({String? statut, int page = 1, int limit = 20}) async {
+  Future<Either<Failure, Map<String, dynamic>>> getColisRecus(
+      {String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) async {
     await Future.delayed(const Duration(milliseconds: 300));
     // Pas de notion de destinataire-compte en mode démo : rien à recevoir.
     return const Right({

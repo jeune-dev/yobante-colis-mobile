@@ -15,6 +15,29 @@ class ArticleChoisi extends Equatable {
   List<Object?> get props => [articleTarifId, quantite];
 }
 
+/// Types d'emballage acceptés par le backend (`TYPES_EMBALLAGE`).
+const Map<String, String> kTypesEmballage = {
+  'carton': 'Carton',
+  'enveloppe': 'Enveloppe',
+  'sac': 'Sac',
+  'valise': 'Valise',
+  'barigot': 'Barigot',
+  'malle': 'Malle',
+  'fut': 'Fût',
+  'palette': 'Palette',
+  'autre': 'Autre',
+};
+
+/// Unités de quantité acceptées pour l'inventaire douanier.
+const Map<String, String> kUnitesDouane = {
+  'piece': 'Pièce',
+  'kg': 'Kg',
+  'litre': 'Litre',
+  'metre': 'Mètre',
+  'paire': 'Paire',
+  'lot': 'Lot',
+};
+
 /// Colis décrit par ses dimensions et son poids (colis au poids, colis XXL).
 class PieceDeclaree extends Equatable {
   final double poidsKg;
@@ -22,12 +45,14 @@ class PieceDeclaree extends Equatable {
   final double? largeurCm;
   final double? hauteurCm;
   final String? designation;
+  final String typeEmballage;
   const PieceDeclaree({
     required this.poidsKg,
     this.longueurCm,
     this.largeurCm,
     this.hauteurCm,
     this.designation,
+    this.typeEmballage = 'carton',
   });
 
   Map<String, dynamic> toJson() => {
@@ -36,36 +61,56 @@ class PieceDeclaree extends Equatable {
         if (largeurCm != null) 'largeurCm': largeurCm,
         if (hauteurCm != null) 'hauteurCm': hauteurCm,
         if (designation != null && designation!.isNotEmpty) 'designation': designation,
-        'typeEmballage': 'carton',
+        'typeEmballage': typeEmballage,
       };
 
   @override
-  List<Object?> get props => [poidsKg, longueurCm, largeurCm, hauteurCm];
+  List<Object?> get props => [poidsKg, longueurCm, largeurCm, hauteurCm, designation, typeEmballage];
 }
 
 /// Ligne de contenu déclarée (produit, quantité, valeur, état) — reprise en
 /// douane et dans l'inventaire des chargements.
 class ContenuDeclare extends Equatable {
   final String designation;
-  final int quantite;
+  final double quantite;
+  final String unite;
   final double valeurUnitaire;
   final String? etat;
+
+  /// Code du système harmonisé (6 à 10 chiffres), s'il est connu.
+  final String? codeSh;
+  final double? poidsNetKg;
+
+  /// Pays d'origine, code ISO à deux lettres (FR, CN…).
+  final String? paysOrigine;
+  final String? marque;
   const ContenuDeclare({
     required this.designation,
     this.quantite = 1,
+    this.unite = 'piece',
     this.valeurUnitaire = 0,
     this.etat,
+    this.codeSh,
+    this.poidsNetKg,
+    this.paysOrigine,
+    this.marque,
   });
 
   Map<String, dynamic> toJson() => {
         'designation': designation,
         'quantite': quantite,
+        'unite': unite,
         'valeurUnitaire': valeurUnitaire,
         if (etat != null) 'etat': etat,
+        if (codeSh != null && codeSh!.isNotEmpty) 'codeSh': codeSh,
+        'poidsNetKg': ?poidsNetKg,
+        if (paysOrigine != null && paysOrigine!.isNotEmpty) 'paysOrigine': paysOrigine!.toUpperCase(),
+        if (marque != null && marque!.isNotEmpty) 'marque': marque,
       };
 
   @override
-  List<Object?> get props => [designation, quantite, valeurUnitaire, etat];
+  List<Object?> get props =>
+      [designation, quantite, unite, valeurUnitaire, etat, codeSh, poidsNetKg, paysOrigine, marque];
 }
 
 /// Demande d'expédition complète, telle que saisie dans le parcours « Expédier ».
@@ -97,9 +142,15 @@ class DemandeExpedition extends Equatable {
   /// et les services proposés. Forcé à « document » par le backend en catégorie 1.
   final String typeContenu;
   final bool fragile;
+
+  /// Contenu soumis à la réglementation des marchandises dangereuses (surcharge éventuelle).
+  final bool marchandiseDangereuse;
   final bool assuranceSouscrite;
 
-  /// DAP : droits réglés par le destinataire ; DDP : avancés par Yobante et facturés.
+  /// Emballage du colis quand il est déclaré par son seul poids (sans pièces).
+  final String? typeEmballage;
+
+  /// DAP : droits réglés par le destinataire ; DDP : avancés par Yobante Colis et facturés.
   final String incoterm;
 
   /// Qui règle l'expédition : la devise de facturation suit son pays.
@@ -158,7 +209,9 @@ class DemandeExpedition extends Equatable {
     this.emballages = const {},
     this.typeContenu = 'marchandise',
     this.fragile = false,
+    this.marchandiseDangereuse = false,
     this.assuranceSouscrite = false,
+    this.typeEmballage,
     this.incoterm = 'DAP',
     this.payeur = 'expediteur',
     this.referenceClient,
@@ -212,6 +265,7 @@ class DemandeExpedition extends Equatable {
         'deviseValeur': deviseValeur,
         'typeContenu': typeContenu,
         'fragile': fragile,
+        'marchandiseDangereuse': marchandiseDangereuse,
         'assuranceSouscrite': assuranceSouscrite,
         'incoterm': incoterm,
         'payeur': payeur,
@@ -253,6 +307,7 @@ class DemandeExpedition extends Equatable {
       'deviseValeur': deviseValeur,
       'typeContenu': typeContenu,
       'fragile': fragile ? 'true' : 'false',
+      'marchandiseDangereuse': marchandiseDangereuse ? 'true' : 'false',
       'assuranceSouscrite': assuranceSouscrite ? 'true' : 'false',
       'incoterm': incoterm,
       'payeur': payeur,
@@ -273,6 +328,7 @@ class DemandeExpedition extends Equatable {
       champs['pieces'] = jsonEncode(pieces.map((p) => p.toJson()).toList());
     } else if (poidsKg != null) {
       champs['poidsKg'] = '$poidsKg';
+      if (typeEmballage != null) champs['typeEmballage'] = typeEmballage;
     }
     if (contenu.isNotEmpty) {
       champs['articlesDouane'] = jsonEncode(contenu.map((c) => c.toJson()).toList());
@@ -308,7 +364,9 @@ class DemandeExpedition extends Equatable {
         emballages: emballages,
         typeContenu: typeContenu,
         fragile: fragile,
+        marchandiseDangereuse: marchandiseDangereuse,
         assuranceSouscrite: assuranceSouscrite,
+        typeEmballage: typeEmballage,
         incoterm: incoterm,
         payeur: payeur,
         referenceClient: referenceClient,
@@ -343,7 +401,21 @@ class DemandeExpedition extends Equatable {
 
   @override
   List<Object?> get props =>
-      [categorie, villeDepartId, villeArriveeId, serviceId, articles, pieces, poidsKg, typeContenu, incoterm, payeur];
+      [
+        categorie,
+        villeDepartId,
+        villeArriveeId,
+        serviceId,
+        articles,
+        pieces,
+        poidsKg,
+        contenu,
+        typeContenu,
+        fragile,
+        marchandiseDangereuse,
+        incoterm,
+        payeur,
+      ];
 }
 
 /// Résultat d'une déclaration : l'expédition créée et ce que le client doit

@@ -198,10 +198,10 @@ class _StatutVisuel {
       case 'receptionne':           return AppColor.kInfo;
       case 'en_preparation':       return AppColor.kInfo;
       case 'en_transit':           return AppColor.kInfo;
-      case 'en_douane':            return Colors.brown;
+      case 'en_douane':            return AppColor.kAlerte;
       case 'arrive':               return AppColor.kInfo;
       case 'disponible_retrait':  return AppColor.kInfo;
-      case 'en_livraison':         return Colors.deepPurple;
+      case 'en_livraison':         return AppColor.kPrimary;
       case 'recupere':              return AppColor.kInfo;
       case 'livre':                 return AppColor.kSucces;
       case 'retourne':              return AppColor.kAlerte;

@@ -130,8 +130,7 @@ class _ProfilViewState extends State<_ProfilView> {
       ),
     );
     if (ok != true || !mounted) return;
-    context.read<AuthBloc>().add(LogoutRequested());
-    Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.clientRoute, (_) => false);
+    context.read<AuthBloc>().add(const LogoutRequested());
   }
 
   @override
@@ -145,8 +144,7 @@ class _ProfilViewState extends State<_ProfilView> {
           if (state.message.isNotEmpty) {
             showToast(context, tr('Mot de passe modifié'), state.message, ToastificationType.success);
           }
-          context.read<AuthBloc>().add(LogoutRequested());
-          Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.loginRoute, (_) => false);
+          context.read<AuthBloc>().add(const LogoutRequested(ouvrirConnexion: true));
         } else if (state is AccountError) {
           showToast(context, tr('Erreur'), state.message, ToastificationType.error);
         }
@@ -259,7 +257,7 @@ class _EnTete extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppColor.kPrimary, Color(0xFF0A55C2)],
+          colors: [AppColor.kPrimary, AppColor.kPrimaryMedium],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

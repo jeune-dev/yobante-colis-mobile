@@ -38,12 +38,14 @@ class CarteSection extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 2))],
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(color: AppColor.kPrimary.withValues(alpha: 0.06), blurRadius: 18, offset: const Offset(0, 6)),
+        ],
       ),
       child: Material(
         color: AppColor.kWhite,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: padding,
@@ -53,21 +55,32 @@ class CarteSection extends StatelessWidget {
               if (titre != null) ...[
                 Row(
                   children: [
-                    if (icone != null) ...[Icon(icone, size: 18, color: AppColor.kPrimary), const SizedBox(width: 8)],
+                    // Icône dans une pastille bleu clair, titre sombre (comme les cartes de connexion)
+                    if (icone != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColor.kPrimaryLight,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(icone, size: 16, color: AppColor.kPrimary),
+                      ),
+                      const SizedBox(width: 10),
+                    ],
                     Expanded(
                       child: Text(
                         titre!,
                         style: GoogleFonts.plusJakartaSans(
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                          color: AppColor.kPrimary,
+                          fontSize: 15,
+                          color: AppColor.kGrayscaleDark100,
                         ),
                       ),
                     ),
                     ?action,
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
               ],
               ...children,
             ],
@@ -134,22 +147,29 @@ class Bandeau extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: couleur.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: couleur.withValues(alpha: 0.25)),
+        color: couleur.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: couleur.withValues(alpha: 0.18)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icone, color: couleur, size: 22),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: couleur.withValues(alpha: 0.12), shape: BoxShape.circle),
+            child: Icon(icone, color: couleur, size: 18),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  titre,
-                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13, color: couleur),
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(
+                    titre,
+                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13, color: couleur),
+                  ),
                 ),
                 if (message != null) ...[
                   const SizedBox(height: 4),
@@ -278,7 +298,7 @@ class ChampTexte extends StatelessWidget {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          prefixIcon: icone == null ? null : Icon(icone, size: 20),
+          prefixIcon: icone == null ? null : Icon(icone, size: 20, color: AppColor.kPrimary),
         ),
       ),
     );

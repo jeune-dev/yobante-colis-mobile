@@ -376,7 +376,7 @@ class _CarteAvis extends StatelessWidget {
             margin: const EdgeInsets.only(top: 8),
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(color: AppColor.kBackground, borderRadius: BorderRadius.circular(10)),
-            child: Text(tr('Réponse de Yobante : ${a.reponse}'), style: GoogleFonts.plusJakartaSans(fontSize: 12)),
+            child: Text(tr('Réponse de Yobante Colis : ${a.reponse}'), style: GoogleFonts.plusJakartaSans(fontSize: 12)),
           ),
       ]),
     );

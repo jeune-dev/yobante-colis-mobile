@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
+import '../theme/app_color.dart';
 
 void showToast(
   BuildContext context,
@@ -48,27 +49,27 @@ _ToastConfig _toastConfig(ToastificationType type) {
     case ToastificationType.success:
       return const _ToastConfig(
         icon: Icons.check_rounded,
-        accent: Color(0xFF16A34A),
-        iconBg: Color(0xFFDCFCE7),
+        accent: AppColor.kSucces,
+        iconBg: AppColor.kSuccesLight,
       );
     case ToastificationType.error:
       return const _ToastConfig(
         icon: Icons.close_rounded,
-        accent: Color(0xFFDC2626),
-        iconBg: Color(0xFFFEE2E2),
+        accent: AppColor.kErreur,
+        iconBg: AppColor.kErreurLight,
       );
     case ToastificationType.warning:
       return const _ToastConfig(
         icon: Icons.warning_amber_rounded,
-        accent: Color(0xFFD97706),
-        iconBg: Color(0xFFFEF3C7),
+        accent: AppColor.kAlerte,
+        iconBg: AppColor.kSecondaryLight,
       );
     case ToastificationType.info:
     default:
       return const _ToastConfig(
         icon: Icons.info_outline_rounded,
-        accent: Color(0xFF2563EB),
-        iconBg: Color(0xFFDBEAFE),
+        accent: AppColor.kPrimary,
+        iconBg: AppColor.kPrimaryLight,
       );
   }
 }
@@ -149,7 +150,7 @@ class _ToastCard extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF111827),
+                                color: AppColor.kGrayscaleDark100,
                                 height: 1.2,
                               ),
                             ),
@@ -159,7 +160,7 @@ class _ToastCard extends StatelessWidget {
                                 description,
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF6B7280),
+                                  color: AppColor.kGrayscale40,
                                   height: 1.4,
                                 ),
                               ),

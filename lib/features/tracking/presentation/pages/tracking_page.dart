@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/config/env.dart';
 import '../../../../core/errors/api_error.dart';
@@ -110,6 +111,11 @@ class _TrackingSearchState extends State<TrackingSearch> {
   Future<void> _rechercher() async {
     final ref = _refCtrl.text.trim();
     if (ref.isEmpty) return;
+    // Numéro de suivi : 3 à 40 caractères (contrôle du backend)
+    if (ref.length < 3) {
+      setState(() => _erreur = tr('Numéro de suivi trop court.'));
+      return;
+    }
     setState(() {
       _chargement = true;
       _erreur = null;
@@ -132,49 +138,72 @@ class _TrackingSearchState extends State<TrackingSearch> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Barre de recherche : une seule zone blanche, champ sans cadre propre
+        // (le thème des formulaires est neutralisé ici) et bouton bleu marine,
+        // bien visible sur le bandeau jaune de l'accueil.
         Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
           decoration: BoxDecoration(
             color: AppColor.kWhite,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 4))],
+            boxShadow: [
+              BoxShadow(color: AppColor.kPrimary.withValues(alpha: 0.10), blurRadius: 14, offset: const Offset(0, 4)),
+            ],
           ),
           child: Row(
             children: [
-              const SizedBox(width: 10),
-              const Icon(Icons.search_rounded, color: AppColor.kGrayscale40),
+              const Icon(Icons.search_rounded, color: AppColor.kPrimary, size: 22),
               const SizedBox(width: 8),
               Expanded(
                 child: TextField(
                   controller: _refCtrl,
                   textCapitalization: TextCapitalization.characters,
+                  textInputAction: TextInputAction.search,
+                  inputFormatters: [LengthLimitingTextInputFormatter(40)],
                   onSubmitted: (_) => _rechercher(),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColor.kGrayscaleDark100,
+                    letterSpacing: 0.5,
+                  ),
                   decoration: InputDecoration(
-                    hintText: tr('Numéro de suivi (ex : PNCO01…)'),
-                    hintStyle: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40),
+                    hintText: tr('N° de suivi'),
+                    hintStyle: GoogleFonts.plusJakartaSans(fontSize: 14, color: AppColor.kGrayscale40),
+                    filled: false,
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
-              SizedBox(
-                height: 42,
-                child: ElevatedButton(
-                  onPressed: _chargement ? null : _rechercher,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.kSecondary,
-                    foregroundColor: AppColor.kPrimary,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: _chargement
-                      ? const SizedBox(
-                          width: 18, height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColor.kPrimary))
-                      : Text(tr('Suivre'), style: TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: _chargement ? null : _rechercher,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.kPrimary,
+                  foregroundColor: AppColor.kWhite,
+                  disabledBackgroundColor: AppColor.kPrimary.withValues(alpha: 0.6),
+                  elevation: 0,
+                  minimumSize: const Size(0, 46),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
+                child: _chargement
+                    ? const SizedBox(
+                        width: 18, height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColor.kWhite))
+                    : Text(tr('Suivre'), style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 15)),
               ),
             ],
           ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8, left: 4),
+          child: Text(tr('Exemple : PNCO2610060001ADI01'),
+              style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kPrimary.withValues(alpha: 0.7))),
         ),
         if (_erreur != null) ...[
           const SizedBox(height: 12),

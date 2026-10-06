@@ -29,7 +29,7 @@ class _ParrainagePageState extends State<ParrainagePage> {
   }
 
   String _messagePartage(Parrainage p) =>
-      tr('Envoie tes colis entre la France et le Sénégal avec Yobante ! Inscris-toi avec mon code ${p.code} '
+      tr('Envoie tes colis entre la France et le Sénégal avec Yobante Colis ! Inscris-toi avec mon code ${p.code} '
       'et profite de ${p.remiseFilleulPourcent.toStringAsFixed(0)} % de réduction sur ton premier envoi.');
 
   @override

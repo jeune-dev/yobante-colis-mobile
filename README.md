@@ -1,6 +1,6 @@
 # Yobante Colis — Application Mobile
 
-Application Flutter de gestion de colis et livraisons pour la plateforme Yobante.
+Application Flutter de gestion de colis et livraisons pour la plateforme Yobante Colis.
 
 ## Stack technique
 
@@ -51,8 +51,9 @@ flutter run --dart-define-from-file=dart_defines.json
 flutter build apk --release --dart-define-from-file=dart_defines.json
 ```
 
-Sans `--dart-define-from-file`, `flutter run` vise le backend local et
-`flutter build` la production (voir `lib/core/config/env.dart`).
+Sans `--dart-define-from-file`, `flutter run` comme `flutter build` visent la
+production (voir `lib/core/config/env.dart`) ; `dart_defines.local.json` ne sert
+qu'à tester contre un backend lancé sur le Mac.
 
 ## Variables d'environnement
 

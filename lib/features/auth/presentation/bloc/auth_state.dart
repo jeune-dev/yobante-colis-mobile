@@ -10,6 +10,13 @@ abstract class AuthState extends Equatable {
 class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 
+/// Session fermée et jetons effacés : l'app repart sur l'accueil en invité.
+class LogoutSuccess extends AuthState {
+  final bool ouvrirConnexion;
+  const LogoutSuccess({this.ouvrirConnexion = false});
+  @override List<Object?> get props => [ouvrirConnexion];
+}
+
 class AuthSuccess extends AuthState {
   final User user;
   const AuthSuccess({required this.user});

@@ -8,7 +8,8 @@ import '../../../../core/i18n/langue.dart';
 import '../../../../core/utils/pagination.dart';
 
 abstract class PaiementsRemoteDataSource {
-  Future<List<FactureColisModel>> getFactures();
+  /// [impayees] : factures en attente ou partiellement payées ; [statut] : un statut précis.
+  Future<List<FactureColisModel>> getFactures({String? statut, bool impayees = false});
   Future<FactureColisModel> getFactureDetail(String id);
 
   /// Historique des règlements du client.
@@ -26,10 +27,13 @@ class PaiementsRemoteDataSourceImpl implements PaiementsRemoteDataSource {
   PaiementsRemoteDataSourceImpl({required this.dio});
 
   @override
-  Future<List<FactureColisModel>> getFactures() async {
+  Future<List<FactureColisModel>> getFactures({String? statut, bool impayees = false}) async {
     try {
-      // Pas de pagination à l'écran : toutes les pages sont chargées
-      final list = await chargerToutesLesPages(dio, Env.clientFactures, 'factures');
+      // Pas de pagination à l'écran : toutes les pages sont chargées (filtrées par le backend)
+      final list = await chargerToutesLesPages(dio, Env.clientFactures, 'factures', parametres: {
+        'statut': ?statut,
+        if (impayees) 'impayees': 'true',
+      });
       return list.map(FactureColisModel.fromJson).toList();
     } on DioException catch (e) {
       throw ServerException(message: messageErreur(e, tr('Erreur lors du chargement des factures')));

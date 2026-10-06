@@ -22,11 +22,16 @@ import '../theme/app_color.dart';
 import 'static_info_page.dart';
 import '../../features/adresses/presentation/pages/adresses_page.dart';
 import '../../features/avis/presentation/pages/avis_page.dart';
+import '../../features/contact/presentation/pages/contact_page.dart';
 import '../../features/enlevements/presentation/pages/enlevements_page.dart';
 import '../../features/faq/presentation/pages/faq_page.dart';
 import '../../features/reclamations/presentation/pages/reclamations_page.dart';
 import '../i18n/langue.dart';
 import '../i18n/selecteur_langue.dart';
+import '../../features/account/domain/entities/account_user.dart';
+import '../../features/account/domain/repositories/account_repository.dart';
+import 'avatar_utilisateur.dart';
+import 'pastille_notifications.dart';
 
 /// Tiroir latéral de navigation, façon DHL Express : compte, raccourcis
 /// commerciaux (devis, suivi, point de service), pages d'information et
@@ -87,6 +92,7 @@ class AppDrawer extends StatelessWidget {
                         icon: Icons.notifications_outlined,
                         label: tr('Notifications'),
                         onTap: () => _push(context, const NotificationsPage()),
+                        compteur: isAuth,
                       ),
                       if (isAuth)
                         _MenuTile(
@@ -134,12 +140,21 @@ class AppDrawer extends StatelessWidget {
                         onTap: () async {
                           Navigator.of(context).pop();
                           final config = await sl<CatalogueRemoteDataSource>().getConfiguration().catchError(
-                                (_) => const ConfigurationPublique(),
-                              );
+                            (_) => const ConfigurationPublique(),
+                          );
                           if (context.mounted) {
-                            ouvrirWhatsapp(context, numero: config.whatsappContact, message: tr('Bonjour Yobante,'));
+                            ouvrirWhatsapp(
+                              context,
+                              numero: config.whatsappContact,
+                              message: tr('Bonjour Yobante Colis,'),
+                            );
                           }
                         },
+                      ),
+                      _MenuTile(
+                        icon: Icons.mail_outline,
+                        label: tr('Nous contacter'),
+                        onTap: () => _push(context, const ContactPage()),
                       ),
                       _MenuTile(
                         icon: Icons.support_agent_outlined,
@@ -149,10 +164,8 @@ class AppDrawer extends StatelessWidget {
                       _MenuTile(
                         icon: Icons.shield_outlined,
                         label: tr('Degré de sensibilisation à la fraude'),
-                        onTap: () => _push(
-                          context,
-                          StaticInfoPage(title: tr('Sensibilisation à la fraude'), sections: _fraude),
-                        ),
+                        onTap: () =>
+                            _push(context, StaticInfoPage(title: tr('Sensibilisation à la fraude'), sections: _fraude)),
                       ),
                     ],
                   ),
@@ -173,12 +186,47 @@ class AppDrawer extends StatelessWidget {
   }
 }
 
-class _Header extends StatelessWidget {
+class _Header extends StatefulWidget {
   final bool isAuth;
   const _Header({required this.isAuth});
 
   @override
+  State<_Header> createState() => _HeaderState();
+}
+
+class _HeaderState extends State<_Header> {
+  AccountUser? _utilisateur;
+
+  bool get isAuth => widget.isAuth;
+
+  @override
+  void initState() {
+    super.initState();
+    _chargerUtilisateur();
+  }
+
+  // Le statut de connexion arrive après un premier affichage « non connecté » :
+  // l'utilisateur est chargé dès qu'il passe à « connecté ».
+  @override
+  void didUpdateWidget(covariant _Header ancien) {
+    super.didUpdateWidget(ancien);
+    if (isAuth && !ancien.isAuth) _chargerUtilisateur();
+  }
+
+  /// Nom, email et photo de l'utilisateur connecté.
+  void _chargerUtilisateur() {
+    if (!isAuth || _utilisateur != null) return;
+    sl<AccountRepository>().getMe().then(
+          (res) => res.fold((_) {}, (u) {
+            if (mounted) setState(() => _utilisateur = u);
+          }),
+        );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final u = _utilisateur;
+    final email = u?.email ?? '';
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       child: Column(
@@ -186,23 +234,37 @@ class _Header extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 44, height: 44,
-                decoration: const BoxDecoration(color: AppColor.kSecondary, shape: BoxShape.circle),
-                child: const Icon(Icons.person, color: AppColor.kPrimary),
-              ),
+              AvatarUtilisateur(prenom: u?.prenom, nom: u?.nom, photoUrl: u?.avatarUrl, rayon: 24),
               const SizedBox(width: 12),
-              Text(isAuth ? tr('Mon compte') : tr('Client'),
-                  style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isAuth ? (u?.fullName ?? tr('Mon compte')) : tr('Client'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700),
+                    ),
+                    if (isAuth && email.isNotEmpty)
+                      Text(
+                        email,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40),
+                      ),
+                  ],
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            isAuth
-                ? tr('Gérez votre profil, vos factures et vos envois.')
-                : tr('Inscrivez-vous pour déverrouiller d\'autres fonctionnalités de l\'application'),
-            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40),
-          ),
+          if (!isAuth) ...[
+            const SizedBox(height: 12),
+            Text(
+              tr('Inscrivez-vous pour déverrouiller d\'autres fonctionnalités de l\'application'),
+              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40),
+            ),
+          ],
           const SizedBox(height: 14),
           if (isAuth)
             Row(
@@ -218,7 +280,7 @@ class _Header extends StatelessWidget {
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    context.read<AuthBloc>().add(LogoutRequested());
+                    context.read<AuthBloc>().add(const LogoutRequested());
                   },
                   child: Text(tr('Se déconnecter'), style: TextStyle(color: AppColor.kErreur)),
                 ),
@@ -258,14 +320,23 @@ class _MenuTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  const _MenuTile({required this.icon, required this.label, required this.onTap});
+
+  /// Affiche le nombre de notifications non lues avant la flèche.
+  final bool compteur;
+  const _MenuTile({required this.icon, required this.label, required this.onTap, this.compteur = false});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: AppColor.kGrayscaleDark100),
       title: Text(label, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 14)),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColor.kGrayscale40),
+      trailing: compteur
+          ? const Row(mainAxisSize: MainAxisSize.min, children: [
+              CompteurNotificationsLigne(),
+              SizedBox(width: 4),
+              Icon(Icons.chevron_right_rounded, color: AppColor.kGrayscale40),
+            ])
+          : const Icon(Icons.chevron_right_rounded, color: AppColor.kGrayscale40),
       onTap: onTap,
     );
   }
@@ -281,18 +352,22 @@ class _Footer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Icon(Icons.public, size: 18, color: AppColor.kGrayscale40),
-            SizedBox(width: 10),
-            Text(tr('Sénégal'), style: TextStyle(fontSize: 13)),
-          ]),
+          Row(
+            children: [
+              Icon(Icons.public, size: 18, color: AppColor.kGrayscale40),
+              SizedBox(width: 10),
+              Text(tr('Sénégal'), style: TextStyle(fontSize: 13)),
+            ],
+          ),
           const SizedBox(height: 10),
           // Choix de la langue (français / anglais)
           const TuileLangue(compacte: true),
           const SizedBox(height: 14),
           Text(tr('Yobante Colis'), style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 12)),
-          Text(tr('© ${DateTime.now().year} Yobante Colis. Tous droits réservés.'),
-              style: GoogleFonts.plusJakartaSans(fontSize: 10, color: AppColor.kGrayscale40)),
+          Text(
+            tr('© ${DateTime.now().year} Yobante Colis. Tous droits réservés.'),
+            style: GoogleFonts.plusJakartaSans(fontSize: 10, color: AppColor.kGrayscale40),
+          ),
         ],
       ),
     );
@@ -314,15 +389,19 @@ List<LienInfo> get _liensContact => [
 List<StaticInfoSection> get _legal => [
   StaticInfoSection(
     titre: tr('Confidentialité des données'),
-    corps: tr('Les données personnelles collectées (identité, coordonnées, adresses, '
-        'contenu des expéditions) sont utilisées pour l\'exécution du contrat de '
-        'transport. Elles ne sont ni vendues ni utilisées à des fins publicitaires.'),
+    corps: tr(
+      'Les données personnelles collectées (identité, coordonnées, adresses, '
+      'contenu des expéditions) sont utilisées pour l\'exécution du contrat de '
+      'transport. Elles ne sont ni vendues ni utilisées à des fins publicitaires.',
+    ),
     liens: [LienInfo(tr('Lire les règles de confidentialité'), _urlConfidentialite)],
   ),
   StaticInfoSection(
     titre: tr('Suppression de votre compte'),
-    corps: tr('Vous pouvez supprimer votre compte depuis Réglages du compte, '
-        'ou en suivant la procédure décrite sur notre site.'),
+    corps: tr(
+      'Vous pouvez supprimer votre compte depuis Réglages du compte, '
+      'ou en suivant la procédure décrite sur notre site.',
+    ),
     liens: [LienInfo(tr('Procédure de suppression du compte'), _urlSuppressionCompte)],
   ),
 ];
@@ -330,8 +409,10 @@ List<StaticInfoSection> get _legal => [
 List<StaticInfoSection> get _support => [
   StaticInfoSection(
     titre: tr('Nous contacter'),
-    corps: tr('Pour toute question sur une expédition, une facture ou votre compte, '
-        'contactez le support Yobante Colis.'),
+    corps: tr(
+      'Pour toute question sur une expédition, une facture ou votre compte, '
+      'contactez le support Yobante Colis.',
+    ),
     liens: _liensContact,
   ),
 ];
@@ -339,15 +420,19 @@ List<StaticInfoSection> get _support => [
 List<StaticInfoSection> get _fraude => [
   StaticInfoSection(
     titre: tr('Restez vigilant'),
-    corps: tr('Yobante Colis ne vous demandera jamais vos identifiants, code de '
-        'retrait ou informations bancaires par téléphone, SMS ou email non sollicité. '
-        'Ne communiquez votre code de retrait qu\'à un agent Yobante Colis en point '
-        'de service, et vérifiez toujours l\'expéditeur d\'un message avant d\'y répondre.'),
+    corps: tr(
+      'Yobante Colis ne vous demandera jamais vos identifiants, code de '
+      'retrait ou informations bancaires par téléphone, SMS ou email non sollicité. '
+      'Ne communiquez votre code de retrait qu\'à un agent Yobante Colis en point '
+      'de service, et vérifiez toujours l\'expéditeur d\'un message avant d\'y répondre.',
+    ),
   ),
   StaticInfoSection(
     titre: tr('Signaler une tentative de fraude'),
-    corps: tr('Si vous recevez une communication suspecte se présentant comme émanant '
-        'de Yobante Colis, signalez-la au support avant toute action.'),
+    corps: tr(
+      'Si vous recevez une communication suspecte se présentant comme émanant '
+      'de Yobante Colis, signalez-la au support avant toute action.',
+    ),
     liens: _liensContact,
   ),
 ];

@@ -10,9 +10,9 @@ class PaiementsRepositoryImpl implements PaiementsRepository {
   PaiementsRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, List<FactureColis>>> getFactures() async {
+  Future<Either<Failure, List<FactureColis>>> getFactures({String? statut, bool impayees = false}) async {
     try {
-      return Right(await remoteDataSource.getFactures());
+      return Right(await remoteDataSource.getFactures(statut: statut, impayees: impayees));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {

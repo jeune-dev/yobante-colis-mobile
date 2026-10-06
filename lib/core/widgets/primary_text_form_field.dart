@@ -4,22 +4,23 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class PrimaryTextFormField extends StatelessWidget {
-  const PrimaryTextFormField(
-      {super.key,
-      required this.hintText,
-      this.keyboardType,
-      required this.controller,
-      this.width = double.maxFinite,
-      this.height = 55,
-      this.hintTextColor,
-      this.onChanged,
-      this.onTapOutside,
-      this.prefixIcon,
-      this.prefixIconColor,
-      this.inputFormatters,
-      this.maxLines = 1,
-      this.borderRadius,
-      this.validator});
+  const PrimaryTextFormField({
+    super.key,
+    required this.hintText,
+    this.keyboardType,
+    required this.controller,
+    this.width = double.maxFinite,
+    this.height = 55,
+    this.hintTextColor,
+    this.onChanged,
+    this.onTapOutside,
+    this.prefixIcon,
+    this.prefixIconColor,
+    this.inputFormatters,
+    this.maxLines = 1,
+    this.borderRadius,
+    this.validator,
+  });
 
   final BorderRadiusGeometry? borderRadius;
   final String hintText;
@@ -36,13 +37,11 @@ class PrimaryTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    // Apparence du thème des formulaires (app_theme.dart) : fond clair, contour fin,
+    // bleu de la marque au focus. Pas de hauteur fixe : le message d'erreur s'affiche
+    // sous le champ au lieu d'être coupé.
+    return SizedBox(
       width: width,
-      height: height,
-      decoration: BoxDecoration(
-          borderRadius: borderRadius,
-          color: AppColor.kBackground,
-          border: Border.all(color: AppColor.kLine)),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
@@ -52,16 +51,12 @@ class PrimaryTextFormField extends StatelessWidget {
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
-        validator: validator, // Passage du validateur au TextFormField
+        validator: validator,
         decoration: InputDecoration(
-          border: InputBorder.none, // La bordure est gérée par le Container
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-          filled: true,
-          fillColor: Colors.transparent, // Le Container gère la couleur
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           hintText: hintText,
           hintStyle: GoogleFonts.plusJakartaSans(
-            color: AppColor.kGrayscale40,
+            color: hintTextColor ?? AppColor.kGrayscale40,
             fontWeight: FontWeight.w500,
             fontSize: 14,
           ),
@@ -75,4 +70,3 @@ class PrimaryTextFormField extends StatelessWidget {
     );
   }
 }
-

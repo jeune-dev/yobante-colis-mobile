@@ -32,9 +32,14 @@ class CatalogueRemoteDataSource {
         CategorieColis.appliquerRegles(_data(res)['categories'] as List? ?? const []);
       });
 
-  Future<ContenuAccueil> getAccueil({String? codePostal}) => appelApi(() async {
+  /// [emplacement] : `accueil`, `banniere` ou `popup` (toutes les annonces sinon).
+  Future<ContenuAccueil> getAccueil({String? codePostal, String? pays, String? villeId, String? emplacement}) =>
+      appelApi(() async {
         final res = await dio.get(Env.publicAccueil, queryParameters: {
           if (codePostal != null && codePostal.isNotEmpty) 'codePostal': codePostal,
+          'pays': ?pays,
+          'villeId': ?villeId,
+          'emplacement': ?emplacement,
         });
         final d = _data(res);
         return ContenuAccueil(
@@ -59,21 +64,25 @@ class CatalogueRemoteDataSource {
             .toList();
       });
 
-  Future<List<ArticleTarif>> getTarifs({String? categorie, String? modeTransport, String? paysDepart}) =>
+  Future<List<ArticleTarif>> getTarifs(
+          {String? categorie, String? modeTransport, String? paysDepart, String? paysArrivee}) =>
       appelApi(() async {
         final res = await dio.get(Env.publicTarifs, queryParameters: {
           'categorie': ?categorie,
           'modeTransport': ?modeTransport,
           'paysDepart': ?paysDepart,
+          'paysArrivee': ?paysArrivee,
         });
         return (_data(res)['articles'] as List? ?? [])
             .map((a) => ArticleTarif.fromJson(a as Map<String, dynamic>))
             .toList();
       });
 
-  Future<List<Emballage>> getEmballages({String? categorie}) => appelApi(() async {
+  /// [type] : `contenant` (carton, barigot…) ou `prestation` (emballage par nos équipes).
+  Future<List<Emballage>> getEmballages({String? categorie, String? type}) => appelApi(() async {
         final res = await dio.get(Env.publicEmballages, queryParameters: {
           'categorie': ?categorie,
+          'type': ?type,
         });
         return (_data(res)['emballages'] as List? ?? [])
             .map((e) => Emballage.fromJson(e as Map<String, dynamic>))
@@ -94,12 +103,26 @@ class CatalogueRemoteDataSource {
             .toList();
       });
 
-  Future<List<PointService>> getPoints({String? villeId, String? pays, String? service}) =>
+  Future<List<PointService>> getPoints({
+    String? villeId,
+    String? pays,
+    String? service,
+    String? type,
+    String? codePostal,
+    double? latitude,
+    double? longitude,
+    double? rayonKm,
+  }) =>
       appelApi(() async {
         final res = await dio.get(Env.publicPointsCollecte, queryParameters: {
           'villeId': ?villeId,
           'pays': ?pays,
           'service': ?service,
+          'type': ?type,
+          if (codePostal != null && codePostal.isNotEmpty) 'codePostal': codePostal,
+          'latitude': ?latitude,
+          'longitude': ?longitude,
+          'rayonKm': ?rayonKm,
         });
         return (_data(res)['points'] as List? ?? [])
             .map((p) => PointService.fromJson(p as Map<String, dynamic>))

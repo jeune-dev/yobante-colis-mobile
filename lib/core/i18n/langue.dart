@@ -19,7 +19,11 @@ enum Langue {
   String get localeIntl => code == 'fr' ? 'fr_FR' : 'en_US';
 }
 
-/// Langue courante de l'application, mémorisée entre deux lancements.
+/// Langue courante de l'application, choisie par l'utilisateur (français ou anglais).
+///
+/// Le choix est mémorisé sur le téléphone (il survit à la déconnexion et au
+/// redémarrage) et enregistré sur le compte, qui le retrouve à la connexion sur
+/// un autre téléphone ou après réinstallation.
 ///
 /// Les textes de l'interface sont écrits en français dans le code et passent
 /// par [tr] : en anglais, ils sont traduits via le dictionnaire
@@ -29,18 +33,35 @@ class LangueApp extends ValueNotifier<Langue> {
   static final LangueApp instance = LangueApp._();
 
   static const _cle = 'langue_app';
+
+  /// Choix fait sans pouvoir l'enregistrer sur le compte (hors connexion, réseau
+  /// absent) : il sera reporté sur le compte à la prochaine connexion.
+  static const _cleAEnregistrer = 'langue_a_enregistrer';
   SharedPreferences? _prefs;
 
-  /// Enregistre la langue dans le profil du client connecté (branché au démarrage) :
-  /// le serveur envoie alors les notifications push dans cette langue.
-  Future<void> Function(Langue langue)? enregistrerDansProfil;
+  /// Enregistre la langue sur le compte connecté (branché au démarrage) ; renvoie
+  /// false hors connexion. Le serveur envoie alors les push dans cette langue.
+  Future<bool> Function(Langue langue)? enregistrerDansProfil;
 
-  /// À appeler après la connexion : la langue choisie avant de se connecter
-  /// est reportée sur le compte. Sans effet en cas d'échec.
-  Future<void> synchroniserProfil() async {
+  Future<void> _enregistrerSurLeCompte() async {
+    var enregistre = false;
     try {
-      await enregistrerDansProfil?.call(value);
+      enregistre = await enregistrerDansProfil?.call(value) ?? false;
     } catch (_) {}
+    if (enregistre) {
+      await _prefs?.remove(_cleAEnregistrer);
+    } else {
+      await _prefs?.setBool(_cleAEnregistrer, true);
+    }
+  }
+
+  /// À la connexion : la langue du compte s'applique à l'application, sauf si
+  /// l'utilisateur vient d'en choisir une autre sans être connecté (ce choix
+  /// récent est alors enregistré sur le compte).
+  Future<void> apresConnexion(String? langueDuCompte) async {
+    if (_prefs?.getBool(_cleAEnregistrer) ?? false) return _enregistrerSurLeCompte();
+    final langue = Langue.values.where((l) => l.code == langueDuCompte).firstOrNull;
+    if (langue != null && langue != value) await _appliquer(langue);
   }
 
   /// Au premier lancement, la langue du téléphone est reprise si elle est proposée.
@@ -54,11 +75,16 @@ class LangueApp extends ValueNotifier<Langue> {
     );
   }
 
+  /// Choix de l'utilisateur : appliqué tout de suite et enregistré sur le compte.
   Future<void> changer(Langue langue) async {
     if (langue == value) return;
+    await _appliquer(langue);
+    await _enregistrerSurLeCompte();
+  }
+
+  Future<void> _appliquer(Langue langue) async {
     value = langue;
     await _prefs?.setString(_cle, langue.code);
-    synchroniserProfil();
     // Tous les écrans ouverts sont redessinés dans la nouvelle langue, sans
     // perdre la navigation ni les saisies en cours.
     void reconstruire(Element e) {

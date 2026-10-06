@@ -46,7 +46,14 @@ class RegisterRequested extends AuthEvent {
   List<Object?> get props => [email];
 }
 
-class LogoutRequested extends AuthEvent {}
+class LogoutRequested extends AuthEvent {
+  /// Ouvre l'écran de connexion par-dessus l'accueil une fois déconnecté
+  /// (session expirée, mot de passe changé…).
+  final bool ouvrirConnexion;
+  const LogoutRequested({this.ouvrirConnexion = false});
+  @override
+  List<Object?> get props => [ouvrirConnexion];
+}
 class ResetAuthState extends AuthEvent {}
 
 class ForgotPasswordRequested extends AuthEvent {

@@ -6,6 +6,8 @@ import '../../../../core/routes/app_router.dart';
 import '../../../../core/services/token_service.dart';
 import '../../../../core/services/version_service.dart';
 import '../../../catalogue/data/catalogue_remote_datasource.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/theme/app_color.dart';
 
 const String kHasSeenOnboardingKey = 'has_seen_onboarding';
 
@@ -58,9 +60,7 @@ class _SplashPageState extends State<SplashPage> {
       // alors une connexion).
       final hasSeenOnboarding = sl<SharedPreferences>().getBool(kHasSeenOnboardingKey) ?? false;
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(
-        hasSeenOnboarding ? AppRouter.clientRoute : AppRouter.onboardingRoute,
-      );
+      Navigator.of(context).pushReplacementNamed(hasSeenOnboarding ? AppRouter.clientRoute : AppRouter.onboardingRoute);
     } catch (e) {
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed(AppRouter.onboardingRoute);
@@ -69,14 +69,28 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Fond blanc, comme l'écran de lancement natif (iOS / Android) : aucune
+    // coupure de couleur entre les deux. Pictogramme à fond transparent.
     return Scaffold(
+      backgroundColor: AppColor.kWhite,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/images/logo_yobante_icon.png', width: 140),
-            const SizedBox(height: 32),
-            const CircularProgressIndicator(),
+            Image.asset('assets/images/logo_yobante_icon.png', width: 112),
+            const SizedBox(height: 24),
+            Text(
+              'Yobante Colis',
+              style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w700, color: AppColor.kPrimary),
+            ),
+            const SizedBox(height: 28),
+            const SizedBox(
+              width: 120,
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(4)),
+                child: LinearProgressIndicator(minHeight: 4),
+              ),
+            ),
           ],
         ),
       ),

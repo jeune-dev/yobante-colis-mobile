@@ -54,6 +54,7 @@ class ProfilClient {
   final bool notificationsEmail;
   final bool notificationsPush;
   final bool notificationsWhatsapp;
+  final bool notificationsSms;
   final bool emailVerifie;
   final String? telephone;
 
@@ -69,6 +70,7 @@ class ProfilClient {
     this.notificationsEmail = true,
     this.notificationsPush = true,
     this.notificationsWhatsapp = true,
+    this.notificationsSms = false,
     this.emailVerifie = false,
     this.telephone,
     this.telephoneVerifie = false,
@@ -83,6 +85,7 @@ class ProfilClient {
         notificationsEmail: j['notificationsEmail'] as bool? ?? true,
         notificationsPush: j['notificationsPush'] as bool? ?? true,
         notificationsWhatsapp: j['notificationsWhatsapp'] as bool? ?? true,
+        notificationsSms: j['notificationsSms'] as bool? ?? false,
         emailVerifie: j['emailVerifie'] as bool? ?? false,
         telephone: j['telephone'] as String?,
         telephoneVerifie: j['telephoneVerifie'] as bool? ?? false,

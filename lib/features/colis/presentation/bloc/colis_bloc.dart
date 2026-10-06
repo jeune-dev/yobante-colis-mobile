@@ -41,7 +41,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
 
   Future<void> _onLoadColis(LoadColis event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
-    final result = await getColis(statut: event.statut, page: 1);
+    final result = await getColis(statut: event.statut, filtres: event.filtres, page: 1);
     result.fold(
       (f) => emit(_echec(f)),
       (data) {
@@ -59,7 +59,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
   Future<void> _onLoadMoreColis(LoadMoreColis event, Emitter<ColisState> emit) async {
     final current = state;
     if (current is! ColisListLoaded) return;
-    final result = await getColis(statut: event.statut, page: event.page);
+    final result = await getColis(statut: event.statut, filtres: event.filtres, page: event.page);
     result.fold(
       (f) => emit(_echec(f)),
       (data) {
@@ -76,7 +76,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
 
   Future<void> _onLoadColisRecus(LoadColisRecus event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
-    final result = await getColisRecus(statut: event.statut, page: 1);
+    final result = await getColisRecus(statut: event.statut, filtres: event.filtres, page: 1);
     result.fold(
       (f) => emit(_echec(f)),
       (data) {
@@ -94,7 +94,7 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
   Future<void> _onLoadMoreColisRecus(LoadMoreColisRecus event, Emitter<ColisState> emit) async {
     final current = state;
     if (current is! ColisRecusLoaded) return;
-    final result = await getColisRecus(statut: event.statut, page: event.page);
+    final result = await getColisRecus(statut: event.statut, filtres: event.filtres, page: event.page);
     result.fold(
       (f) => emit(_echec(f)),
       (data) {

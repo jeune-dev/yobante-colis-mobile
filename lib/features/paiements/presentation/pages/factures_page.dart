@@ -19,6 +19,7 @@ import '../bloc/paiements_bloc.dart';
 import '../bloc/paiements_event.dart';
 import '../bloc/paiements_state.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../domain/entities/facture_colis.dart';
 
 /// Page autonome (fournit son propre [PaiementsBloc]) — accessible depuis le
 /// tiroir latéral, indépendamment des onglets de la coquille principale.
@@ -44,6 +45,43 @@ class _FacturesView extends StatefulWidget {
 class _FacturesViewState extends State<_FacturesView> {
   static DateFormat get _dateFmt => formatDateCourte();
   bool? _isAuth;
+
+  /// Filtre appliqué par le backend : « impayees » ou un statut de facture.
+  String _filtre = 'toutes';
+
+  static Map<String, String> get _filtres => {
+        'toutes': tr('Toutes'),
+        'impayees': tr('À payer'),
+        'payee': tr('Payées'),
+        'annulee': tr('Annulées'),
+        'remboursee': tr('Remboursées'),
+      };
+
+  LoadFactures get _chargement => switch (_filtre) {
+        'toutes' => const LoadFactures(),
+        'impayees' => const LoadFactures(impayees: true),
+        final statut => LoadFactures(statut: statut),
+      };
+
+  Widget _barreFiltres() => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+        child: Row(
+          children: _filtres.entries
+              .map((e) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(e.value),
+                      selected: _filtre == e.key,
+                      onSelected: (_) {
+                        setState(() => _filtre = e.key);
+                        context.read<PaiementsBloc>().add(_chargement);
+                      },
+                    ),
+                  ))
+              .toList(),
+        ),
+      );
 
   @override
   void initState() {
@@ -81,6 +119,7 @@ class _FacturesViewState extends State<_FacturesView> {
               : TabBarView(children: [
                   Column(children: [
                     const _BandeauEncours(),
+                    _barreFiltres(),
                     Expanded(child: BlocBuilder<PaiementsBloc, PaiementsState>(
         builder: (context, state) {
           if (state is PaiementsLoading) return const ShimmerList();
@@ -90,108 +129,25 @@ class _FacturesViewState extends State<_FacturesView> {
               return EmptyState(
                 icon: Icons.receipt_long_outlined,
                 title: tr('Aucune facture'),
-                subtitle: tr('Vos factures apparaîtront ici après création d\'un colis.'),
+                subtitle: _filtre == 'toutes'
+                    ? tr('Vos factures apparaîtront ici après création d\'un colis.')
+                    : tr('Aucune facture dans cette catégorie.'),
               );
             }
             return RefreshIndicator(
-              onRefresh: () async => context.read<PaiementsBloc>().add(const LoadFactures()),
+              onRefresh: () async => context.read<PaiementsBloc>().add(_chargement),
               child: ListView.separated(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                 itemCount: state.factures.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (_, i) {
                   final f = state.factures[i];
                   final (label, color) = _statutInfo(f.statut);
-                  final dateLabel = _formatDate(f.dateEmission);
-                  return Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColor.kWhite,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(children: [
-                          Expanded(child: Text(f.reference,
-                              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700))),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(label,
-                                style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 11, fontWeight: FontWeight.w600, color: color)),
-                          ),
-                        ]),
-                        if (f.colisReference != null) ...[
-                          const SizedBox(height: 4),
-                          Text(tr('Colis ${f.colisReference}'),
-                              style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40)),
-                        ],
-                        const SizedBox(height: 8),
-                        Text(tr('Transport : ${formaterMontant(f.montantTransport, f.devise)}'),
-                            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
-                        if (f.montantSurcharges > 0)
-                          Text(tr('Surcharges : ${formaterMontant(f.montantSurcharges, f.devise)}'),
-                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
-                        if (f.montantAssurance > 0)
-                          Text(tr('Assurance : ${formaterMontant(f.montantAssurance, f.devise)}'),
-                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
-                        if (f.remise > 0)
-                          Text(tr('Remise : -${formaterMontant(f.remise, f.devise)}'),
-                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kSucces)),
-                        if (f.montantHt > 0)
-                          Text(tr('Total HT : ${formaterMontant(f.montantHt, f.devise)}'),
-                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
-                        if (f.montantTva > 0)
-                          Text(tr('TVA : ${formaterMontant(f.montantTva, f.devise)}'),
-                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
-                        if (f.montantDroitsDouane > 0)
-                          Text(tr('Droits de douane : ${formaterMontant(f.montantDroitsDouane, f.devise)}'),
-                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
-                        const SizedBox(height: 4),
-                        Text(tr('Total TTC : ${formaterMontant(f.montantTotal, f.devise)}'),
-                            style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w700)),
-                        if (f.montantPaye > 0 && f.soldeDu > 0)
-                          Text(tr('Reste à payer : ${formaterMontant(f.soldeDu, f.devise)}'),
-                              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kAlerte)),
-                        const SizedBox(height: 4),
-                        Text(tr('Émise le $dateLabel'),
-                            style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40)),
-                        const SizedBox(height: 6),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton.icon(
-                            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                              builder: (_) => DocumentPage(
-                                titre: tr('Facture ${f.reference}'),
-                                chemin: Env.clientFactureDocument(f.id),
-                                nomFichier: 'facture-${f.reference}.html',
-                              ),
-                            )),
-                            icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
-                            label: Text(tr('Voir la facture')),
-                          ),
-                        ),
-                        if (f.lienPaiement != null) ...[
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () => ouvrirLien(context, f.lienPaiement),
-                              icon: const Icon(Icons.lock_outline, size: 18),
-                              label: Text(tr('Payer')),
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColor.kSecondary, foregroundColor: AppColor.kPrimary),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                  return _CarteFacture(
+                    facture: f,
+                    statut: label,
+                    couleurStatut: color,
+                    dateEmission: _formatDate(f.dateEmission),
                   );
                 },
               ),
@@ -225,6 +181,150 @@ class _FacturesViewState extends State<_FacturesView> {
 }
 
 /// Sommes restant dues, toutes devises confondues (`GET /client/paiements/encours`).
+/// Carte d'une facture : référence et statut, total TTC mis en avant, détail du
+/// calcul dans un encadré, puis les actions (voir le document, payer).
+class _CarteFacture extends StatelessWidget {
+  final FactureColis facture;
+  final String statut;
+  final Color couleurStatut;
+  final String dateEmission;
+  const _CarteFacture({
+    required this.facture,
+    required this.statut,
+    required this.couleurStatut,
+    required this.dateEmission,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final f = facture;
+    String m(double v) => formaterMontant(v, f.devise);
+    final lignes = <(String, String, Color?)>[
+      (tr('Transport'), m(f.montantTransport), null),
+      if (f.montantSurcharges > 0) (tr('Surcharges'), m(f.montantSurcharges), null),
+      if (f.montantAssurance > 0) (tr('Assurance'), m(f.montantAssurance), null),
+      if (f.remise > 0) (tr('Remise'), '-${m(f.remise)}', AppColor.kSucces),
+      if (f.montantHt > 0) (tr('Total HT'), m(f.montantHt), null),
+      if (f.montantTva > 0) (tr('TVA'), m(f.montantTva), null),
+      if (f.montantDroitsDouane > 0) (tr('Droits de douane'), m(f.montantDroitsDouane), null),
+    ];
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColor.kWhite,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [BoxShadow(color: AppColor.kPrimary.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, 6))],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(color: AppColor.kPrimaryLight, borderRadius: BorderRadius.circular(12)),
+              child: const Icon(Icons.receipt_long_outlined, size: 20, color: AppColor.kPrimary),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(f.reference,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 14)),
+                const SizedBox(height: 2),
+                Text(
+                  [if (f.colisReference != null) tr('Colis ${f.colisReference}'), tr('Émise le $dateEmission')].join(' · '),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40),
+                ),
+              ]),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(color: couleurStatut.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
+              child: Text(statut,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: couleurStatut)),
+            ),
+          ]),
+          const SizedBox(height: 16),
+          // Total mis en avant, reste à payer à côté
+          Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(tr('Total TTC'), style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40)),
+                Text(m(f.montantTotal),
+                    style: GoogleFonts.plusJakartaSans(fontSize: 24, fontWeight: FontWeight.w700, color: AppColor.kPrimary)),
+              ]),
+            ),
+            if (f.montantPaye > 0 && f.soldeDu > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(color: AppColor.kSecondaryLight, borderRadius: BorderRadius.circular(10)),
+                child: Text(tr('Reste ${m(f.soldeDu)}'),
+                    style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: AppColor.kAlerte)),
+              ),
+          ]),
+          const SizedBox(height: 12),
+          // Détail du calcul
+          Container(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+            decoration: BoxDecoration(color: AppColor.kBackground, borderRadius: BorderRadius.circular(12)),
+            child: Column(children: [
+              for (final (libelle, valeur, couleur) in lignes)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(children: [
+                    Expanded(
+                      child: Text(libelle, style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40)),
+                    ),
+                    Text(valeur,
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12, fontWeight: FontWeight.w600, color: couleur ?? AppColor.kGrayscaleDark100)),
+                  ]),
+                ),
+            ]),
+          ),
+          const SizedBox(height: 14),
+          Row(children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => DocumentPage(
+                    titre: tr('Facture ${f.reference}'),
+                    chemin: Env.clientFactureDocument(f.id),
+                    nomFichier: 'facture-${f.reference}.html',
+                  ),
+                )),
+                style: OutlinedButton.styleFrom(minimumSize: const Size(0, 44)),
+                icon: const Icon(Icons.description_outlined, size: 18),
+                label: Text(tr('Voir')),
+              ),
+            ),
+            if (f.lienPaiement != null) ...[
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => ouvrirLien(context, f.lienPaiement),
+                  icon: const Icon(Icons.lock_outline_rounded, size: 18),
+                  label: Text(tr('Payer')),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(0, 44),
+                    backgroundColor: AppColor.kSecondary,
+                    foregroundColor: AppColor.kPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ]),
+        ],
+      ),
+    );
+  }
+}
+
 class _BandeauEncours extends StatefulWidget {
   const _BandeauEncours();
 

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/demande_expedition.dart';
+import '../../domain/entities/filtres_colis.dart';
 
 abstract class ColisEvent extends Equatable {
   const ColisEvent();
@@ -9,18 +10,20 @@ abstract class ColisEvent extends Equatable {
 
 class LoadColis extends ColisEvent {
   final String? statut;
+  final FiltresColis filtres;
   final int page;
-  const LoadColis({this.statut, this.page = 1});
+  const LoadColis({this.statut, this.filtres = const FiltresColis(), this.page = 1});
   @override
-  List<Object?> get props => [statut, page];
+  List<Object?> get props => [statut, filtres, page];
 }
 
 class LoadColisRecus extends ColisEvent {
   final String? statut;
+  final FiltresColis filtres;
   final int page;
-  const LoadColisRecus({this.statut, this.page = 1});
+  const LoadColisRecus({this.statut, this.filtres = const FiltresColis(), this.page = 1});
   @override
-  List<Object?> get props => [statut, page];
+  List<Object?> get props => [statut, filtres, page];
 }
 
 class LoadColisDetail extends ColisEvent {
@@ -79,18 +82,20 @@ class AnnulerColisRequested extends ColisEvent {
 
 class LoadMoreColis extends ColisEvent {
   final String? statut;
+  final FiltresColis filtres;
   final int page;
-  const LoadMoreColis({this.statut, required this.page});
+  const LoadMoreColis({this.statut, this.filtres = const FiltresColis(), required this.page});
   @override
-  List<Object?> get props => [statut, page];
+  List<Object?> get props => [statut, filtres, page];
 }
 
 class LoadMoreColisRecus extends ColisEvent {
   final String? statut;
+  final FiltresColis filtres;
   final int page;
-  const LoadMoreColisRecus({this.statut, required this.page});
+  const LoadMoreColisRecus({this.statut, this.filtres = const FiltresColis(), required this.page});
   @override
-  List<Object?> get props => [statut, page];
+  List<Object?> get props => [statut, filtres, page];
 }
 
 class ResetColisState extends ColisEvent {}

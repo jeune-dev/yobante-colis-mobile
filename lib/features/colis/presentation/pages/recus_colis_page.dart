@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
@@ -10,13 +8,13 @@ import '../../../../core/widgets/shimmer_list.dart';
 import '../../../../injection_container.dart';
 import '../../../account/presentation/widgets/verification_telephone_dialog.dart';
 import '../../../tracking/presentation/pages/tracking_page.dart';
-import '../../domain/entities/colis.dart';
 import '../bloc/colis_bloc.dart';
 import '../bloc/colis_event.dart';
 import '../bloc/colis_state.dart';
-import '../widgets/statut_badge.dart';
+import '../../domain/entities/filtres_colis.dart';
+import '../widgets/filtres_colis_widgets.dart';
+import '../widgets/carte_colis.dart';
 import '../../../../core/i18n/langue.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 
 /// Onglet « Reçus » : expéditions dont l'utilisateur connecté est le
@@ -49,10 +47,34 @@ class RecusColisPage extends StatelessWidget {
   }
 }
 
-class _RecusView extends StatelessWidget {
+class _RecusView extends StatefulWidget {
   final bool isAuth;
   final bool integre;
   const _RecusView({required this.isAuth, this.integre = false});
+
+  @override
+  State<_RecusView> createState() => _RecusViewState();
+}
+
+class _RecusViewState extends State<_RecusView> {
+  String? _statut;
+  FiltresColis _filtres = const FiltresColis();
+
+  bool get isAuth => widget.isAuth;
+  bool get integre => widget.integre;
+  bool get _filtrage => _statut != null || _filtres.actif;
+
+  LoadColisRecus get _chargement => LoadColisRecus(statut: _statut, filtres: _filtres);
+
+  Future<void> _ouvrirFiltres() async {
+    final choix = await choisirFiltresColis(context, statut: _statut, filtres: _filtres, recus: true);
+    if (choix == null || !mounted) return;
+    setState(() {
+      _statut = choix.statut;
+      _filtres = choix.filtres;
+    });
+    context.read<ColisBloc>().add(_chargement);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +94,17 @@ class _RecusView extends StatelessWidget {
               actionLabel: tr('Se connecter'),
               onAction: () => Navigator.of(context).pushNamed(AppRouter.loginRoute),
             )
-          : BlocBuilder<ColisBloc, ColisState>(
+          : Column(
+              children: [
+                BarreFiltresColis(recherche: false, filtresActifs: _filtrage, onFiltres: _ouvrirFiltres),
+                Expanded(child: _liste()),
+              ],
+            ),
+    );
+  }
+
+  Widget _liste() {
+    return BlocBuilder<ColisBloc, ColisState>(
               builder: (context, state) {
                 if (state is ColisLoading) return const ShimmerList();
                 if (state is ColisFailure) {
@@ -86,7 +118,7 @@ class _RecusView extends StatelessWidget {
                       actionLabel: tr('Vérifier mon numéro'),
                       onAction: () async {
                         final bloc = context.read<ColisBloc>();
-                        if (await verifierTelephone(context) != null) bloc.add(const LoadColisRecus());
+                        if (await verifierTelephone(context) != null) bloc.add(_chargement);
                       },
                     );
                   }
@@ -95,10 +127,25 @@ class _RecusView extends StatelessWidget {
                     title: tr('Erreur'),
                     subtitle: state.message,
                     actionLabel: tr('Réessayer'),
-                    onAction: () => context.read<ColisBloc>().add(const LoadColisRecus()),
+                    onAction: () => context.read<ColisBloc>().add(_chargement),
                   );
                 }
                 if (state is ColisRecusLoaded) {
+                  if (state.colis.isEmpty && _filtrage) {
+                    return EmptyState(
+                      icon: Icons.search_off_rounded,
+                      title: tr('Aucun résultat'),
+                      subtitle: tr('Aucun colis reçu ne correspond à ces critères.'),
+                      actionLabel: tr('Effacer les filtres'),
+                      onAction: () {
+                        setState(() {
+                          _statut = null;
+                          _filtres = const FiltresColis();
+                        });
+                        context.read<ColisBloc>().add(_chargement);
+                      },
+                    );
+                  }
                   if (state.colis.isEmpty) {
                     return EmptyState(
                       icon: Icons.mark_email_read_outlined,
@@ -109,7 +156,7 @@ class _RecusView extends StatelessWidget {
                   final hasMore = state.hasMore;
                   final nextPage = state.currentPage + 1;
                   return RefreshIndicator(
-                    onRefresh: () async => context.read<ColisBloc>().add(const LoadColisRecus()),
+                    onRefresh: () async => context.read<ColisBloc>().add(_chargement),
                     child: ListView.separated(
                       padding: const EdgeInsets.all(16),
                       itemCount: state.colis.length + (hasMore ? 1 : 0),
@@ -120,14 +167,14 @@ class _RecusView extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Center(
                               child: OutlinedButton(
-                                onPressed: () => context.read<ColisBloc>().add(LoadMoreColisRecus(page: nextPage)),
+                                onPressed: () => context.read<ColisBloc>().add(LoadMoreColisRecus(statut: _statut, filtres: _filtres, page: nextPage)),
                                 child: Text(tr('Charger plus')),
                               ),
                             ),
                           );
                         }
                         return RepaintBoundary(
-                          child: _RecuCard(
+                          child: CarteColis(recu: true, 
                             colis: state.colis[i],
                             // Le détail complet est réservé à l'expéditeur : le destinataire
                             // suit son colis par le suivi public (numéro de suivi)
@@ -141,62 +188,6 @@ class _RecusView extends StatelessWidget {
                 }
                 return const SizedBox.shrink();
               },
-            ),
-    );
-  }
-}
-
-class _RecuCard extends StatelessWidget {
-  static DateFormat get _fmt => formatDate();
-
-  final Colis colis;
-  final VoidCallback onTap;
-  const _RecuCard({required this.colis, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColor.kWhite,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(colis.reference,
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 14)),
-                ),
-                StatutBadge(statut: colis.statut),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(children: [
-              const Icon(Icons.person_outline, size: 14, color: AppColor.kGrayscale40),
-              const SizedBox(width: 6),
-              Text(tr('Expéditeur : '), style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40)),
-              Expanded(child: Text(colis.expediteurNom, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w600))),
-            ]),
-            const SizedBox(height: 6),
-            Row(children: [
-              const Icon(Icons.location_on_outlined, size: 14, color: AppColor.kGrayscale40),
-              const SizedBox(width: 6),
-              Text('${colis.villeDepart?.nom ?? '—'} → ${colis.villeArrivee?.nom ?? '—'}',
-                  style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w600)),
-            ]),
-            const SizedBox(height: 8),
-            Text(tr('Créé le ${_fmt.format(colis.createdAt)}'),
-                style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40)),
-          ],
-        ),
-      ),
-    );
+            );
   }
 }

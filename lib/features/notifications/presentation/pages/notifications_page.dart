@@ -85,45 +85,81 @@ class _NotificationsViewState extends State<_NotificationsView> {
             return RefreshIndicator(
               onRefresh: () async => context.read<NotificationsBloc>().add(const LoadNotifications()),
               child: ListView.separated(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                 itemCount: state.notifications.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (_, i) {
                   final n = state.notifications[i];
                   final bloc = context.read<NotificationsBloc>();
+                  // Carte par notification : non lue = liseré jaune et titre en gras
                   return Dismissible(
                     key: ValueKey(n.id),
                     direction: DismissDirection.endToStart,
                     background: Container(
                       alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 20),
-                      color: AppColor.kErreur,
-                      child: const Icon(Icons.delete_outline, color: Colors.white),
+                      padding: const EdgeInsets.only(right: 24),
+                      decoration: BoxDecoration(color: AppColor.kErreur, borderRadius: BorderRadius.circular(16)),
+                      child: const Icon(Icons.delete_outline_rounded, color: AppColor.kWhite),
                     ),
                     onDismissed: (_) => bloc.add(SupprimerNotification(n.id)),
-                    child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: n.isRead ? AppColor.kLine : AppColor.kPrimary.withValues(alpha: 0.1),
-                      child: Icon(_typeIcon(n.type),
-                          color: n.isRead ? AppColor.kGrayscale40 : AppColor.kPrimary, size: 18),
-                    ),
-                    title: Text(n.titre,
-                        style: GoogleFonts.plusJakartaSans(
-                            fontWeight: n.isRead ? FontWeight.w500 : FontWeight.w700, fontSize: 13)),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(n.message, style: GoogleFonts.plusJakartaSans(fontSize: 12)),
-                        Text(_fmt.format(n.createdAt),
-                            style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40)),
-                      ],
-                    ),
-                    tileColor: n.isRead ? null : AppColor.kPrimary.withValues(alpha: 0.03),
-                    onTap: () {
-                      if (!n.isRead) bloc.add(MarquerLue(n.id));
-                      // Colis, facture, réclamation, enlèvement… : ouverture de l'écran concerné
-                      ouvrirEntiteNotification(context, n.entite, n.entiteId);
-                    },
+                    child: Material(
+                      color: n.isRead ? AppColor.kWhite : AppColor.kPrimaryLight,
+                      borderRadius: BorderRadius.circular(16),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () {
+                          if (!n.isRead) bloc.add(MarquerLue(n.id));
+                          // Colis, facture, réclamation, enlèvement… : ouverture de l'écran concerné
+                          ouvrirEntiteNotification(context, n.entite, n.entiteId);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              left: BorderSide(color: n.isRead ? Colors.transparent : AppColor.kSecondary, width: 4),
+                            ),
+                          ),
+                          padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: n.isRead ? AppColor.kBackground : AppColor.kWhite,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(_typeIcon(n.type),
+                                    color: n.isRead ? AppColor.kGrayscale40 : AppColor.kPrimary, size: 19),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(children: [
+                                      Expanded(
+                                        child: Text(n.titre,
+                                            style: GoogleFonts.plusJakartaSans(
+                                                fontWeight: n.isRead ? FontWeight.w600 : FontWeight.w700,
+                                                fontSize: 14,
+                                                color: AppColor.kGrayscaleDark100)),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(_fmt.format(n.createdAt),
+                                          style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40)),
+                                    ]),
+                                    const SizedBox(height: 4),
+                                    Text(n.message,
+                                        style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 13, height: 1.4, color: AppColor.kGrayscale40)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -140,6 +176,9 @@ class _NotificationsViewState extends State<_NotificationsView> {
     switch (type) {
       case 'colis':    return Icons.inventory_2_outlined;
       case 'paiement': return Icons.payments_outlined;
+      case 'douane':   return Icons.gavel_rounded;
+      case 'reclamation': return Icons.support_agent_outlined;
+      case 'enlevement':  return Icons.local_shipping_outlined;
       default:         return Icons.notifications_outlined;
     }
   }

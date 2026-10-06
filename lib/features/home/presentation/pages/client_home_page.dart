@@ -10,6 +10,8 @@ import '../../../../core/services/auth_status.dart';
 import '../../../../core/services/fcm_service.dart';
 import '../../../../core/widgets/app_drawer.dart';
 import '../../../../core/i18n/langue.dart';
+import '../../../../core/services/compteur_notifications.dart';
+import '../../../../core/widgets/pastille_notifications.dart';
 
 /// Coquille de navigation principale, façon DHL Express : tiroir latéral et
 /// cinq onglets (Accueil, Mes envois, Expédier, Points de service, Compte).
@@ -34,6 +36,8 @@ class _ClientHomePageState extends State<ClientHomePage> {
       setState(() => _isAuth = auth);
       // Notifications push : permissions, jeton d'appareil et ouverture sur tap
       if (auth && !kDemoMode) FcmService.init(context).catchError((_) {});
+      // Compteur de notifications non lues, tenu à jour automatiquement
+      if (auth) CompteurNotifications.instance.demarrer();
     });
   }
 
@@ -75,7 +79,10 @@ class _ClientHomePageState extends State<ClientHomePage> {
               icon: Icon(Icons.inventory_2_outlined), selectedIcon: Icon(Icons.inventory_2), label: tr('Mes envois')),
           NavigationDestination(icon: Icon(Icons.send_outlined), selectedIcon: Icon(Icons.send), label: tr('Expédier')),
           NavigationDestination(icon: Icon(Icons.storefront_outlined), selectedIcon: Icon(Icons.storefront), label: tr('Points')),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: tr('Compte')),
+          NavigationDestination(
+              icon: const PastilleNotifications(child: Icon(Icons.person_outline)),
+              selectedIcon: const PastilleNotifications(child: Icon(Icons.person)),
+              label: tr('Compte')),
         ],
       ),
     );
