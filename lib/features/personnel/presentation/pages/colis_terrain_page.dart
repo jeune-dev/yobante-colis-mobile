@@ -12,6 +12,9 @@ import '../../../../core/widgets/shimmer_list.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../core/widgets/ui_kit.dart';
 import '../../../../injection_container.dart';
+import '../../../../core/errors/api_error.dart';
+import '../../../../core/routes/app_router.dart';
+import '../../../colis/domain/usecases/colis_usecases.dart';
 import '../../../colis/presentation/widgets/statut_badge.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../notifications/presentation/widgets/apercu_notifications.dart';
@@ -74,7 +77,8 @@ class _ColisTerrainPageState extends State<ColisTerrainPage> {
 
   /// Un seul chargement du périmètre : les filtres et leurs compteurs en découlent.
   Future<void> _charger() async {
-    setState(() => _erreur = null);
+    // Pas de setState au premier chargement (appelé depuis initState)
+    if (_erreur != null) setState(() => _erreur = null);
     try {
       final tous = await _source.getColis();
       if (mounted) setState(() => _tous = tous);
@@ -394,13 +398,35 @@ class _DetailColisTerrainPageState extends State<DetailColisTerrainPage> {
     _charger();
   }
 
+  bool _indisponible = false;
+
   Future<void> _charger() async {
+    if (_erreur != null) {
+      setState(() {
+        _erreur = null;
+        _indisponible = false;
+      });
+    }
     try {
       final c = await _source.getColisDetail(widget.id);
       if (mounted) setState(() => _c = c);
     } on ServerException catch (e) {
-      if (mounted) setState(() => _erreur = e.message);
+      if (e.code == kCodeIntrouvable && await _ouvrirCommeClient()) return;
+      if (!mounted) return;
+      setState(() {
+        _erreur = e.message;
+        _indisponible = e.code == kCodeIntrouvable;
+      });
     }
+  }
+
+  /// Hors des missions du compte, le colis peut être un envoi personnel
+  /// (expédié ou reçu) : il s'ouvre alors comme dans l'espace client.
+  Future<bool> _ouvrirCommeClient() async {
+    final res = await sl<GetColisDetail>()(widget.id);
+    if (res.isLeft() || !mounted) return res.isRight();
+    Navigator.of(context).pushReplacementNamed(AppRouter.detailColisRoute, arguments: widget.id);
+    return true;
   }
 
   Future<void> _mettreAJour() async {
@@ -512,7 +538,13 @@ class _DetailColisTerrainPageState extends State<DetailColisTerrainPage> {
                 ),
               ]),
         body: _erreur != null
-            ? EmptyState(icon: Icons.error_outline, title: tr('Erreur'), subtitle: _erreur!)
+            ? MissionIndisponible(
+                indisponible: _indisponible,
+                message: _indisponible
+                    ? tr('Ce colis ne fait plus partie de vos missions : il a pu être confié à un autre membre du personnel ou changer de point.')
+                    : _erreur!,
+                onReessayer: _charger,
+              )
             : c == null
                 ? const Center(child: CircularProgressIndicator())
                 : RefreshIndicator(

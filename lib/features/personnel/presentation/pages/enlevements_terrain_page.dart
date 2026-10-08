@@ -11,7 +11,9 @@ import '../../../../core/widgets/shimmer_list.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../core/widgets/ui_kit.dart';
 import '../../../../injection_container.dart';
-import '../../../enlevements/presentation/pages/enlevements_page.dart' show PastilleStatutEnlevement;
+import '../../../../core/errors/api_error.dart';
+import '../../../enlevements/data/enlevements_remote_datasource.dart';
+import '../../../enlevements/presentation/pages/enlevements_page.dart' show DetailEnlevementPage, PastilleStatutEnlevement;
 import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../notifications/presentation/widgets/apercu_notifications.dart';
 import '../../data/personnel_remote_datasource.dart';
@@ -58,7 +60,8 @@ class _EnlevementsTerrainPageState extends State<EnlevementsTerrainPage> {
   }
 
   Future<void> _charger() async {
-    setState(() => _erreur = null);
+    // Pas de setState au premier chargement (appelé depuis initState)
+    if (_erreur != null) setState(() => _erreur = null);
     try {
       final resultats = await Future.wait([
         _source.getEnlevements(),
@@ -243,13 +246,39 @@ class _DetailEnlevementTerrainPageState extends State<DetailEnlevementTerrainPag
     _charger();
   }
 
+  bool _indisponible = false;
+
   Future<void> _charger() async {
+    if (_erreur != null) {
+      setState(() {
+        _erreur = null;
+        _indisponible = false;
+      });
+    }
     try {
       final e = await _source.getEnlevement(widget.id);
       if (mounted) setState(() => _e = e);
     } on ServerException catch (e) {
-      if (mounted) setState(() => _erreur = e.message);
+      if (e.code == kCodeIntrouvable && await _ouvrirCommeClient()) return;
+      if (!mounted) return;
+      setState(() {
+        _erreur = e.message;
+        _indisponible = e.code == kCodeIntrouvable;
+      });
     }
+  }
+
+  /// Hors des missions du compte, la demande peut être la sienne en tant que
+  /// client (notification reçue avant de rejoindre le personnel).
+  Future<bool> _ouvrirCommeClient() async {
+    try {
+      await sl<EnlevementsRemoteDataSource>().getDemande(widget.id);
+    } on ServerException {
+      return false;
+    }
+    if (!mounted) return true;
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => DetailEnlevementPage(id: widget.id)));
+    return true;
   }
 
   Future<void> _executer(Future<String> Function() action) async {
@@ -352,7 +381,13 @@ class _DetailEnlevementTerrainPageState extends State<DetailEnlevementTerrainPag
         appBar: barreEspace(tr('Enlèvement')),
         bottomNavigationBar: e == null ? null : _barre(e),
         body: _erreur != null
-            ? EmptyState(icon: Icons.error_outline, title: tr('Erreur'), subtitle: _erreur!)
+            ? MissionIndisponible(
+                indisponible: _indisponible,
+                message: _indisponible
+                    ? tr('Cet enlèvement ne fait plus partie de vos missions : il a pu être réaffecté, annulé ou supprimé.')
+                    : _erreur!,
+                onReessayer: _charger,
+              )
             : e == null || d == null
                 ? const Center(child: CircularProgressIndicator())
                 : RefreshIndicator(

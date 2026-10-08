@@ -71,11 +71,17 @@ String messageApi(Response res, [String defaut = '']) {
   return message is String && message.isNotEmpty ? message : defaut;
 }
 
+/// Code des erreurs 404 sans code métier (ressource absente ou hors périmètre).
+const String kCodeIntrouvable = 'INTROUVABLE';
+
 /// Exécute un appel réseau en traduisant les erreurs Dio en [ServerException].
 Future<T> appelApi<T>(Future<T> Function() appel, [String? defaut]) async {
   try {
     return await appel();
   } on DioException catch (e) {
-    throw ServerException(message: messageErreur(e, defaut), code: codeErreur(e));
+    // Sans code métier, une 404 reçoit le code INTROUVABLE : les écrans
+    // distinguent ainsi une ressource absente d'un problème de connexion.
+    final code = codeErreur(e) ?? (e.response?.statusCode == 404 ? kCodeIntrouvable : null);
+    throw ServerException(message: messageErreur(e, defaut), code: code);
   }
 }

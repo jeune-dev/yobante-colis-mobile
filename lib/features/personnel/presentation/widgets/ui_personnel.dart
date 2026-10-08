@@ -4,6 +4,7 @@ import '../../../../core/config/user_role.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/ui_kit.dart';
 import '../../../../injection_container.dart';
 import '../../../account/domain/repositories/account_repository.dart';
@@ -685,4 +686,24 @@ class TitreListe extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Padding(padding: const EdgeInsets.fromLTRB(20, 20, 20, 10), child: Text(texte, style: titreSection(16)));
+}
+
+/// Détail impossible à ouvrir : mission sortie du périmètre (réaffectée,
+/// annulée…) ou erreur de chargement, avec retour ou nouvel essai.
+class MissionIndisponible extends StatelessWidget {
+  final bool indisponible;
+  final String message;
+  final VoidCallback onReessayer;
+  const MissionIndisponible({super.key, required this.indisponible, required this.message, required this.onReessayer});
+
+  @override
+  Widget build(BuildContext context) {
+    return EmptyState(
+      icon: indisponible ? Icons.assignment_late_outlined : Icons.wifi_off_rounded,
+      title: indisponible ? tr('Mission indisponible') : tr('Chargement impossible'),
+      subtitle: message,
+      actionLabel: indisponible ? tr('Retour') : tr('Réessayer'),
+      onAction: indisponible ? () => Navigator.of(context).maybePop() : onReessayer,
+    );
+  }
 }

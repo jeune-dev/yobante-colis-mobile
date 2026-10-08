@@ -1229,4 +1229,8 @@ const Map<String, String> traductionsEn = {
   '{p} payés sur {t}': '{p} paid out of {t}',
   'Échec': 'Failed',
   'Étiquette': 'Label',
+  'Cet enlèvement ne fait plus partie de vos missions : il a pu être réaffecté, annulé ou supprimé.': 'This pickup is no longer one of your missions: it may have been reassigned, cancelled or deleted.',
+  'Ce colis ne fait plus partie de vos missions : il a pu être confié à un autre membre du personnel ou changer de point.': 'This parcel is no longer one of your missions: it may have been assigned to another staff member or moved to another point.',
+  'Mission indisponible': 'Mission unavailable',
+  'Chargement impossible': 'Could not load',
 };
