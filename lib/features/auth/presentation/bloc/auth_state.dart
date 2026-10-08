@@ -34,8 +34,11 @@ class AuthFailure extends AuthState {
 
   /// Connexion refusée tant que l'adresse email n'est pas confirmée.
   final bool emailNonConfirme;
-  const AuthFailure({required this.message, this.emailNonConfirme = false});
-  @override List<Object?> get props => [message, emailNonConfirme];
+
+  /// Adresse du compte à confirmer (renvoyée par le backend avec le refus).
+  final String? email;
+  const AuthFailure({required this.message, this.emailNonConfirme = false, this.email});
+  @override List<Object?> get props => [message, emailNonConfirme, email];
 }
 
 class ForgotPasswordSuccess extends AuthState {

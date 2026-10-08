@@ -82,6 +82,19 @@ class Env {
   static String clientEnlevementId(String id)      => '/client/enlevements/$id';
   static String clientEnlevementAnnuler(String id) => '/client/enlevements/$id/annuler';
 
+  // ── PERSONNEL — COURSIERS, AGENTS DE POINT, ADMINISTRATEURS ───────────────
+  // Le backend restreint chaque liste au périmètre du compte connecté.
+  static const String personnelEnlevements = '/admin/enlevements';
+  static const String personnelTournee     = '/admin/enlevements/tournee/aujourdhui';
+  static String personnelEnlevementId(String id)        => '/admin/enlevements/$id';
+  static String personnelEnlevementDemarrer(String id)  => '/admin/enlevements/$id/demarrer';
+  static String personnelEnlevementCloturer(String id)  => '/admin/enlevements/$id/cloturer';
+  static const String personnelColis = '/admin/colis';
+  static String personnelColisId(String id)              => '/admin/colis/$id';
+  static String personnelColisRecherche(String numero)   => '/admin/colis/recherche/${Uri.encodeComponent(numero)}';
+  static String personnelColisEvenement(String id)       => '/admin/colis/$id/evenements';
+  static String personnelEncaissement(String factureId)  => '/admin/paiements/factures/$factureId';
+
   // ── CLIENT — CARNET D'ADRESSES ────────────────────────────────────────────
   static const String clientAdresses = '/client/adresses';
   static String clientAdresseId(String id)     => '/client/adresses/$id';

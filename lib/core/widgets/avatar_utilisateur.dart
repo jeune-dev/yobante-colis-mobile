@@ -13,7 +13,20 @@ class AvatarUtilisateur extends StatelessWidget {
   /// Liseré blanc autour de l'avatar (sur un fond coloré).
   final bool bordure;
 
-  const AvatarUtilisateur({super.key, this.prenom, this.nom, this.photoUrl, this.rayon = 24, this.bordure = false});
+  /// Couleurs des initiales et de leur fond (jaune et bleu de la marque par défaut).
+  final Color fond;
+  final Color couleurTexte;
+
+  const AvatarUtilisateur({
+    super.key,
+    this.prenom,
+    this.nom,
+    this.photoUrl,
+    this.rayon = 24,
+    this.bordure = false,
+    this.fond = AppColor.kSecondary,
+    this.couleurTexte = AppColor.kPrimary,
+  });
 
   /// Initiales du prénom et du nom, en majuscules (au plus deux lettres).
   static String initiales(String? prenom, String? nom) => [
@@ -27,17 +40,17 @@ class AvatarUtilisateur extends StatelessWidget {
     final lettres = initiales(prenom, nom);
     final avatar = CircleAvatar(
       radius: rayon,
-      backgroundColor: AppColor.kSecondary,
+      backgroundColor: fond,
       foregroundImage: photo == null ? null : NetworkImage(photo),
       // Initiales (ou icône) visibles tant que la photo n'est pas chargée, ou si elle échoue
       child: lettres.isEmpty
-          ? Icon(Icons.person_rounded, color: AppColor.kPrimary, size: rayon)
+          ? Icon(Icons.person_rounded, color: couleurTexte, size: rayon)
           : Text(
               lettres,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: rayon * 0.72,
                 fontWeight: FontWeight.w700,
-                color: AppColor.kPrimary,
+                color: couleurTexte,
               ),
             ),
     );

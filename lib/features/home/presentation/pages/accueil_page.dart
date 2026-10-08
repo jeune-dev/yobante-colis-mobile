@@ -23,6 +23,7 @@ import '../../../tracking/presentation/pages/tracking_page.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 import '../../../../core/widgets/pastille_notifications.dart';
+import '../../../notifications/presentation/widgets/apercu_notifications.dart';
 
 /// Onglet d'accueil façon DHL : suivi en accès libre, messages de
 /// l'administrateur (annonces, prochaine collecte), raccourcis et envois en cours.
@@ -168,6 +169,8 @@ class _AccueilPageState extends State<AccueilPage> {
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // Dernières notifications, visibles dès l'ouverture de l'application
+              if (_connecte) ...[const ApercuNotifications(), const SizedBox(height: 16)],
               ..._contenu.tournees.map(_banniereTournee),
               ..._contenu.annonces.where((a) => !a.estPopup).map(_banniereAnnonce),
               Text(tr('Que souhaitez-vous faire ?'), style: titreSection()),

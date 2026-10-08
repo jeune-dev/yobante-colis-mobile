@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yobante_colis/features/auth/presentation/pages/verification_email_page.dart';
 import 'package:yobante_colis/features/colis/domain/entities/demande_expedition.dart';
 import 'package:yobante_colis/features/colis/domain/entities/filtres_colis.dart';
 
@@ -95,21 +94,6 @@ void main() {
       final f = auPoids.versFormulaire();
       expect(f['poidsKg'], '3.0');
       expect(f['typeEmballage'], 'sac');
-    });
-  });
-
-  group('confirmation d\'email', () {
-    final jeton = 'ab' * 32;
-
-    test('jeton extrait du lien de l\'API ou du site', () {
-      expect(VerificationEmailPage.extraireJeton('https://api.yobanterek.com/auth/verify-email/$jeton'), jeton);
-      expect(VerificationEmailPage.extraireJeton('https://yobanterek.com/verifier-email?token=$jeton'), jeton);
-      expect(VerificationEmailPage.extraireJeton('  ${jeton.toUpperCase()} '), jeton);
-    });
-
-    test('saisie sans jeton valide', () {
-      expect(VerificationEmailPage.extraireJeton('https://yobanterek.com'), isNull);
-      expect(VerificationEmailPage.extraireJeton('${jeton}ff'), isNull);
     });
   });
 }

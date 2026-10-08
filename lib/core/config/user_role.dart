@@ -29,6 +29,9 @@ extension UserRoleX on UserRole {
   bool get isSuperAdmin => this == UserRole.superAdmin;
   bool get isPersonnelTerrain => this == UserRole.coursier || this == UserRole.agentPoint;
 
+  /// Membre du personnel : ouvre l'espace de travail au lieu de l'espace client.
+  bool get estPersonnel => isPersonnelTerrain || isAdmin;
+
   String get label {
     switch (this) {
       case UserRole.client:     return tr('Client');

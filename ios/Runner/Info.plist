@@ -27,7 +27,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Yobante Colis peut utiliser l'appareil photo pour prendre une photo de profil.</string>
+	<string>Yobante Colis utilise l'appareil photo pour photographier votre colis et, si vous le souhaitez, prendre votre photo de profil.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<!-- Développement : backend HTTP du Mac sur le réseau local (la production reste en HTTPS) -->
@@ -41,9 +41,9 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Yobante Colis utilise le micro pour enregistrer un message vocal décrivant votre colis.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Yobante Colis enregistre vos documents signés dans votre bibliothèque photo.</string>
+	<string>Yobante Colis enregistre dans votre bibliothèque photo les documents et images que vous choisissez de sauvegarder.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Yobante Colis utilise votre bibliothèque photo pour ajouter une photo de profil et un logo d'entreprise.</string>
+	<string>Yobante Colis utilise votre bibliothèque photo pour ajouter des photos de votre colis, une photo de profil ou un logo d'entreprise.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/fcm_service.dart';
+import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -16,6 +17,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutRequested>(_onLogout);
     on<ForgotPasswordRequested>(_onForgotPassword);
     on<ResetPasswordRequested>(_onResetPassword);
+    on<VerificationEmailRequested>(_onVerificationEmail);
     on<ResetAuthState>((_, emit) => emit(AuthInitial()));
   }
 
@@ -23,14 +25,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     final result = await authRepository.login(event.identifiant, event.motDePasse);
     await result.fold(
-      (f) async => emit(AuthFailure(message: f.errorMessage, emailNonConfirme: f is EmailNonConfirmeFailure)),
-      (user) async {
-        // La langue du compte s'applique avant d'afficher l'accueil
-        await LangueApp.instance.apresConnexion(user.langue);
-        emit(AuthSuccess(user: user));
-        FcmService.uploadToken().catchError((_) {});
-      },
+      (f) async => emit(AuthFailure(
+        message: f.errorMessage,
+        emailNonConfirme: f is EmailNonConfirmeFailure,
+        email: f is EmailNonConfirmeFailure ? f.email : null,
+      )),
+      (user) => _connecte(user, emit),
     );
+  }
+
+  /// Le code confirmé ouvre la session : même suite qu'une connexion réussie.
+  Future<void> _onVerificationEmail(VerificationEmailRequested event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    final result = await authRepository.verifierEmail(event.email, event.code);
+    await result.fold(
+      (f) async => emit(AuthFailure(message: f.errorMessage)),
+      (user) => _connecte(user, emit),
+    );
+  }
+
+  Future<void> _connecte(User user, Emitter<AuthState> emit) async {
+    // La langue du compte s'applique avant d'afficher l'accueil
+    await LangueApp.instance.apresConnexion(user.langue);
+    emit(AuthSuccess(user: user));
+    FcmService.uploadToken().catchError((_) {});
   }
 
   Future<void> _onRegister(RegisterRequested event, Emitter<AuthState> emit) async {

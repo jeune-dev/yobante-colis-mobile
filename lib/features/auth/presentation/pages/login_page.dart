@@ -48,35 +48,21 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  /// Compte existant mais email non confirmé : proposer de renvoyer le lien.
-  Future<void> _compteNonConfirme(String message) async {
+  /// Compte existant mais email non confirmé : ouverture directe de l'écran de
+  /// saisie du code (adresse renvoyée par le backend avec le refus).
+  void _compteNonConfirme(AuthFailure state) {
     final saisie = _emailCtrl.text.trim();
-    final email = TextEditingController(text: saisie.contains('@') ? saisie : '');
-    final choix = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(tr('Email non confirmé')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message),
-            const SizedBox(height: 12),
-            TextField(
-              controller: email,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(labelText: tr('Votre email')),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr('Fermer'))),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr('Renvoyer le lien'))),
-        ],
-      ),
+    final email = state.email ?? (saisie.contains('@') ? saisie : null);
+    if (email == null) {
+      showToast(context, tr('Email non confirmé'), state.message, ToastificationType.warning);
+      return;
+    }
+    context.read<AuthBloc>().add(ResetAuthState());
+    showToast(context, tr('Email non confirmé'), state.message, ToastificationType.info);
+    // Le code d'origine a pu expirer : le renvoi est proposé immédiatement
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => VerificationEmailPage(email: email, codeEnvoye: false)),
     );
-    if (choix != true || !mounted || !email.text.contains('@')) return;
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => VerificationEmailPage(email: email.text.trim())));
-    VerificationEmailPage.renvoyerLien(email.text.trim()).catchError((_) => '');
   }
 
   @override
@@ -87,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
       listenWhen: (_, _) => ModalRoute.of(context)?.isCurrent ?? false,
       listener: (context, state) {
         if (state is AuthFailure && state.emailNonConfirme) {
-          _compteNonConfirme(state.message);
+          _compteNonConfirme(state);
           return;
         }
         if (state is AuthFailure) {

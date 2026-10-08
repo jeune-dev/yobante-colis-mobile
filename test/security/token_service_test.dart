@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yobante_colis/core/services/token_service.dart';
@@ -124,6 +126,55 @@ void main() {
       await fakeStorage.write(key: 'jwt_token', value: validToken);
       await tokenService.setToken(null);
       expect(await fakeStorage.read(key: 'jwt_token'), isNull);
+    });
+    test('setToken vide supprime le token', () async {
+      await fakeStorage.write(key: 'jwt_token', value: validToken);
+      await tokenService.setToken('');
+      expect(await fakeStorage.read(key: 'jwt_token'), isNull);
+    });
+  });
+
+  group('TokenService — Expiration (VULN-M05)', () {
+    String jwt(Map<String, dynamic> payload) {
+      String b64(Map<String, dynamic> m) => base64Url.encode(utf8.encode(jsonEncode(m))).replaceAll('=', '');
+      return '${b64({'alg': 'HS256', 'typ': 'JWT'})}.${b64(payload)}.sig';
+    }
+
+    int dans(Duration d) => DateTime.now().add(d).millisecondsSinceEpoch ~/ 1000;
+
+    test('jeton expirant dans moins de 30 s considéré comme expiré (marge réseau)', () async {
+      await fakeStorage.write(key: 'jwt_token', value: jwt({'exp': dans(const Duration(seconds: 10))}));
+      expect(await tokenService.getValidToken(), isNull);
+    });
+
+    test('jeton expirant dans plus de 30 s accepté', () async {
+      final token = jwt({'exp': dans(const Duration(minutes: 5))});
+      await fakeStorage.write(key: 'jwt_token', value: token);
+      expect(await tokenService.getValidToken(), token);
+    });
+
+    test('jeton illisible traité comme expiré et effacé', () async {
+      await fakeStorage.write(key: 'jwt_token', value: 'pas.un.jwt');
+      expect(await tokenService.getValidToken(), isNull);
+      expect(await fakeStorage.read(key: 'jwt_token'), isNull);
+      expect(await tokenService.isAuthenticated, false);
+    });
+  });
+
+  group('TokenService — Refresh token', () {
+    test('setRefreshToken écrit, puis null ou vide supprime', () async {
+      await tokenService.setRefreshToken('r1');
+      expect(await tokenService.getRefreshToken(), 'r1');
+      await tokenService.setRefreshToken('');
+      expect(await tokenService.getRefreshToken(), isNull);
+      await tokenService.setRefreshToken('r2');
+      await tokenService.setRefreshToken(null);
+      expect(await tokenService.getRefreshToken(), isNull);
+    });
+
+    test('refresh token vide : pas de session', () async {
+      await fakeStorage.write(key: 'refresh_token', value: '');
+      expect(await tokenService.isAuthenticated, false);
     });
   });
 }

@@ -87,5 +87,31 @@ void main() {
       // Le token n'est pas dans props → ne fuite pas dans les logs BLoC
       expect(user.props.any((p) => p.toString().contains('secret')), false);
     });
+    test('toString (logs BLoC, rapports de crash) ne révèle ni jeton ni téléphone', () {
+      const user = User(
+        id: '1',
+        nom: 'Dupont',
+        prenom: 'Jean',
+        email: 'jean@example.com',
+        telephone: '+221771234567',
+        role: 'client',
+        accessToken: 'super_secret_jwt',
+        refreshToken: 'super_secret_refresh',
+      );
+      expect(user.toString(), isNot(contains('secret')));
+      expect(user.toString(), isNot(contains('771234567')));
+    });
+
+    test('AuthResponseModel.toString ne révèle pas les jetons', () {
+      final response = AuthResponseModel.fromJson(const {
+        'data': {
+          'accessToken': 'super_secret_jwt',
+          'refreshToken': 'super_secret_refresh',
+          'utilisateur': {'id': '1', 'email': 'j@e.com'},
+        },
+      });
+      expect(response.toString(), isNot(contains('secret')));
+      expect(response.user.toString(), isNot(contains('secret')));
+    });
   });
 }

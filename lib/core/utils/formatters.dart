@@ -46,14 +46,33 @@ String normaliserTelephone(String brut, {String paysParDefaut = 'SN'}) {
   return paysParDefaut == 'FR' && RegExp(r'^\d{9}$').hasMatch(n) ? '+33$n' : n;
 }
 
-/// Contrôle de format côté application, avant l'appel au backend.
-String? validerTelephone(String? v) {
+/// Contrôle de format côté application, avant l'appel au backend — mêmes règles et
+/// mêmes messages précis que lui : indicatif non desservi, nombre de chiffres, plage
+/// non attribuée. Sans indicatif, le numéro est rattaché à [paysParDefaut].
+String? validerTelephone(String? v, {String paysParDefaut = 'SN'}) {
   if (v == null || v.trim().isEmpty) return tr('Numéro requis');
-  final n = normaliserTelephone(v);
+  if (!RegExp(r'^(\+|00)?\d+$').hasMatch(nettoyerTelephone(v))) {
+    return tr('Le numéro ne doit contenir que des chiffres');
+  }
+  var n = normaliserTelephone(v, paysParDefaut: paysParDefaut);
+  if (!n.startsWith('+')) n = '${paysParDefaut == 'FR' ? '+33' : '+221'}$n';
+
+  final (String, String)? pays = n.startsWith('+221')
+      ? (tr('Sénégal'), '+221')
+      : n.startsWith('+33')
+          ? (tr('France'), '+33')
+          : null;
+  if (pays == null) {
+    return tr('Indicatif non pris en charge : France (+33) ou Sénégal (+221) uniquement');
+  }
+  final chiffres = n.length - pays.$2.length;
+  if (chiffres != 9) {
+    return tr('Un numéro ${pays.$1} comporte 9 chiffres hors indicatif (${pays.$2}) — $chiffres saisis');
+  }
   // Mêmes plages que le backend (libphonenumber) : France +33 suivi d'un chiffre
   // de 1 à 9 ; Sénégal +221, mobiles en 7x et fixes en 3x
   if (!RegExp(r'^\+(33[1-9]\d{8}|221[37]\d{8})$').hasMatch(n)) {
-    return tr('Numéro français (+33) ou sénégalais (+221) attendu');
+    return tr('Ce numéro ne correspond à aucune plage ${pays.$1} attribuée');
   }
   return null;
 }

@@ -18,6 +18,7 @@ import '../bloc/auth_state.dart';
 import '../widgets/mise_en_page_auth.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/utils/validateurs.dart';
+import '../../../../core/utils/normalisation_nom.dart';
 
 class _VilleOption {
   final String id;
@@ -40,6 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _telephoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmationController = TextEditingController();
   final _adresseController = TextEditingController();
   final _raisonSocialeController = TextEditingController();
   final _ninController = TextEditingController();
@@ -47,6 +49,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _codePostalController = TextEditingController();
   final _parrainageController = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirmation = true;
 
   bool _hasUpperCase = false;
   bool _hasDigit = false;
@@ -102,8 +105,8 @@ class _RegisterPageState extends State<RegisterPage> {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
         RegisterRequested(
-          nom: _nomController.text.trim(),
-          prenom: _prenomController.text.trim(),
+          nom: normaliserNomFamille(_nomController.text.trim()),
+          prenom: normaliserPrenom(_prenomController.text.trim()),
           email: _emailController.text.trim(),
           motDePasse: _passwordController.text,
           telephone: normaliserTelephone(_telephoneController.text, paysParDefaut: _pays),
@@ -132,6 +135,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailController.dispose();
     _telephoneController.dispose();
     _passwordController.dispose();
+    _confirmationController.dispose();
     _adresseController.dispose();
     _raisonSocialeController.dispose();
     _ninController.dispose();
@@ -185,7 +189,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             _prenomController,
                             null,
                             maxLength: 50,
-                            validator: texte(requis: true, min: 2, max: 50),
+                            // Mise en forme pendant la frappe (« awa » → « Awa »), comme le backend
+                            formateurs: const [FormateurPrenom()],
+                            validator: texte(requis: true, min: 2, max: 50, message: tr('Indiquez votre prénom')),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -196,7 +202,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             _nomController,
                             null,
                             maxLength: 50,
-                            validator: texte(requis: true, min: 2, max: 50),
+                            // Nom de famille en capitales (« diop » → « DIOP »)
+                            formateurs: const [FormateurNomFamille()],
+                            validator: texte(requis: true, min: 2, max: 50, message: tr('Indiquez votre nom')),
                           ),
                         ),
                       ],
@@ -209,7 +217,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       maxLength: 150,
-                      validator: email(),
+                      validator: emailDetaille(),
                     ),
                     const SizedBox(height: 16),
                     _buildField(
@@ -218,7 +226,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       _telephoneController,
                       Icons.phone_outlined,
                       keyboardType: TextInputType.phone,
-                      validator: validerTelephone,
+                      // Message précis (indicatif, nombre de chiffres, plage) ; sans
+                      // indicatif, le numéro est rattaché au pays choisi plus bas
+                      validator: (v) => validerTelephone(v, paysParDefaut: _pays),
                     ),
                   ],
                 ),
@@ -330,6 +340,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     _buildPasswordField(),
                     const SizedBox(height: 16),
+                    _buildConfirmationField(),
+                    const SizedBox(height: 16),
                     _buildField(
                       tr('Code de parrainage (optionnel)'),
                       tr('Ex: K7P2QX9M'),
@@ -422,6 +434,7 @@ class _RegisterPageState extends State<RegisterPage> {
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
     int? maxLength,
+    List<TextInputFormatter> formateurs = const [],
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,7 +446,38 @@ class _RegisterPageState extends State<RegisterPage> {
           style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w500),
           decoration: _inputDecoration(hint, icon),
           validator: validator,
-          inputFormatters: maxLength == null ? null : [LengthLimitingTextInputFormatter(maxLength)],
+          inputFormatters: [...formateurs, if (maxLength != null) LengthLimitingTextInputFormatter(maxLength)],
+        ),
+      ],
+    );
+  }
+
+  /// Seconde saisie du mot de passe : une faute de frappe ne bloque plus le compte.
+  Widget _buildConfirmationField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        LibelleChamp(tr('Confirmez le mot de passe')),
+        TextFormField(
+          controller: _confirmationController,
+          obscureText: _obscureConfirmation,
+          inputFormatters: [LengthLimitingTextInputFormatter(72)],
+          style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w500),
+          decoration: _inputDecoration(tr('Saisissez-le à nouveau'), Icons.lock_outline_rounded).copyWith(
+            suffixIcon: IconButton(
+              onPressed: () => setState(() => _obscureConfirmation = !_obscureConfirmation),
+              icon: Icon(
+                _obscureConfirmation ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                color: AppColor.kGrayscale40,
+                size: 20,
+              ),
+            ),
+          ),
+          validator: (v) {
+            if (v == null || v.isEmpty) return tr('Confirmez votre mot de passe');
+            if (v != _passwordController.text) return tr('Les deux mots de passe ne correspondent pas');
+            return null;
+          },
         ),
       ],
     );

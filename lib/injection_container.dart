@@ -47,6 +47,7 @@ import 'features/reclamations/data/reclamations_remote_datasource.dart';
 import 'features/adresses/data/adresses_remote_datasource.dart';
 import 'features/contact/data/contact_remote_datasource.dart';
 import 'features/enlevements/data/enlevements_remote_datasource.dart';
+import 'features/personnel/data/personnel_remote_datasource.dart';
 import 'features/avis/data/avis_remote_datasource.dart';
 
 // Villes
@@ -244,6 +245,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => AdressesRemoteDataSource(dio: sl()));
   sl.registerLazySingleton(() => ContactRemoteDataSource(dio: sl()));
   sl.registerLazySingleton(() => EnlevementsRemoteDataSource(dio: sl()));
+  sl.registerLazySingleton(() => PersonnelRemoteDataSource(dio: sl()));
   sl.registerLazySingleton(() => AvisRemoteDataSource(dio: sl()));
 
   // ── VILLES ────────────────────────────────────────────────────────────────

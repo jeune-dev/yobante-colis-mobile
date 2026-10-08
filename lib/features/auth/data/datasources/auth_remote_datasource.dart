@@ -28,6 +28,12 @@ abstract class AuthRemoteDataSource {
   Future<String> forgotPassword(String email);
   Future<String> resetPassword(String email, String code, String newPassword);
   Future<void> logout(String refreshToken, {String? accessToken});
+
+  /// Confirme l'adresse avec le code reçu par email : ouvre la session (jetons).
+  Future<AuthResponseModel> verifierEmail(String email, String code);
+
+  /// Redemande un code de confirmation (réponse identique que le compte existe ou non).
+  Future<String> renvoyerCodeVerification(String email);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -52,7 +58,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           codeErreur(e) == 'EMAIL_NON_CONFIRME' ||
           (e.response?.statusCode == 403 && message.toLowerCase().contains('confirm'));
       if (nonConfirme) {
-        throw EmailNonConfirmeException(message: message);
+        final data = e.response?.data;
+        final email = data is Map ? data['email'] : null;
+        throw EmailNonConfirmeException(message: message, email: email is String ? email : null);
       }
       throw ServerException(message: message);
     }
@@ -100,6 +108,35 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return messageApi(res);
     } on DioException catch (e) {
       throw ServerException(message: messageErreur(e, tr('Erreur d\'inscription')));
+    }
+  }
+
+  @override
+  Future<AuthResponseModel> verifierEmail(String email, String code) async {
+    try {
+      final res = await dio.post(
+        Env.authVerifyEmail,
+        data: {'email': email, 'code': code},
+        options: Options(extra: {'skipAuthInterceptor': true}),
+      );
+      return AuthResponseModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ServerException(message: messageErreur(e, tr('Code incorrect ou expiré')));
+    }
+  }
+
+  @override
+  Future<String> renvoyerCodeVerification(String email) async {
+    try {
+      return messageApi(
+        await dio.post(
+          Env.authResendVerification,
+          data: {'email': email},
+          options: Options(extra: {'skipAuthInterceptor': true}),
+        ),
+      );
+    } on DioException catch (e) {
+      throw ServerException(message: messageErreur(e, tr('Envoi impossible pour le moment.')));
     }
   }
 

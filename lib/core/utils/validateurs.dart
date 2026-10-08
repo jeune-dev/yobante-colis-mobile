@@ -25,6 +25,32 @@ String? Function(String?) email({bool requis = true}) => (v) {
       return null;
     };
 
+/// Adresse email contrôlée règle par règle, comme à l'inscription côté backend :
+/// le message dit ce qui cloche (espace, @ manquant ou en double, domaine…).
+String? Function(String?) emailDetaille({bool requis = true}) => (v) {
+      final t = v?.trim() ?? '';
+      if (t.isEmpty) return requis ? tr('L\'adresse email est obligatoire') : null;
+      if (t.length > 150) return tr('150 caractères maximum');
+      if (RegExp(r'\s').hasMatch(t)) return tr('L\'adresse email ne doit pas contenir d\'espace');
+      if (!t.contains('@')) return tr('L\'adresse email doit contenir un @');
+      final morceaux = t.split('@');
+      if (morceaux.length != 2) return tr('L\'adresse email doit contenir un seul @');
+      final locale = morceaux[0];
+      final domaine = morceaux[1];
+      if (locale.isEmpty) return tr('La partie avant le @ est vide');
+      if (!RegExp(r'^[A-Za-z0-9._%+-]+$').hasMatch(locale)) {
+        return tr('La partie avant le @ contient un caractère non autorisé');
+      }
+      if (locale.startsWith('.') || locale.endsWith('.') || locale.contains('..')) {
+        return tr('La partie avant le @ ne peut pas commencer, finir ou doubler un point');
+      }
+      if (!domaine.contains('.')) return tr('Le domaine de l\'adresse email est incomplet');
+      if (!RegExp(r'^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$').hasMatch(domaine)) {
+        return tr('Le domaine de l\'adresse email est invalide');
+      }
+      return null;
+    };
+
 /// Téléphone France ou Sénégal, obligatoire ou non.
 String? Function(String?) telephone({bool requis = true}) => (v) {
       if ((v?.trim() ?? '').isEmpty) return requis ? tr('Numéro requis') : null;

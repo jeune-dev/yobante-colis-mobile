@@ -71,3 +71,12 @@ class ResetPasswordRequested extends AuthEvent {
   @override
   List<Object?> get props => [email];
 }
+
+/// Saisie du code de confirmation reçu par email après l'inscription.
+class VerificationEmailRequested extends AuthEvent {
+  final String email;
+  final String code;
+  const VerificationEmailRequested({required this.email, required this.code});
+  @override
+  List<Object?> get props => [email, code];
+}

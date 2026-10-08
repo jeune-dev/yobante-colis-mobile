@@ -7,6 +7,7 @@ import '../../../../core/services/token_service.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
+import '../models/user_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -18,14 +19,40 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> login(String email, String password) async {
     try {
-      final res = await remoteDataSource.login(email, password);
-      await tokenService.setToken(res.accessToken);
-      if (res.refreshToken != null) await tokenService.setRefreshToken(res.refreshToken);
-      await secureStorage.write(key: 'user_id', value: res.user.id);
-      await secureStorage.write(key: 'user_role', value: res.user.role);
-      return Right(res.user);
+      return Right(await _ouvrirSession(await remoteDataSource.login(email, password)));
     } on EmailNonConfirmeException catch (e) {
-      return Left(EmailNonConfirmeFailure(e.message));
+      return Left(EmailNonConfirmeFailure(e.message, email: e.email));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  /// Enregistre les jetons et l'identité du compte (connexion ou confirmation d'email).
+  Future<User> _ouvrirSession(AuthResponseModel res) async {
+    await tokenService.setToken(res.accessToken);
+    if (res.refreshToken != null) await tokenService.setRefreshToken(res.refreshToken);
+    await secureStorage.write(key: 'user_id', value: res.user.id);
+    await secureStorage.write(key: 'user_role', value: res.user.role);
+    return res.user;
+  }
+
+  @override
+  Future<Either<Failure, User>> verifierEmail(String email, String code) async {
+    try {
+      return Right(await _ouvrirSession(await remoteDataSource.verifierEmail(email, code)));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> renvoyerCodeVerification(String email) async {
+    try {
+      return Right(await remoteDataSource.renvoyerCodeVerification(email));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {

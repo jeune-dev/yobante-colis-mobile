@@ -4,6 +4,8 @@ import 'envois_page.dart';
 import '../../../account/presentation/pages/compte_page.dart';
 import '../../../expedition/presentation/pages/expedier_page.dart';
 import '../../../points_collecte/presentation/pages/point_de_service_page.dart';
+import '../../../personnel/presentation/pages/personnel_home_page.dart';
+import '../../../../core/config/user_role.dart';
 import '../../../../core/demo/demo_config.dart';
 import '../../../../core/routes/app_shell_key.dart';
 import '../../../../core/services/auth_status.dart';
@@ -27,13 +29,20 @@ class _ClientHomePageState extends State<ClientHomePage> {
   int _currentIndex = 0;
   final _visited = <int>{0};
   bool? _isAuth;
+  UserRole _role = UserRole.client;
 
   @override
   void initState() {
     super.initState();
-    isUserAuthenticated().then((auth) {
+    isUserAuthenticated().then((auth) async {
+      final role = auth ? await roleCourant() : UserRole.client;
       if (!mounted) return;
-      setState(() => _isAuth = auth);
+      setState(() {
+        _isAuth = auth;
+        _role = role;
+      });
+      // Le personnel a son propre espace, qui gère ses notifications
+      if (role.estPersonnel) return;
       // Notifications push : permissions, jeton d'appareil et ouverture sur tap
       if (auth && !kDemoMode) FcmService.init(context).catchError((_) {});
       // Compteur de notifications non lues, tenu à jour automatiquement
@@ -51,6 +60,7 @@ class _ClientHomePageState extends State<ClientHomePage> {
     if (_isAuth == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+    if (_role.estPersonnel) return PersonnelHomePage(role: _role);
 
     final pages = [
       AccueilPage(onExpedier: () => _selectionner(_ongletExpedier)),

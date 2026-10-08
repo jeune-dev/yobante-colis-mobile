@@ -24,7 +24,8 @@ class ServerFailure extends Failure {
 
 /// Email non confirmé : l'écran de connexion propose de renvoyer le lien.
 class EmailNonConfirmeFailure extends ServerFailure {
-  const EmailNonConfirmeFailure(super.errorMessage);
+  final String? email;
+  const EmailNonConfirmeFailure(super.errorMessage, {this.email});
 }
 
 class CacheFailure extends Failure {

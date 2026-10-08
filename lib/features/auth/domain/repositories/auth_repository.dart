@@ -21,4 +21,8 @@ abstract class AuthRepository {
   Future<Either<Failure, String>> forgotPassword(String email);
   Future<Either<Failure, String>> resetPassword(String email, String code, String newPassword);
   Future<void> logout();
+
+  /// Code de confirmation de l'email : en cas de succès, la session est ouverte.
+  Future<Either<Failure, User>> verifierEmail(String email, String code);
+  Future<Either<Failure, String>> renvoyerCodeVerification(String email);
 }

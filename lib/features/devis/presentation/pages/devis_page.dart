@@ -148,6 +148,12 @@ class _DevisPageState extends State<DevisPage> {
       setState(() => _erreur = tr('Poids ou dimensions : $erreurMesure'));
       return;
     }
+    // La longueur est le plus grand côté ; égalité admise pour une base carrée.
+    final longueur = _n(_longueur), largeur = _n(_largeur);
+    if (longueur != null && largeur != null && largeur > longueur) {
+      setState(() => _erreur = tr('La largeur ne peut pas être supérieure à la longueur.'));
+      return;
+    }
     setState(() {
       _calcul = true;
       _erreur = null;
@@ -274,11 +280,11 @@ class _DevisPageState extends State<DevisPage> {
                   icone: Icons.scale_outlined,
                 ),
                 Row(children: [
-                  Expanded(child: ChampTexte(controller: _longueur, label: tr('L (cm)'), clavier: TextInputType.number)),
+                  Expanded(child: ChampTexte(controller: _longueur, label: tr('Longueur'), hint: 'cm', clavier: TextInputType.number)),
                   const SizedBox(width: 8),
-                  Expanded(child: ChampTexte(controller: _largeur, label: tr('l (cm)'), clavier: TextInputType.number)),
+                  Expanded(child: ChampTexte(controller: _largeur, label: tr('Largeur'), hint: 'cm', clavier: TextInputType.number)),
                   const SizedBox(width: 8),
-                  Expanded(child: ChampTexte(controller: _hauteur, label: tr('h (cm)'), clavier: TextInputType.number)),
+                  Expanded(child: ChampTexte(controller: _hauteur, label: tr('Hauteur'), hint: 'cm', clavier: TextInputType.number)),
                 ]),
               ],
               const SizedBox(height: 8),

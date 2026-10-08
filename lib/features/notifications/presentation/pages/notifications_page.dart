@@ -129,7 +129,7 @@ class _NotificationsViewState extends State<_NotificationsView> {
                                   color: n.isRead ? AppColor.kBackground : AppColor.kWhite,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Icon(_typeIcon(n.type),
+                                child: Icon(iconeTypeNotification(n.type),
                                     color: n.isRead ? AppColor.kGrayscale40 : AppColor.kPrimary, size: 19),
                               ),
                               const SizedBox(width: 12),
@@ -172,14 +172,16 @@ class _NotificationsViewState extends State<_NotificationsView> {
     );
   }
 
-  static IconData _typeIcon(String type) {
-    switch (type) {
-      case 'colis':    return Icons.inventory_2_outlined;
-      case 'paiement': return Icons.payments_outlined;
-      case 'douane':   return Icons.gavel_rounded;
-      case 'reclamation': return Icons.support_agent_outlined;
-      case 'enlevement':  return Icons.local_shipping_outlined;
-      default:         return Icons.notifications_outlined;
-    }
+}
+
+/// Pictogramme d'une notification selon son type (colis, paiement, douane…).
+IconData iconeTypeNotification(String type) {
+  switch (type) {
+    case 'colis':    return Icons.inventory_2_outlined;
+    case 'paiement': return Icons.payments_outlined;
+    case 'douane':   return Icons.gavel_rounded;
+    case 'reclamation': return Icons.support_agent_outlined;
+    case 'enlevement':  return Icons.local_shipping_outlined;
+    default:         return Icons.notifications_outlined;
   }
 }

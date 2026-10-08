@@ -99,6 +99,9 @@ class _PieceSaisie {
     if ([poids, longueur, largeur, hauteur].any((c) => c.text.trim().isNotEmpty && _n(c) == null)) {
       return tr('Poids ou dimension invalide : saisissez un nombre.');
     }
+    // La longueur est le plus grand côté ; égalité admise pour une base carrée.
+    final l = _n(longueur), w = _n(largeur);
+    if (l != null && w != null && w > l) return tr('La largeur ne peut pas être supérieure à la longueur.');
     return null;
   }
 
@@ -927,7 +930,7 @@ class _AssistantState extends State<_Assistant> {
                 controller: _valeur,
                 label: c == 'colis_moyen' ? tr('Valeur estimée') : tr('Valeur estimée (facultatif)'),
                 clavier: const TextInputType.numberWithOptions(decimal: true),
-                icone: Icons.euro_outlined,
+                icone: Icons.payments_outlined,
               ),
             ),
             const SizedBox(width: 10),
@@ -1066,18 +1069,20 @@ class _AssistantState extends State<_Assistant> {
               clavier: const TextInputType.numberWithOptions(decimal: true),
               icone: Icons.scale_outlined,
             ),
+            Text(tr('Dimensions du colis (en cm)'), style: texteDiscret(13)),
+            const SizedBox(height: 6),
             Row(
               children: [
                 Expanded(
-                  child: ChampTexte(controller: p.longueur, label: tr('L (cm)'), clavier: TextInputType.number),
+                  child: ChampTexte(controller: p.longueur, label: tr('Longueur'), hint: 'cm', clavier: TextInputType.number),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ChampTexte(controller: p.largeur, label: tr('l (cm)'), clavier: TextInputType.number),
+                  child: ChampTexte(controller: p.largeur, label: tr('Largeur'), hint: 'cm', clavier: TextInputType.number),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ChampTexte(controller: p.hauteur, label: tr('h (cm)'), clavier: TextInputType.number),
+                  child: ChampTexte(controller: p.hauteur, label: tr('Hauteur'), hint: 'cm', clavier: TextInputType.number),
                 ),
               ],
             ),

@@ -16,5 +16,7 @@ class CacheException implements Exception {
 
 /// Connexion refusée (403) parce que l'adresse email n'est pas encore confirmée.
 class EmailNonConfirmeException extends ServerException {
-  const EmailNonConfirmeException({required super.message});
+  /// Adresse du compte, renvoyée par le backend : l'écran de code s'ouvre dessus.
+  final String? email;
+  const EmailNonConfirmeException({required super.message, this.email});
 }
