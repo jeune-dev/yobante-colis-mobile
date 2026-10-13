@@ -300,7 +300,7 @@ class _CarteFacture extends StatelessWidget {
                   ],
                 ),
               ),
-              if (f.montantPaye > 0 && f.soldeDu > 0)
+              if ((f.montantPaye > 0 || f.montantAvoirs > 0) && f.soldeDu > 0)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(color: AppColor.kSecondaryLight, borderRadius: BorderRadius.circular(10)),

@@ -16,7 +16,7 @@ class BoutonMenuOuRetour extends StatelessWidget {
     return IconButton(
       tooltip: tr('Menu'),
       icon: const Icon(Icons.menu),
-      onPressed: () => appShellScaffoldKey.currentState?.openDrawer(),
+      onPressed: () => CoquilleScaffold.of(context)?.currentState?.openDrawer(),
     );
   }
 }

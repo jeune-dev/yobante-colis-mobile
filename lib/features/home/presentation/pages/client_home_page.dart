@@ -29,6 +29,7 @@ class _ClientHomePageState extends State<ClientHomePage> {
   int _currentIndex = 0;
   final _visited = <int>{0};
   bool? _isAuth;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   UserRole _role = UserRole.client;
 
   @override
@@ -70,35 +71,46 @@ class _ClientHomePageState extends State<ClientHomePage> {
       const ComptePage(),
     ];
 
-    return Scaffold(
-      key: appShellScaffoldKey,
-      drawer: const AppDrawer(),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: List.generate(pages.length, (i) => _visited.contains(i) ? pages[i] : const SizedBox.shrink()),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: _selectionner,
-        destinations: [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: tr('Accueil')),
-          NavigationDestination(
-            icon: Icon(Icons.inventory_2_outlined),
-            selectedIcon: Icon(Icons.inventory_2),
-            label: tr('Mes envois'),
-          ),
-          NavigationDestination(icon: Icon(Icons.send_outlined), selectedIcon: Icon(Icons.send), label: tr('Expédier')),
-          NavigationDestination(
-            icon: Icon(Icons.storefront_outlined),
-            selectedIcon: Icon(Icons.storefront),
-            label: tr('Points'),
-          ),
-          NavigationDestination(
-            icon: const PastilleNotifications(child: Icon(Icons.person_outline)),
-            selectedIcon: const PastilleNotifications(child: Icon(Icons.person)),
-            label: tr('Compte'),
-          ),
-        ],
+    return CoquilleScaffold(
+      cle: _scaffoldKey,
+      child: Scaffold(
+        key: _scaffoldKey,
+        drawer: const AppDrawer(),
+        body: IndexedStack(
+          index: _currentIndex,
+          children: List.generate(pages.length, (i) => _visited.contains(i) ? pages[i] : const SizedBox.shrink()),
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: _selectionner,
+          destinations: [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home),
+              label: tr('Accueil'),
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.inventory_2_outlined),
+              selectedIcon: Icon(Icons.inventory_2),
+              label: tr('Mes envois'),
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.send_outlined),
+              selectedIcon: Icon(Icons.send),
+              label: tr('Expédier'),
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.storefront_outlined),
+              selectedIcon: Icon(Icons.storefront),
+              label: tr('Points'),
+            ),
+            NavigationDestination(
+              icon: const PastilleNotifications(child: Icon(Icons.person_outline)),
+              selectedIcon: const PastilleNotifications(child: Icon(Icons.person)),
+              label: tr('Compte'),
+            ),
+          ],
+        ),
       ),
     );
   }

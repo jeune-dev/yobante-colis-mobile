@@ -104,13 +104,23 @@ class _EnlevementFormPageState extends State<EnlevementFormPage> {
     await _chargerVilles(villeId: a.villeId);
   }
 
+  /// Aucun enlèvement le dimanche (le serveur refuse aussi les jours fériés).
+  static bool _jourOuvert(DateTime d) => d.weekday != DateTime.sunday;
+
   Future<void> _choisirDate() async {
     final demain = DateTime.now().add(const Duration(days: 1));
+    final derniere = DateTime.now().add(const Duration(days: 30));
+    var initiale = DateTime.tryParse(_date ?? '') ?? demain;
+    if (!_jourOuvert(initiale)) {
+      final apres = initiale.add(const Duration(days: 1));
+      initiale = apres.isAfter(derniere) ? initiale.subtract(const Duration(days: 1)) : apres;
+    }
     final choix = await showDatePicker(
       context: context,
       firstDate: DateTime(demain.year, demain.month, demain.day),
-      lastDate: DateTime.now().add(const Duration(days: 30)),
-      initialDate: DateTime.tryParse(_date ?? '') ?? demain,
+      lastDate: derniere,
+      initialDate: initiale,
+      selectableDayPredicate: _jourOuvert,
     );
     if (choix != null) setState(() => _date = choix.toIso8601String().substring(0, 10));
   }

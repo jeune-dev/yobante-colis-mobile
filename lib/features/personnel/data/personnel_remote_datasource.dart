@@ -76,6 +76,10 @@ class FactureTerrain {
   final String devise;
   final double montantTotal;
   final double montantPaye;
+
+  /// Avoirs imputés : ils réduisent ce qu'il reste à encaisser.
+  final double montantAvoirs;
+  final String type;
   final String statut;
   const FactureTerrain({
     required this.id,
@@ -83,6 +87,8 @@ class FactureTerrain {
     required this.devise,
     required this.montantTotal,
     required this.montantPaye,
+    this.montantAvoirs = 0,
+    this.type = 'expedition',
     required this.statut,
   });
 
@@ -92,11 +98,14 @@ class FactureTerrain {
     devise: j['devise'] as String? ?? 'XOF',
     montantTotal: _dn(j['montantTotal']) ?? 0,
     montantPaye: _dn(j['montantPaye']) ?? 0,
+    montantAvoirs: _dn(j['montantAvoirs']) ?? 0,
+    type: j['type'] as String? ?? 'expedition',
     statut: j['statut'] as String? ?? '',
   );
 
-  double get reste => (montantTotal - montantPaye).clamp(0, double.infinity).toDouble();
-  bool get aEncaisser => reste > 0 && const ['en_attente', 'partiellement_payee'].contains(statut);
+  double get reste => (montantTotal - montantPaye - montantAvoirs).clamp(0, double.infinity).toDouble();
+  // Un avoir est dû au client : il ne s'encaisse jamais
+  bool get aEncaisser => type != 'avoir' && reste > 0 && const ['en_attente', 'partiellement_payee'].contains(statut);
 
   /// Moyens acceptés selon le pays de règlement (même liste que le backend).
   List<String> get methodes => devise == 'EUR'

@@ -1040,7 +1040,8 @@ class _AssistantState extends State<_Assistant> {
               child: ChampTexte(
                 key: _repere('valeur'),
                 controller: _valeur,
-                label: c == 'colis_moyen' ? tr('Valeur estimée') : tr('Valeur estimée (facultatif)'),
+                // Obligatoire pour un colis moyen, et dès que l'assurance est demandée
+                label: c == 'colis_moyen' || _assurance ? tr('Valeur estimée') : tr('Valeur estimée (facultatif)'),
                 clavier: const TextInputType.numberWithOptions(decimal: true),
                 icone: Icons.payments_outlined,
               ),

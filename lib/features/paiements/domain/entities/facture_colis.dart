@@ -22,6 +22,12 @@ class FactureColis extends Equatable {
   final String devise;
   final double montantPaye;
 
+  /// Avoirs imputés sur la facture : ils réduisent le reste dû sans être des règlements.
+  final double montantAvoirs;
+
+  /// « avoir » : somme due au client (indemnisation, remboursement), jamais à payer.
+  final String type;
+
   /// Lien de paiement en ligne, fourni par le backend tant que la facture est due.
   final String? lienPaiement;
   final String? colisReference;
@@ -38,6 +44,8 @@ class FactureColis extends Equatable {
     this.dateLimitePaiement,
     this.devise = 'XOF',
     this.montantPaye = 0,
+    this.montantAvoirs = 0,
+    this.type = 'expedition',
     this.lienPaiement,
     this.colisReference,
     this.montantSurcharges = 0,
@@ -47,7 +55,10 @@ class FactureColis extends Equatable {
     this.montantDroitsDouane = 0,
   });
 
-  double get soldeDu => (montantTotal - montantPaye).clamp(0, double.infinity).toDouble();
+  bool get estAvoir => type == 'avoir';
+
+  double get soldeDu =>
+      estAvoir ? 0 : (montantTotal - montantPaye - montantAvoirs).clamp(0, double.infinity).toDouble();
 
   @override
   List<Object?> get props => [id];

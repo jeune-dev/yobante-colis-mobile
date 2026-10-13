@@ -13,6 +13,8 @@ class FactureColisModel extends FactureColis {
     super.dateLimitePaiement,
     super.devise,
     super.montantPaye,
+    super.montantAvoirs,
+    super.type,
     super.lienPaiement,
     super.colisReference,
     super.montantSurcharges,
@@ -43,6 +45,8 @@ class FactureColisModel extends FactureColis {
     dateLimitePaiement: j['dateLimitePaiement'] as String?,
     devise: j['devise'] as String? ?? 'XOF',
     montantPaye: _d(j['montantPaye']),
+    montantAvoirs: _d(j['montantAvoirs']),
+    type: j['type'] as String? ?? 'expedition',
     lienPaiement: j['lienPaiement'] as String?,
     colisReference: (j['colis'] as Map<String, dynamic>?)?['reference'] as String?,
   );
