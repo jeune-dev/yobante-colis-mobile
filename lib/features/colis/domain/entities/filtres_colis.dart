@@ -21,13 +21,13 @@ class FiltresColis extends Equatable {
 
   /// Paramètres de requête ; [recus] limite aux filtres acceptés pour les colis reçus.
   Map<String, dynamic> versRequete({bool recus = false}) => {
-        if (!recus && reference != null && reference!.trim().isNotEmpty) 'reference': reference!.trim(),
-        if (!recus && categorie != null) 'categorie': categorie,
-        if (!recus && enCours) 'enCours': 'true',
-        if (dateDebut != null) 'dateDebut': _jour(dateDebut!),
-        // Fin de journée incluse : le backend compare la date de création à cet instant
-        if (dateFin != null) 'dateFin': '${_jour(dateFin!)}T23:59:59',
-      };
+    if (!recus && reference != null && reference!.trim().isNotEmpty) 'reference': reference!.trim(),
+    if (!recus && categorie != null) 'categorie': categorie,
+    if (!recus && enCours) 'enCours': 'true',
+    if (dateDebut != null) 'dateDebut': _jour(dateDebut!),
+    // Fin de journée incluse : le backend compare la date de création à cet instant
+    if (dateFin != null) 'dateFin': '${_jour(dateFin!)}T23:59:59',
+  };
 
   bool get actif =>
       (reference?.trim().isNotEmpty ?? false) || categorie != null || enCours || dateDebut != null || dateFin != null;
@@ -40,14 +40,13 @@ class FiltresColis extends Equatable {
     DateTime? dateFin,
     bool effacerCategorie = false,
     bool effacerPeriode = false,
-  }) =>
-      FiltresColis(
-        reference: reference ?? this.reference,
-        categorie: effacerCategorie ? null : categorie ?? this.categorie,
-        enCours: enCours ?? this.enCours,
-        dateDebut: effacerPeriode ? null : dateDebut ?? this.dateDebut,
-        dateFin: effacerPeriode ? null : dateFin ?? this.dateFin,
-      );
+  }) => FiltresColis(
+    reference: reference ?? this.reference,
+    categorie: effacerCategorie ? null : categorie ?? this.categorie,
+    enCours: enCours ?? this.enCours,
+    dateDebut: effacerPeriode ? null : dateDebut ?? this.dateDebut,
+    dateFin: effacerPeriode ? null : dateFin ?? this.dateFin,
+  );
 
   @override
   List<Object?> get props => [reference, categorie, enCours, dateDebut, dateFin];

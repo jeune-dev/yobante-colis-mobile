@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/categories.dart';
@@ -8,16 +10,16 @@ import '../../domain/entities/filtres_colis.dart';
 
 /// Statuts proposés au filtre (null : tous).
 Map<String?, String> get libellesFiltreStatut => {
-      null: tr('Tous'),
-      'en_attente_validation': tr('En cours d\'étude'),
-      'devis_propose': tr('Proposition reçue'),
-      'en_attente': tr('En attente de remise'),
-      'en_transit': tr('En transit'),
-      'en_douane': tr('En dédouanement'),
-      'arrive': tr('Arrivé'),
-      'livre': tr('Livré'),
-      'annule': tr('Annulé'),
-    };
+  null: tr('Tous'),
+  'en_attente_validation': tr('En cours d\'étude'),
+  'devis_propose': tr('Proposition reçue'),
+  'en_attente': tr('En attente de remise'),
+  'en_transit': tr('En transit'),
+  'en_douane': tr('En dédouanement'),
+  'arrive': tr('Arrivé'),
+  'livre': tr('Livré'),
+  'annule': tr('Annulé'),
+};
 
 typedef ChoixFiltresColis = ({String? statut, FiltresColis filtres});
 
@@ -28,13 +30,12 @@ Future<ChoixFiltresColis?> choisirFiltresColis(
   required String? statut,
   required FiltresColis filtres,
   bool recus = false,
-}) =>
-    showModalBottomSheet<ChoixFiltresColis>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => _FeuilleFiltres(statut: statut, filtres: filtres, recus: recus),
-    );
+}) => showModalBottomSheet<ChoixFiltresColis>(
+  context: context,
+  isScrollControlled: true,
+  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+  builder: (_) => _FeuilleFiltres(statut: statut, filtres: filtres, recus: recus),
+);
 
 class _FeuilleFiltres extends StatefulWidget {
   final String? statut;
@@ -84,11 +85,13 @@ class _FeuilleFiltresState extends State<_FeuilleFiltres> {
               spacing: 8,
               runSpacing: 4,
               children: libellesFiltreStatut.entries
-                  .map((e) => ChoiceChip(
-                        label: Text(e.value),
-                        selected: _statut == e.key,
-                        onSelected: (_) => setState(() => _statut = e.key),
-                      ))
+                  .map(
+                    (e) => ChoiceChip(
+                      label: Text(e.value),
+                      selected: _statut == e.key,
+                      onSelected: (_) => setState(() => _statut = e.key),
+                    ),
+                  )
                   .toList(),
             ),
             if (!widget.recus) ...[
@@ -104,14 +107,19 @@ class _FeuilleFiltresState extends State<_FeuilleFiltres> {
                     selected: _filtres.categorie == null,
                     onSelected: (_) => setState(() => _filtres = _filtres.copyWith(effacerCategorie: true)),
                   ),
-                  ...CategorieColis.toutes.map((c) => ChoiceChip(
-                        // Icône blanche sur la puce choisie (fond bleu), bleue sinon
-                        avatar: Icon(c.icone,
-                            size: 16, color: _filtres.categorie == c.code ? AppColor.kWhite : AppColor.kPrimary),
-                        label: Text(c.libelle),
-                        selected: _filtres.categorie == c.code,
-                        onSelected: (_) => setState(() => _filtres = _filtres.copyWith(categorie: c.code)),
-                      )),
+                  ...CategorieColis.toutes.map(
+                    (c) => ChoiceChip(
+                      // Icône blanche sur la puce choisie (fond bleu), bleue sinon
+                      avatar: Icon(
+                        c.icone,
+                        size: 16,
+                        color: _filtres.categorie == c.code ? AppColor.kWhite : AppColor.kPrimary,
+                      ),
+                      label: Text(c.libelle),
+                      selected: _filtres.categorie == c.code,
+                      onSelected: (_) => setState(() => _filtres = _filtres.copyWith(categorie: c.code)),
+                    ),
+                  ),
                 ],
               ),
               SwitchListTile(
@@ -130,6 +138,7 @@ class _FeuilleFiltresState extends State<_FeuilleFiltres> {
               trailing: _filtres.dateDebut == null
                   ? const Icon(Icons.chevron_right)
                   : IconButton(
+                      tooltip: tr('Effacer la période'),
                       icon: const Icon(Icons.close),
                       onPressed: () => setState(() => _filtres = _filtres.copyWith(effacerPeriode: true)),
                     ),
@@ -140,10 +149,10 @@ class _FeuilleFiltresState extends State<_FeuilleFiltres> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => Navigator.pop(
-                      context,
-                      (statut: null, filtres: FiltresColis(reference: widget.filtres.reference)),
-                    ),
+                    onPressed: () => Navigator.pop(context, (
+                      statut: null,
+                      filtres: FiltresColis(reference: widget.filtres.reference),
+                    )),
                     child: Text(tr('Réinitialiser')),
                   ),
                 ),
@@ -171,12 +180,17 @@ class _FeuilleFiltresState extends State<_FeuilleFiltres> {
 class BarreFiltresColis extends StatefulWidget {
   final bool recherche;
   final bool filtresActifs;
+
+  /// Référence recherchée côté page : quand elle est effacée (« Effacer les
+  /// filtres »), le champ de saisie est vidé lui aussi.
+  final String? reference;
   final ValueChanged<String>? onRecherche;
   final VoidCallback onFiltres;
   const BarreFiltresColis({
     super.key,
     this.recherche = true,
     required this.filtresActifs,
+    this.reference,
     this.onRecherche,
     required this.onFiltres,
   });
@@ -187,11 +201,37 @@ class BarreFiltresColis extends StatefulWidget {
 
 class _BarreFiltresColisState extends State<BarreFiltresColis> {
   final _texte = TextEditingController();
+  Timer? _delai;
+  String _envoye = '';
+
+  @override
+  void didUpdateWidget(BarreFiltresColis ancien) {
+    super.didUpdateWidget(ancien);
+    if ((widget.reference ?? '').isEmpty && ancien.reference != widget.reference && _texte.text.isNotEmpty) {
+      _delai?.cancel();
+      _envoye = '';
+      _texte.clear();
+    }
+  }
 
   @override
   void dispose() {
+    _delai?.cancel();
     _texte.dispose();
     super.dispose();
+  }
+
+  /// Recherche lancée sans attendre la touche « Rechercher » du clavier.
+  void _envoyer(String v, {bool immediat = false}) {
+    _delai?.cancel();
+    void appel() {
+      final ref = v.trim();
+      if (ref == _envoye) return;
+      _envoye = ref;
+      widget.onRecherche?.call(ref);
+    }
+
+    immediat ? appel() : _delai = Timer(const Duration(milliseconds: 450), appel);
   }
 
   @override
@@ -210,6 +250,7 @@ class _BarreFiltresColisState extends State<BarreFiltresColis> {
               child: TextField(
                 controller: _texte,
                 textInputAction: TextInputAction.search,
+                onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                 decoration: InputDecoration(
                   isDense: true,
                   hintText: tr('Rechercher une référence'),
@@ -219,15 +260,17 @@ class _BarreFiltresColisState extends State<BarreFiltresColis> {
                     builder: (_, v, _) => v.text.isEmpty
                         ? const SizedBox.shrink()
                         : IconButton(
+                            tooltip: tr('Effacer la recherche'),
                             icon: const Icon(Icons.close),
                             onPressed: () {
                               _texte.clear();
-                              widget.onRecherche?.call('');
+                              _envoyer('', immediat: true);
                             },
                           ),
                   ),
                 ),
-                onSubmitted: (v) => widget.onRecherche?.call(v.trim()),
+                onChanged: _envoyer,
+                onSubmitted: (v) => _envoyer(v, immediat: true),
               ),
             )
           else

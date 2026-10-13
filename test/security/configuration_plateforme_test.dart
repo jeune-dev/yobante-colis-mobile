@@ -34,8 +34,11 @@ void main() {
     });
 
     test('le mode démo est désactivé par défaut', () {
-      expect(kDemoMode, isFalse,
-          reason: 'Un build sans --dart-define=DEMO_MODE=true ne doit jamais contourner l\'authentification');
+      expect(
+        kDemoMode,
+        isFalse,
+        reason: 'Un build sans --dart-define=DEMO_MODE=true ne doit jamais contourner l\'authentification',
+      );
     });
   });
 
@@ -44,16 +47,21 @@ void main() {
     final debug = 'android/app/src/debug/res/xml/network_security_config.xml';
 
     test('le manifeste applique la configuration réseau', () {
-      expect(lire('android/app/src/main/AndroidManifest.xml'),
-          contains('android:networkSecurityConfig="@xml/network_security_config"'));
+      expect(
+        lire('android/app/src/main/AndroidManifest.xml'),
+        contains('android:networkSecurityConfig="@xml/network_security_config"'),
+      );
     });
 
     test('release : aucun trafic HTTP en clair (VULN-H03)', () {
       final xml = sansCommentaires(lire(release));
       expect(xml, contains('<base-config cleartextTrafficPermitted="false">'));
       expect(xml, isNot(contains('cleartextTrafficPermitted="true"')));
-      expect(xml, isNot(contains('src="user"')),
-          reason: 'Les certificats installés par l\'utilisateur permettraient une interception (proxy)');
+      expect(
+        xml,
+        isNot(contains('src="user"')),
+        reason: 'Les certificats installés par l\'utilisateur permettraient une interception (proxy)',
+      );
     });
 
     test('debug : HTTP en clair limité au réseau local', () {
@@ -61,7 +69,8 @@ void main() {
       expect(xml, contains('<base-config cleartextTrafficPermitted="false">'));
       final domaines = RegExp(r'<domain[^>]*>([^<]+)</domain>').allMatches(xml).map((m) => m.group(1)!.trim());
       for (final d in domaines) {
-        final local = d == 'localhost' ||
+        final local =
+            d == 'localhost' ||
             d == '10.0.2.2' ||
             d.startsWith('127.') ||
             d.startsWith('192.168.') ||
@@ -89,9 +98,10 @@ void main() {
     });
 
     test('seule l\'activité de lancement est exportée', () {
-      final exportees = RegExp(r'<(activity|service|receiver|provider)[^>]*android:exported="true"', dotAll: true)
-          .allMatches(manifeste())
-          .toList();
+      final exportees = RegExp(
+        r'<(activity|service|receiver|provider)[^>]*android:exported="true"',
+        dotAll: true,
+      ).allMatches(manifeste()).toList();
       expect(exportees, hasLength(1));
       expect(exportees.single.group(1), 'activity');
     });
@@ -107,9 +117,13 @@ void main() {
 
     test('sauvegarde Android désactivée (jetons hors des sauvegardes cloud / adb)', () {
       final application = RegExp(r'<application[^>]*>', dotAll: true).firstMatch(manifeste())!.group(0)!;
-      expect(application, contains('android:allowBackup="false"'),
-          reason: 'Sans allowBackup="false", les préférences et le stockage sécurisé partent dans '
-              'la sauvegarde Google / adb backup (sign le désactive).');
+      expect(
+        application,
+        contains('android:allowBackup="false"'),
+        reason:
+            'Sans allowBackup="false", les préférences et le stockage sécurisé partent dans '
+            'la sauvegarde Google / adb backup (sign le désactive).',
+      );
     });
 
     test('release : obfuscation et réduction activées (VULN-C02)', () {
@@ -129,9 +143,8 @@ void main() {
   group('iOS — App Transport Security', () {
     test('aucune exception HTTP globale', () {
       final plist = lire('ios/Runner/Info.plist');
-      final ats = RegExp(r'<key>NSAppTransportSecurity</key>\s*<dict>(.*?)</dict>', dotAll: true)
-              .firstMatch(plist)
-              ?.group(1) ??
+      final ats =
+          RegExp(r'<key>NSAppTransportSecurity</key>\s*<dict>(.*?)</dict>', dotAll: true).firstMatch(plist)?.group(1) ??
           '';
       expect(ats, isNot(matches(RegExp(r'NSAllowsArbitraryLoads</key>\s*<true/>'))));
       expect(ats, isNot(matches(RegExp(r'NSAllowsArbitraryLoadsInWebContent</key>\s*<true/>'))));

@@ -7,28 +7,19 @@ class ShimmerList extends StatefulWidget {
   final Color accentColor;
   final EdgeInsets? padding;
 
-  const ShimmerList({
-    super.key,
-    this.itemCount = 5,
-    this.accentColor = Colors.black,
-    this.padding,
-  });
+  const ShimmerList({super.key, this.itemCount = 5, this.accentColor = Colors.black, this.padding});
 
   @override
   State<ShimmerList> createState() => _ShimmerListState();
 }
 
-class _ShimmerListState extends State<ShimmerList>
-    with SingleTickerProviderStateMixin {
+class _ShimmerListState extends State<ShimmerList> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))..repeat();
   }
 
   @override
@@ -60,17 +51,13 @@ class _ShimmerCard extends StatelessWidget {
   const _ShimmerCard({required this.progress});
 
   Decoration _box({BorderRadius? radius}) => BoxDecoration(
-        borderRadius: radius ?? BorderRadius.circular(8),
-        gradient: LinearGradient(
-          begin: Alignment(-2.5 + progress * 5, 0),
-          end: Alignment(-1.5 + progress * 5, 0),
-          colors: const [
-            Color(0xFFEBEBEB),
-            Color(0xFFF5F5F5),
-            Color(0xFFEBEBEB),
-          ],
-        ),
-      );
+    borderRadius: radius ?? BorderRadius.circular(8),
+    gradient: LinearGradient(
+      begin: Alignment(-2.5 + progress * 5, 0),
+      end: Alignment(-1.5 + progress * 5, 0),
+      colors: const [Color(0xFFEBEBEB), Color(0xFFF5F5F5), Color(0xFFEBEBEB)],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -79,13 +66,7 @@ class _ShimmerCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFF0F0F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 14, offset: const Offset(0, 4))],
       ),
       child: Column(
         children: [
@@ -94,11 +75,7 @@ class _ShimmerCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: _box(radius: BorderRadius.circular(14)),
-                ),
+                Container(width: 46, height: 46, decoration: _box(radius: BorderRadius.circular(14))),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -106,20 +83,12 @@ class _ShimmerCard extends StatelessWidget {
                     children: [
                       Container(height: 13, decoration: _box()),
                       const SizedBox(height: 8),
-                      Container(
-                        height: 10,
-                        width: 110,
-                        decoration: _box(),
-                      ),
+                      Container(height: 10, width: 110, decoration: _box()),
                     ],
                   ),
                 ),
                 const SizedBox(width: 12),
-                Container(
-                  width: 72,
-                  height: 26,
-                  decoration: _box(radius: BorderRadius.circular(10)),
-                ),
+                Container(width: 72, height: 26, decoration: _box(radius: BorderRadius.circular(10))),
               ],
             ),
           ),
@@ -130,17 +99,11 @@ class _ShimmerCard extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Container(
-                    height: 52,
-                    decoration: _box(radius: BorderRadius.circular(12)),
-                  ),
+                  child: Container(height: 52, decoration: _box(radius: BorderRadius.circular(12))),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Container(
-                    height: 52,
-                    decoration: _box(radius: BorderRadius.circular(12)),
-                  ),
+                  child: Container(height: 52, decoration: _box(radius: BorderRadius.circular(12))),
                 ),
               ],
             ),
@@ -152,17 +115,11 @@ class _ShimmerCard extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Container(
-                    height: 42,
-                    decoration: _box(radius: BorderRadius.circular(12)),
-                  ),
+                  child: Container(height: 42, decoration: _box(radius: BorderRadius.circular(12))),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Container(
-                    height: 42,
-                    decoration: _box(radius: BorderRadius.circular(12)),
-                  ),
+                  child: Container(height: 42, decoration: _box(radius: BorderRadius.circular(12))),
                 ),
               ],
             ),
@@ -172,4 +129,3 @@ class _ShimmerCard extends StatelessWidget {
     );
   }
 }
-

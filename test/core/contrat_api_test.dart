@@ -86,7 +86,11 @@ void main() {
   });
 
   test('encours et avis', () {
-    final e = Encours.fromJson({'nbFacturesImpayees': 3, 'parDevise': {'EUR': 245}, 'facturesEchues': []});
+    final e = Encours.fromJson({
+      'nbFacturesImpayees': 3,
+      'parDevise': {'EUR': 245},
+      'facturesEchues': [],
+    });
     expect(e.parDevise['EUR'], 245);
     final s = SyntheseAvis.fromJson({
       'total': 1,

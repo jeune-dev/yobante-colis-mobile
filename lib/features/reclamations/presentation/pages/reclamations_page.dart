@@ -29,12 +29,12 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
   String? _type;
 
   static Map<String, String> get _filtres => {
-        'toutes': tr('Toutes'),
-        'ouvertes': tr('En cours'),
-        'resolue': tr('Résolues'),
-        'rejetee': tr('Rejetées'),
-        'cloturee': tr('Clôturées'),
-      };
+    'toutes': tr('Toutes'),
+    'ouvertes': tr('En cours'),
+    'resolue': tr('Résolues'),
+    'rejetee': tr('Rejetées'),
+    'cloturee': tr('Clôturées'),
+  };
 
   @override
   void initState() {
@@ -57,9 +57,9 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
   }
 
   Future<void> _nouvelle() async {
-    final creee = await Navigator.of(context).push<Reclamation>(
-      MaterialPageRoute(builder: (_) => const NouvelleReclamationPage()),
-    );
+    final creee = await Navigator.of(
+      context,
+    ).push<Reclamation>(MaterialPageRoute(builder: (_) => const NouvelleReclamationPage()));
     if (creee != null) _charger();
   }
 
@@ -78,31 +78,35 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
   }
 
   Widget _barreFiltres() => SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-        child: Row(children: [
-          ..._filtres.entries.map((e) => Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  label: Text(e.value),
-                  selected: _filtre == e.key,
-                  onSelected: (_) => _filtrer(filtre: e.key),
-                ),
-              )),
-          PopupMenuButton<String?>(
-            tooltip: tr('Motif'),
-            onSelected: (t) => t == null ? _filtrer(effacerType: true) : _filtrer(type: t),
-            itemBuilder: (_) => [
-              PopupMenuItem<String?>(value: null, child: Text(tr('Tous les motifs'))),
-              ...kTypesReclamation.entries.map((e) => PopupMenuItem<String?>(value: e.key, child: Text(e.value))),
-            ],
-            child: Chip(
-              avatar: const Icon(Icons.filter_alt_outlined, size: 18),
-              label: Text(_type == null ? tr('Tous les motifs') : kTypesReclamation[_type] ?? _type!),
+    scrollDirection: Axis.horizontal,
+    padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+    child: Row(
+      children: [
+        ..._filtres.entries.map(
+          (e) => Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(e.value),
+              selected: _filtre == e.key,
+              onSelected: (_) => _filtrer(filtre: e.key),
             ),
           ),
-        ]),
-      );
+        ),
+        PopupMenuButton<String?>(
+          tooltip: tr('Motif'),
+          onSelected: (t) => t == null ? _filtrer(effacerType: true) : _filtrer(type: t),
+          itemBuilder: (_) => [
+            PopupMenuItem<String?>(value: null, child: Text(tr('Tous les motifs'))),
+            ...kTypesReclamation.entries.map((e) => PopupMenuItem<String?>(value: e.key, child: Text(e.value))),
+          ],
+          child: Chip(
+            avatar: const Icon(Icons.filter_alt_outlined, size: 18),
+            label: Text(_type == null ? tr('Tous les motifs') : kTypesReclamation[_type] ?? _type!),
+          ),
+        ),
+      ],
+    ),
+  );
 
   bool get _filtrage => _filtre != 'toutes' || _type != null;
 
@@ -117,48 +121,52 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
         icon: const Icon(Icons.add),
         label: Text(tr('Nouvelle réclamation')),
       ),
-      body: Column(children: [
-        _barreFiltres(),
-        Expanded(child: _contenu(liste)),
-      ]),
+      body: Column(
+        children: [
+          _barreFiltres(),
+          Expanded(child: _contenu(liste)),
+        ],
+      ),
     );
   }
 
   Widget _contenu(List<Reclamation>? liste) {
     return _erreur != null
-          ? EmptyState(
-              icon: Icons.error_outline,
-              title: tr('Erreur'),
-              subtitle: _erreur!,
-              actionLabel: tr('Réessayer'),
-              onAction: _charger,
-            )
-          : liste == null
-              ? const ShimmerList()
-              : liste.isEmpty && _filtrage
-                  ? EmptyState(
-                      icon: Icons.search_off_rounded,
-                      title: tr('Aucun résultat'),
-                      subtitle: tr('Aucune réclamation ne correspond à ces critères.'),
-                      actionLabel: tr('Effacer les filtres'),
-                      onAction: () => _filtrer(filtre: 'toutes', effacerType: true),
-                    )
-              : liste.isEmpty
-                  ? EmptyState(
-                      icon: Icons.support_agent_outlined,
-                      title: tr('Aucune réclamation'),
-                      subtitle: tr('Un souci avec un envoi (perte, avarie, retard, facture) ? '
-                          'Ouvrez une réclamation, notre service client vous répond ici.'),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _charger,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                        itemCount: liste.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (_, i) => _CarteReclamation(reclamation: liste[i], onTap: () => _ouvrir(liste[i])),
-                      ),
-                    );
+        ? EmptyState(
+            icon: Icons.error_outline,
+            title: tr('Erreur'),
+            subtitle: _erreur!,
+            actionLabel: tr('Réessayer'),
+            onAction: _charger,
+          )
+        : liste == null
+        ? const ShimmerList()
+        : liste.isEmpty && _filtrage
+        ? EmptyState(
+            icon: Icons.search_off_rounded,
+            title: tr('Aucun résultat'),
+            subtitle: tr('Aucune réclamation ne correspond à ces critères.'),
+            actionLabel: tr('Effacer les filtres'),
+            onAction: () => _filtrer(filtre: 'toutes', effacerType: true),
+          )
+        : liste.isEmpty
+        ? EmptyState(
+            icon: Icons.support_agent_outlined,
+            title: tr('Aucune réclamation'),
+            subtitle: tr(
+              'Un souci avec un envoi (perte, avarie, retard, facture) ? '
+              'Ouvrez une réclamation, notre service client vous répond ici.',
+            ),
+          )
+        : RefreshIndicator(
+            onRefresh: _charger,
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              itemCount: liste.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (_, i) => _CarteReclamation(reclamation: liste[i], onTap: () => _ouvrir(liste[i])),
+            ),
+          );
   }
 }
 
@@ -176,21 +184,29 @@ class _CarteReclamation extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(16)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Expanded(
-              child: Text(r.reference, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    r.reference,
+                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
+                ),
+                PastilleStatutReclamation(statut: r.statut),
+              ],
             ),
-            PastilleStatutReclamation(statut: r.statut),
-          ]),
-          const SizedBox(height: 8),
-          Text(r.objet, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 14)),
-          const SizedBox(height: 4),
-          Text(
-            '${r.typeLibelle}${r.colisReference != null ? ' · ${r.colisReference}' : ''} · ${formaterDate(r.createdAt.toIso8601String())}',
-            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40),
-          ),
-        ]),
+            const SizedBox(height: 8),
+            Text(r.objet, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 14)),
+            const SizedBox(height: 4),
+            Text(
+              '${r.typeLibelle}${r.colisReference != null ? ' · ${r.colisReference}' : ''} · ${formaterDate(r.createdAt.toIso8601String())}',
+              style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -212,8 +228,10 @@ class PastilleStatutReclamation extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(color: couleur.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
-      child: Text(kStatutsReclamation[statut] ?? statut,
-          style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: couleur)),
+      child: Text(
+        kStatutsReclamation[statut] ?? statut,
+        style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: couleur),
+      ),
     );
   }
 }

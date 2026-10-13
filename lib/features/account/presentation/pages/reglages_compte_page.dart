@@ -81,8 +81,7 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
     }
   }
 
-  Future<void> _preference(String cle, bool valeur) =>
-      _executer(() => _source.modifierPreferences({cle: valeur}));
+  Future<void> _preference(String cle, bool valeur) => _executer(() => _source.modifierPreferences({cle: valeur}));
 
   Future<void> _deposerJustificatif() async {
     if (_ninea.text.trim() != (_profil?.numeroIdentificationFiscale ?? '')) {
@@ -117,12 +116,21 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
       final export = await _source.exporterDonnees();
       final dossier = await getTemporaryDirectory();
       final fichier = File('${dossier.path}/mes-donnees-yobante.json');
-      await fichier.writeAsString(const JsonEncoder.withIndent('  ').convert(export));
-      await SharePlus.instance.share(ShareParams(files: [XFile(fichier.path)], title: tr('Mes données Yobante Colis')));
+      try {
+        await fichier.writeAsString(const JsonEncoder.withIndent('  ').convert(export));
+        await SharePlus.instance.share(
+          ShareParams(files: [XFile(fichier.path)], title: tr('Mes données Yobante Colis')),
+        );
+      } finally {
+        // Données personnelles complètes : aucune copie conservée après le partage
+        if (await fichier.exists()) await fichier.delete();
+      }
     } on ServerException catch (e) {
       if (mounted) showToast(context, tr('Erreur'), e.message, ToastificationType.error);
     } catch (_) {
-      if (mounted) showToast(context, tr('Erreur'), tr("Le fichier n'a pas pu être partagé."), ToastificationType.error);
+      if (mounted) {
+        showToast(context, tr('Erreur'), tr("Le fichier n'a pas pu être partagé."), ToastificationType.error);
+      }
     } finally {
       if (mounted) setState(() => _envoi = false);
     }
@@ -137,26 +145,32 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
       builder: (ctx) => AlertDialog(
         title: Text(tr('Supprimer mon compte')),
         content: SingleChildScrollView(
-          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(
-              tr('Vos données personnelles seront effacées et vous serez déconnecté. '
-              'Vos expéditions et factures passées restent archivées (obligations comptables). '
-              'Cette action est définitive.'),
-              style: texteDiscret(13),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: motDePasse,
-              obscureText: true,
-              decoration: InputDecoration(labelText: tr('Mot de passe')),
-            ),
-            TextField(
-              controller: motif,
-              maxLines: 2,
-              maxLength: 500,
-              decoration: InputDecoration(labelText: tr('Motif (facultatif)')),
-            ),
-          ]),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                tr(
+                  'Vos données personnelles seront effacées et vous serez déconnecté. '
+                  'Vos expéditions et factures passées restent archivées (obligations comptables). '
+                  'Cette action est définitive.',
+                ),
+                style: texteDiscret(13),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: motDePasse,
+                obscureText: true,
+                decoration: InputDecoration(labelText: tr('Mot de passe')),
+              ),
+              TextField(
+                controller: motif,
+                maxLines: 2,
+                maxLength: 500,
+                decoration: InputDecoration(labelText: tr('Motif (facultatif)')),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(tr('Annuler'))),
@@ -171,7 +185,12 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
     final raison = motif.text;
     if (confirme != true || !mounted) return;
     if (password.isEmpty) {
-      showToast(context, tr('Mot de passe requis'), tr('Saisissez votre mot de passe pour confirmer.'), ToastificationType.warning);
+      showToast(
+        context,
+        tr('Mot de passe requis'),
+        tr('Saisissez votre mot de passe pour confirmer.'),
+        ToastificationType.warning,
+      );
       return;
     }
     setState(() => _envoi = true);
@@ -197,125 +216,169 @@ class _ReglagesComptePageState extends State<ReglagesComptePage> {
           ? const Center(child: CircularProgressIndicator())
           : AbsorbPointer(
               absorbing: _envoi,
-              child: ListView(padding: const EdgeInsets.all(20), children: [
-                if (_envoi) const LinearProgressIndicator(),
-                CarteSection(titre: tr('Domiciliation'), icone: Icons.home_outlined, children: [
-                  Text(tr('Votre code postal permet de vous prévenir des tournées de collecte dans votre secteur.'),
-                      style: texteDiscret()),
-                  const SizedBox(height: 12),
-                  ChampTexte(controller: _codePostal, label: tr('Code postal'), clavier: TextInputType.number, maxLength: 10),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        final erreur = codePostal()(_codePostal.text);
-                        if (erreur != null) {
-                          showToast(context, tr('Code postal'), erreur, ToastificationType.warning);
-                          return;
-                        }
-                        _executer(() => _source.modifierProfil({'codePostal': _codePostal.text.trim()}));
-                      },
-                      child: Text(tr('Enregistrer')),
-                    ),
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  if (_envoi) const LinearProgressIndicator(),
+                  CarteSection(
+                    titre: tr('Domiciliation'),
+                    icone: Icons.home_outlined,
+                    children: [
+                      Text(
+                        tr('Votre code postal permet de vous prévenir des tournées de collecte dans votre secteur.'),
+                        style: texteDiscret(),
+                      ),
+                      const SizedBox(height: 12),
+                      ChampTexte(
+                        controller: _codePostal,
+                        label: tr('Code postal'),
+                        clavier: TextInputType.number,
+                        maxLength: 10,
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final erreur = codePostal()(_codePostal.text);
+                            if (erreur != null) {
+                              showToast(context, tr('Code postal'), erreur, ToastificationType.warning);
+                              return;
+                            }
+                            _executer(() => _source.modifierProfil({'codePostal': _codePostal.text.trim()}));
+                          },
+                          child: Text(tr('Enregistrer')),
+                        ),
+                      ),
+                    ],
                   ),
-                ]),
-                const SizedBox(height: 16),
-                CarteSection(titre: tr('Téléphone'), icone: Icons.phone_iphone, children: [
-                  Text(p.telephone ?? '—', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 16),
+                  CarteSection(
+                    titre: tr('Téléphone'),
+                    icone: Icons.phone_iphone,
+                    children: [
+                      Text(p.telephone ?? '—', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      if (p.telephoneVerifie)
+                        Bandeau(icone: Icons.verified, titre: tr('Numéro vérifié'), couleur: AppColor.kSucces)
+                      else ...[
+                        Text(
+                          tr('Vérifiez votre numéro pour retrouver les colis qui vous sont adressés.'),
+                          style: texteDiscret(),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _verifierTelephone,
+                            icon: const Icon(Icons.sms_outlined),
+                            label: Text(tr('Vérifier mon numéro')),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  CarteSection(
+                    titre: tr('Notifications'),
+                    icone: Icons.notifications_outlined,
+                    children: [
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(tr('Notifications sur le téléphone')),
+                        value: p.notificationsPush,
+                        onChanged: (v) => _preference('notificationsPush', v),
+                      ),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(tr('Messages WhatsApp')),
+                        subtitle: Text(tr('Réception de votre colis, arrivée à Dakar…')),
+                        value: p.notificationsWhatsapp,
+                        onChanged: (v) => _preference('notificationsWhatsapp', v),
+                      ),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(tr('Emails')),
+                        value: p.notificationsEmail,
+                        onChanged: (v) => _preference('notificationsEmail', v),
+                      ),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(tr('SMS')),
+                        value: p.notificationsSms,
+                        onChanged: (v) => _preference('notificationsSms', v),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  CarteSection(
+                    titre: tr('Tarif professionnel'),
+                    icone: Icons.business_center_outlined,
+                    children: [
+                      Text(
+                        tr(
+                          'Titulaire d\'un NINEA ou d\'un Kbis ? Transmettez votre justificatif pour bénéficier de '
+                          '${_remisePro.toStringAsFixed(0)} % de remise sur vos envois.',
+                        ),
+                        style: texteDiscret(),
+                      ),
+                      const SizedBox(height: 12),
+                      if (p.justificatifProValide)
+                        Bandeau(
+                          icone: Icons.verified,
+                          titre: tr('Tarif professionnel actif'),
+                          couleur: AppColor.kSucces,
+                        )
+                      else if (p.justificatifProUrl != null)
+                        Bandeau(
+                          icone: Icons.hourglass_top,
+                          titre: tr('Justificatif en cours de vérification'),
+                          couleur: AppColor.kAlerte,
+                        ),
+                      if (!p.justificatifProValide) ...[
+                        const SizedBox(height: 12),
+                        ChampTexte(controller: _ninea, label: tr('Numéro NINEA ou SIRET'), maxLength: 30),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _ninea.text.trim().isEmpty && (p.numeroIdentificationFiscale ?? '').isEmpty
+                                ? () => showToast(
+                                    context,
+                                    tr('Numéro requis'),
+                                    tr('Renseignez votre NINEA ou SIRET.'),
+                                    ToastificationType.warning,
+                                  )
+                                : _deposerJustificatif,
+                            icon: const Icon(Icons.upload_file),
+                            label: Text(
+                              p.justificatifProUrl == null
+                                  ? tr('Envoyer mon justificatif')
+                                  : tr('Remplacer le justificatif'),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (!p.emailVerifie)
+                    Text(
+                      tr('Adresse email non confirmée.'),
+                      style: GoogleFonts.plusJakartaSans(color: AppColor.kErreur, fontSize: 12),
+                    ),
+                  const SizedBox(height: 24),
+                  OutlinedButton.icon(
+                    onPressed: _exporterDonnees,
+                    icon: const Icon(Icons.download_outlined),
+                    label: Text(tr('Exporter mes données personnelles')),
+                  ),
                   const SizedBox(height: 8),
-                  if (p.telephoneVerifie)
-                    Bandeau(icone: Icons.verified, titre: tr('Numéro vérifié'), couleur: AppColor.kSucces)
-                  else ...[
-                    Text(tr('Vérifiez votre numéro pour retrouver les colis qui vous sont adressés.'),
-                        style: texteDiscret()),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: _verifierTelephone,
-                        icon: const Icon(Icons.sms_outlined),
-                        label: Text(tr('Vérifier mon numéro')),
-                      ),
-                    ),
-                  ],
-                ]),
-                const SizedBox(height: 16),
-                CarteSection(titre: tr('Notifications'), icone: Icons.notifications_outlined, children: [
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(tr('Notifications sur le téléphone')),
-                    value: p.notificationsPush,
-                    onChanged: (v) => _preference('notificationsPush', v),
+                  TextButton.icon(
+                    onPressed: _supprimerCompte,
+                    icon: const Icon(Icons.delete_forever_outlined, color: AppColor.kErreur),
+                    label: Text(tr('Supprimer mon compte'), style: TextStyle(color: AppColor.kErreur)),
                   ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(tr('Messages WhatsApp')),
-                    subtitle: Text(tr('Réception de votre colis, arrivée à Dakar…')),
-                    value: p.notificationsWhatsapp,
-                    onChanged: (v) => _preference('notificationsWhatsapp', v),
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(tr('Emails')),
-                    value: p.notificationsEmail,
-                    onChanged: (v) => _preference('notificationsEmail', v),
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(tr('SMS')),
-                    value: p.notificationsSms,
-                    onChanged: (v) => _preference('notificationsSms', v),
-                  ),
-                ]),
-                const SizedBox(height: 16),
-                CarteSection(titre: tr('Tarif professionnel'), icone: Icons.business_center_outlined, children: [
-                  Text(
-                    tr('Titulaire d\'un NINEA ou d\'un Kbis ? Transmettez votre justificatif pour bénéficier de '
-                    '${_remisePro.toStringAsFixed(0)} % de remise sur vos envois.'),
-                    style: texteDiscret(),
-                  ),
-                  const SizedBox(height: 12),
-                  if (p.justificatifProValide)
-                    Bandeau(icone: Icons.verified, titre: tr('Tarif professionnel actif'), couleur: AppColor.kSucces)
-                  else if (p.justificatifProUrl != null)
-                    Bandeau(
-                      icone: Icons.hourglass_top,
-                      titre: tr('Justificatif en cours de vérification'),
-                      couleur: AppColor.kAlerte,
-                    ),
-                  if (!p.justificatifProValide) ...[
-                    const SizedBox(height: 12),
-                    ChampTexte(controller: _ninea, label: tr('Numéro NINEA ou SIRET'), maxLength: 30),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: _ninea.text.trim().isEmpty && (p.numeroIdentificationFiscale ?? '').isEmpty
-                            ? () => showToast(context, tr('Numéro requis'), tr('Renseignez votre NINEA ou SIRET.'),
-                                ToastificationType.warning)
-                            : _deposerJustificatif,
-                        icon: const Icon(Icons.upload_file),
-                        label: Text(p.justificatifProUrl == null ? tr('Envoyer mon justificatif') : tr('Remplacer le justificatif')),
-                      ),
-                    ),
-                  ],
-                ]),
-                const SizedBox(height: 16),
-                if (!p.emailVerifie)
-                  Text(tr('Adresse email non confirmée.'),
-                      style: GoogleFonts.plusJakartaSans(color: AppColor.kErreur, fontSize: 12)),
-                const SizedBox(height: 24),
-                OutlinedButton.icon(
-                  onPressed: _exporterDonnees,
-                  icon: const Icon(Icons.download_outlined),
-                  label: Text(tr('Exporter mes données personnelles')),
-                ),
-                const SizedBox(height: 8),
-                TextButton.icon(
-                  onPressed: _supprimerCompte,
-                  icon: const Icon(Icons.delete_forever_outlined, color: AppColor.kErreur),
-                  label: Text(tr('Supprimer mon compte'), style: TextStyle(color: AppColor.kErreur)),
-                ),
-              ]),
+                ],
+              ),
             ),
     );
   }

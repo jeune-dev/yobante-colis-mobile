@@ -49,7 +49,13 @@ class MesureAudience with WidgetsBindingObserver {
     return _visiteurId = id;
   }
 
-  String get _plateforme => kIsWeb ? 'web' : Platform.isIOS ? 'ios' : Platform.isAndroid ? 'android' : 'web';
+  String get _plateforme => kIsWeb
+      ? 'web'
+      : Platform.isIOS
+      ? 'ios'
+      : Platform.isAndroid
+      ? 'android'
+      : 'web';
 
   void demarrer() {
     WidgetsBinding.instance.addObserver(this);

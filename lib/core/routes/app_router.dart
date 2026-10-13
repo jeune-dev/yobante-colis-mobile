@@ -12,16 +12,16 @@ import '../../features/colis/presentation/pages/detail_colis_page.dart';
 import '../../features/colis/presentation/pages/suivi_colis_page.dart';
 
 class AppRouter {
-  static const String splashRoute         = '/';
-  static const String onboardingRoute     = '/onboarding';
-  static const String loginRoute          = '/login';
-  static const String registerRoute       = '/register';
+  static const String splashRoute = '/';
+  static const String onboardingRoute = '/onboarding';
+  static const String loginRoute = '/login';
+  static const String registerRoute = '/register';
   static const String forgotPasswordRoute = '/forgot-password';
-  static const String resetPasswordRoute  = '/reset-password';
-  static const String clientRoute         = '/client';
-  static const String creationColisRoute  = '/colis/nouveau';
-  static const String detailColisRoute    = '/colis/detail';
-  static const String suiviColisRoute     = '/colis/suivi';
+  static const String resetPasswordRoute = '/reset-password';
+  static const String clientRoute = '/client';
+  static const String creationColisRoute = '/colis/nouveau';
+  static const String detailColisRoute = '/colis/detail';
+  static const String suiviColisRoute = '/colis/suivi';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -58,8 +58,10 @@ class AppRouter {
   static MaterialPageRoute<dynamic> _page(Widget w, RouteSettings s) =>
       MaterialPageRoute(builder: (_) => w, settings: s);
 
-  static MaterialPageRoute<dynamic> _guarded(Widget w, RouteSettings s) =>
-      MaterialPageRoute(builder: (_) => _AuthGuard(child: w), settings: s);
+  static MaterialPageRoute<dynamic> _guarded(Widget w, RouteSettings s) => MaterialPageRoute(
+    builder: (_) => _AuthGuard(child: w),
+    settings: s,
+  );
 }
 
 class _AuthGuard extends StatefulWidget {

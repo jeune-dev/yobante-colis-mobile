@@ -82,7 +82,12 @@ void main() {
 
       CategorieColis.appliquerRegles([
         {'code': 'colis_xxl', 'numero': 3, 'tarification': 'sur_devis', 'photosMin': 4},
-        {'code': 'documents', 'numero': 1, 'tarification': 'grille', 'modesDepot': ['point_collecte']},
+        {
+          'code': 'documents',
+          'numero': 1,
+          'tarification': 'grille',
+          'modesDepot': ['point_collecte'],
+        },
       ]);
 
       expect(CategorieColis.toutes.map((c) => c.code), ['documents', 'colis_xxl']);
@@ -104,7 +109,10 @@ void main() {
     test('réponse vide ou invalide : règles inchangées', () {
       final avant = CategorieColis.toutes;
       CategorieColis.appliquerRegles([]);
-      CategorieColis.appliquerRegles(['pas une map', {'numero': 1}]);
+      CategorieColis.appliquerRegles([
+        'pas une map',
+        {'numero': 1},
+      ]);
       expect(CategorieColis.toutes, same(avant));
     });
   });

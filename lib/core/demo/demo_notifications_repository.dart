@@ -26,8 +26,13 @@ class DemoNotificationsRepository implements NotificationsRepository {
     if (index != -1) {
       final n = DemoData.notifications[index];
       DemoData.notifications[index] = NotificationApp(
-        id: n.id, titre: n.titre, message: n.message, type: n.type,
-        isRead: true, lienCible: n.lienCible, createdAt: n.createdAt,
+        id: n.id,
+        titre: n.titre,
+        message: n.message,
+        type: n.type,
+        isRead: true,
+        lienCible: n.lienCible,
+        createdAt: n.createdAt,
       );
     }
     return const Right(null);
@@ -39,8 +44,13 @@ class DemoNotificationsRepository implements NotificationsRepository {
     for (var i = 0; i < DemoData.notifications.length; i++) {
       final n = DemoData.notifications[i];
       DemoData.notifications[i] = NotificationApp(
-        id: n.id, titre: n.titre, message: n.message, type: n.type,
-        isRead: true, lienCible: n.lienCible, createdAt: n.createdAt,
+        id: n.id,
+        titre: n.titre,
+        message: n.message,
+        type: n.type,
+        isRead: true,
+        lienCible: n.lienCible,
+        createdAt: n.createdAt,
       );
     }
     return const Right(null);

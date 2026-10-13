@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:toastification/toastification.dart';
+import '../../../../core/widgets/ui_kit.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
@@ -82,7 +83,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
   void _valider() {
     setState(() => _soumis = true);
-    if (!_formKey.currentState!.validate()) return;
+    if (!validerFormulaire(_formKey)) return;
     FocusScope.of(context).unfocus();
     context.read<AuthBloc>().add(
       ResetPasswordRequested(email: widget.email, otpRecu: _code.text.trim(), newPassword: _nouveau.text),
@@ -121,6 +122,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               TextFormField(
                 controller: _code,
                 keyboardType: TextInputType.number,
+                onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                 autofillHints: const [AutofillHints.oneTimeCode],
                 textInputAction: TextInputAction.next,
                 textAlign: TextAlign.center,
@@ -151,6 +153,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   labelText: tr('Nouveau mot de passe'),
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   suffixIcon: IconButton(
+                    tooltip: _masquer ? tr('Afficher le mot de passe') : tr('Masquer le mot de passe'),
                     icon: Icon(_masquer ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
                     onPressed: () => setState(() => _masquer = !_masquer),
                   ),

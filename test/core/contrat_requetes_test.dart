@@ -26,8 +26,12 @@ void main() {
     });
 
     test('colis reçus : seule la période est transmise', () {
-      final q = FiltresColis(reference: 'X', categorie: 'documents', enCours: true, dateDebut: DateTime(2026, 1, 2))
-          .versRequete(recus: true);
+      final q = FiltresColis(
+        reference: 'X',
+        categorie: 'documents',
+        enCours: true,
+        dateDebut: DateTime(2026, 1, 2),
+      ).versRequete(recus: true);
       expect(q, {'dateDebut': '2026-01-02'});
     });
 

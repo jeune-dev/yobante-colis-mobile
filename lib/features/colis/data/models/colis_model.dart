@@ -151,9 +151,7 @@ class ColisModel extends Colis {
       dateLimiteRetrait: json['dateLimiteRetrait'] as String?,
       codeRetrait: json['codeRetrait'] as String?,
       // Le backend stocke { url, publicId } ; les anciennes données pouvaient être de simples URL
-      photos: rawPhotos is List
-          ? rawPhotos.map((e) => e is Map ? '${e['url']}' : e.toString()).toList()
-          : const [],
+      photos: rawPhotos is List ? rawPhotos.map((e) => e is Map ? '${e['url']}' : e.toString()).toList() : const [],
       annuleMotif: json['annuleMotif'] as String?,
       motifIncident: json['motifIncident'] as String?,
       enRetard: json['enRetard'] as bool? ?? false,
@@ -182,8 +180,8 @@ class ColisModel extends Colis {
       factureStatut: facture?['statut'] as String?,
       adresseReception: json['adresseReception'] as Map<String, dynamic>?,
       tourneeTitre: tournee?['titre'] as String?,
-      dateCollecte: (infosCollecte['datePrevue'] ?? enlevement?['dateSouhaitee'] ?? tournee?['dateCollecte'])
-          as String?,
+      dateCollecte:
+          (infosCollecte['datePrevue'] ?? enlevement?['dateSouhaitee'] ?? tournee?['dateCollecte']) as String?,
     );
   }
 }

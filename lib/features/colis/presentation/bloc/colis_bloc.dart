@@ -42,71 +42,67 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
   Future<void> _onLoadColis(LoadColis event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
     final result = await getColis(statut: event.statut, filtres: event.filtres, page: 1);
-    result.fold(
-      (f) => emit(_echec(f)),
-      (data) {
-        final pagination = data['pagination'] as Map<String, dynamic>?;
-        emit(ColisListLoaded(
+    result.fold((f) => emit(_echec(f)), (data) {
+      final pagination = data['pagination'] as Map<String, dynamic>?;
+      emit(
+        ColisListLoaded(
           colis: List.from(data['colis'] as List),
           pagination: pagination,
           currentPage: 1,
           hasMore: _hasNextPage(pagination),
-        ));
-      },
-    );
+        ),
+      );
+    });
   }
 
   Future<void> _onLoadMoreColis(LoadMoreColis event, Emitter<ColisState> emit) async {
     final current = state;
     if (current is! ColisListLoaded) return;
     final result = await getColis(statut: event.statut, filtres: event.filtres, page: event.page);
-    result.fold(
-      (f) => emit(_echec(f)),
-      (data) {
-        final pagination = data['pagination'] as Map<String, dynamic>?;
-        emit(ColisListLoaded(
+    result.fold((f) => emit(_echec(f)), (data) {
+      final pagination = data['pagination'] as Map<String, dynamic>?;
+      emit(
+        ColisListLoaded(
           colis: [...current.colis, ...List<dynamic>.from(data['colis'] as List).cast()],
           pagination: pagination,
           currentPage: event.page,
           hasMore: _hasNextPage(pagination),
-        ));
-      },
-    );
+        ),
+      );
+    });
   }
 
   Future<void> _onLoadColisRecus(LoadColisRecus event, Emitter<ColisState> emit) async {
     emit(ColisLoading());
     final result = await getColisRecus(statut: event.statut, filtres: event.filtres, page: 1);
-    result.fold(
-      (f) => emit(_echec(f)),
-      (data) {
-        final pagination = data['pagination'] as Map<String, dynamic>?;
-        emit(ColisRecusLoaded(
+    result.fold((f) => emit(_echec(f)), (data) {
+      final pagination = data['pagination'] as Map<String, dynamic>?;
+      emit(
+        ColisRecusLoaded(
           colis: List.from(data['colis'] as List),
           pagination: pagination,
           currentPage: 1,
           hasMore: _hasNextPage(pagination),
-        ));
-      },
-    );
+        ),
+      );
+    });
   }
 
   Future<void> _onLoadMoreColisRecus(LoadMoreColisRecus event, Emitter<ColisState> emit) async {
     final current = state;
     if (current is! ColisRecusLoaded) return;
     final result = await getColisRecus(statut: event.statut, filtres: event.filtres, page: event.page);
-    result.fold(
-      (f) => emit(_echec(f)),
-      (data) {
-        final pagination = data['pagination'] as Map<String, dynamic>?;
-        emit(ColisRecusLoaded(
+    result.fold((f) => emit(_echec(f)), (data) {
+      final pagination = data['pagination'] as Map<String, dynamic>?;
+      emit(
+        ColisRecusLoaded(
           colis: [...current.colis, ...List<dynamic>.from(data['colis'] as List).cast()],
           pagination: pagination,
           currentPage: event.page,
           hasMore: _hasNextPage(pagination),
-        ));
-      },
-    );
+        ),
+      );
+    });
   }
 
   static bool _hasNextPage(Map<String, dynamic>? p) {
@@ -145,16 +141,10 @@ class ColisBloc extends Bloc<ColisEvent, ColisState> {
     ).whenComplete(progressCtrl.close);
 
     // Consomme les événements de progression via emit.forEach (pattern BLoC recommandé)
-    await emit.forEach<double>(
-      progressCtrl.stream,
-      onData: (p) => ColisUploadProgress(p),
-    );
+    await emit.forEach<double>(progressCtrl.stream, onData: (p) => ColisUploadProgress(p));
 
     final result = await uploadFuture;
-    result.fold(
-      (f) => emit(_echec(f)),
-      (resultat) => emit(ColisCreated(resultat)),
-    );
+    result.fold((f) => emit(_echec(f)), (resultat) => emit(ColisCreated(resultat)));
   }
 
   Future<void> _onAnnulerColis(AnnulerColisRequested event, Emitter<ColisState> emit) async {

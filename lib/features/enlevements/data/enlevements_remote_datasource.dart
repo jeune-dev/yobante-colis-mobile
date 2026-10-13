@@ -88,34 +88,34 @@ class DemandeEnlevement extends Equatable {
   bool get annulable => !const ['en_cours', 'effectue', 'annule'].contains(statut);
 
   factory DemandeEnlevement.fromJson(Map<String, dynamic> j) => DemandeEnlevement(
-        id: j['id'] as String? ?? '',
-        reference: j['reference'] as String? ?? '',
-        colisId: j['colisId'] as String?,
-        colisReference: (j['colis'] as Map<String, dynamic>?)?['reference'] as String?,
-        contactNom: j['contactNom'] as String? ?? '',
-        contactTelephone: j['contactTelephone'] as String? ?? '',
-        pays: j['pays'] as String? ?? 'FR',
-        villeId: j['villeId'] as String? ?? '',
-        villeNom: (j['ville'] as Map<String, dynamic>?)?['nom'] as String?,
-        adresse: j['adresse'] as String? ?? '',
-        complementAdresse: j['complementAdresse'] as String?,
-        codePostal: j['codePostal'] as String?,
-        dateSouhaitee: j['dateSouhaitee'] as String? ?? '',
-        creneau: j['creneau'] as String? ?? kCreneauxEnlevement.first,
-        heureSouhaitee: j['heureSouhaitee'] as String?,
-        etage: (j['etage'] as num?)?.toInt(),
-        ascenseur: j['ascenseur'] as bool?,
-        emballageRequis: j['emballageRequis'] as bool? ?? false,
-        nbColis: (j['nbColis'] as num?)?.toInt() ?? 1,
-        poidsEstimeKg: _dn(j['poidsEstimeKg']),
-        instructions: j['instructions'] as String?,
-        statut: j['statut'] as String? ?? 'demande',
-        datePlanifiee: j['datePlanifiee'] as String?,
-        motifEchec: j['motifEchec'] as String?,
-        fraisEnlevement: _dn(j['fraisEnlevement']),
-        tourneeTitre: (j['tourneeCollecte'] as Map<String, dynamic>?)?['titre'] as String?,
-        createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
-      );
+    id: j['id'] as String? ?? '',
+    reference: j['reference'] as String? ?? '',
+    colisId: j['colisId'] as String?,
+    colisReference: (j['colis'] as Map<String, dynamic>?)?['reference'] as String?,
+    contactNom: j['contactNom'] as String? ?? '',
+    contactTelephone: j['contactTelephone'] as String? ?? '',
+    pays: j['pays'] as String? ?? 'FR',
+    villeId: j['villeId'] as String? ?? '',
+    villeNom: (j['ville'] as Map<String, dynamic>?)?['nom'] as String?,
+    adresse: j['adresse'] as String? ?? '',
+    complementAdresse: j['complementAdresse'] as String?,
+    codePostal: j['codePostal'] as String?,
+    dateSouhaitee: j['dateSouhaitee'] as String? ?? '',
+    creneau: j['creneau'] as String? ?? kCreneauxEnlevement.first,
+    heureSouhaitee: j['heureSouhaitee'] as String?,
+    etage: (j['etage'] as num?)?.toInt(),
+    ascenseur: j['ascenseur'] as bool?,
+    emballageRequis: j['emballageRequis'] as bool? ?? false,
+    nbColis: (j['nbColis'] as num?)?.toInt() ?? 1,
+    poidsEstimeKg: _dn(j['poidsEstimeKg']),
+    instructions: j['instructions'] as String?,
+    statut: j['statut'] as String? ?? 'demande',
+    datePlanifiee: j['datePlanifiee'] as String?,
+    motifEchec: j['motifEchec'] as String?,
+    fraisEnlevement: _dn(j['fraisEnlevement']),
+    tourneeTitre: (j['tourneeCollecte'] as Map<String, dynamic>?)?['titre'] as String?,
+    createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
+  );
 
   @override
   List<Object?> get props => [id, statut, dateSouhaitee, creneau];
@@ -136,20 +136,23 @@ class EnlevementsRemoteDataSource {
       DemandeEnlevement.fromJson(res.data['data']['demande'] as Map<String, dynamic>);
 
   Future<CreneauxEnlevement> getCreneaux() => appelApi(() async {
-        final res = await dio.get(Env.clientEnlevementsCreneaux);
-        final d = res.data['data'] as Map<String, dynamic>;
-        return CreneauxEnlevement(
-          creneaux: (d['creneaux'] as List? ?? kCreneauxEnlevement).map((c) => '$c').toList(),
-          dates: (d['dates'] as List? ?? const []).map((c) => '$c').toList(),
-        );
-      }, tr('Impossible de charger les créneaux'));
+    final res = await dio.get(Env.clientEnlevementsCreneaux);
+    final d = res.data['data'] as Map<String, dynamic>;
+    return CreneauxEnlevement(
+      creneaux: (d['creneaux'] as List? ?? kCreneauxEnlevement).map((c) => '$c').toList(),
+      dates: (d['dates'] as List? ?? const []).map((c) => '$c').toList(),
+    );
+  }, tr('Impossible de charger les créneaux'));
 
   Future<List<DemandeEnlevement>> getDemandes({bool? enCours}) => appelApi(() async {
-        final demandes = await chargerToutesLesPages(dio, Env.clientEnlevements, 'demandes', parametres: {
-          if (enCours != null) 'enCours': '$enCours',
-        });
-        return demandes.map(DemandeEnlevement.fromJson).toList();
-      }, tr('Impossible de charger vos enlèvements'));
+    final demandes = await chargerToutesLesPages(
+      dio,
+      Env.clientEnlevements,
+      'demandes',
+      parametres: {if (enCours != null) 'enCours': '$enCours'},
+    );
+    return demandes.map(DemandeEnlevement.fromJson).toList();
+  }, tr('Impossible de charger vos enlèvements'));
 
   Future<DemandeEnlevement> getDemande(String id) =>
       appelApi(() async => _demande(await dio.get(Env.clientEnlevementId(id))), tr('Demande introuvable'));
@@ -159,9 +162,9 @@ class EnlevementsRemoteDataSource {
   /// poidsEstimeKg, instructions, tourneeCollecteId, heureSouhaitee, etage,
   /// ascenseur, emballageRequis. Renvoie la demande et le message du backend.
   Future<({DemandeEnlevement demande, String message})> creer(Map<String, dynamic> champs) => appelApi(() async {
-        final res = await dio.post(Env.clientEnlevements, data: champs);
-        return (demande: _demande(res), message: messageApi(res));
-      }, tr('Impossible de programmer l\'enlèvement'));
+    final res = await dio.post(Env.clientEnlevements, data: champs);
+    return (demande: _demande(res), message: messageApi(res));
+  }, tr('Impossible de programmer l\'enlèvement'));
 
   Future<({DemandeEnlevement demande, String message})> modifier(String id, Map<String, dynamic> champs) =>
       appelApi(() async {
@@ -170,9 +173,10 @@ class EnlevementsRemoteDataSource {
       }, tr('Impossible de modifier la demande'));
 
   Future<({DemandeEnlevement demande, String message})> annuler(String id, {String? motif}) => appelApi(() async {
-        final res = await dio.patch(Env.clientEnlevementAnnuler(id), data: {
-          if (motif != null && motif.trim().isNotEmpty) 'motif': motif.trim(),
-        });
-        return (demande: _demande(res), message: messageApi(res));
-      }, tr('Impossible d\'annuler la demande'));
+    final res = await dio.patch(
+      Env.clientEnlevementAnnuler(id),
+      data: {if (motif != null && motif.trim().isNotEmpty) 'motif': motif.trim()},
+    );
+    return (demande: _demande(res), message: messageApi(res));
+  }, tr('Impossible d\'annuler la demande'));
 }

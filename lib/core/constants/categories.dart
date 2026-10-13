@@ -8,6 +8,7 @@ import '../i18n/langue.dart';
 class CategorieColis {
   final String code;
   final int numero;
+
   /// Textes en français (valeurs intégrées ou envoyées par le backend) ;
   /// [libelle], [description] et [exemples] les renvoient dans la langue choisie.
   final String libelleFr;
@@ -49,10 +50,10 @@ class CategorieColis {
        exemplesFr = exemples;
 
   String get parcours => switch (paiement) {
-        'a_la_commande' => tr('Prix fixe · paiement immédiat'),
-        'a_la_reception' => tr('Prix fixe · validation sous 24 h · paiement à la réception du colis'),
-        _ => tr('Prix proposé sous 24 h · paiement après acceptation'),
-      };
+    'a_la_commande' => tr('Prix fixe · paiement immédiat'),
+    'a_la_reception' => tr('Prix fixe · validation sous 24 h · paiement à la réception du colis'),
+    _ => tr('Prix proposé sous 24 h · paiement après acceptation'),
+  };
 
   static const _documents = CategorieColis(
     code: 'documents',
@@ -107,9 +108,9 @@ class CategorieColis {
   static CategorieColis get colisXxl => parCode('colis_xxl');
 
   static CategorieColis parCode(String? code) => _toutes.firstWhere(
-        (c) => c.code == code,
-        orElse: () => _toutes.firstWhere((c) => c.code == 'colis_moyen', orElse: () => _colisMoyen),
-      );
+    (c) => c.code == code,
+    orElse: () => _toutes.firstWhere((c) => c.code == 'colis_moyen', orElse: () => _colisMoyen),
+  );
 
   /// Remplace les règles intégrées par celles du backend (`data.categories`),
   /// en conservant l'icône et les exemples propres à l'application.
@@ -119,23 +120,23 @@ class CategorieColis {
       if (brut is! Map) continue;
       final code = brut['code'] as String?;
       if (code == null) continue;
-      final local = const [_documents, _colisMoyen, _colisXxl]
-          .where((c) => c.code == code)
-          .firstOrNull;
-      lues.add(CategorieColis(
-        code: code,
-        numero: (brut['numero'] as num?)?.toInt() ?? local?.numero ?? lues.length + 1,
-        libelle: brut['libelle'] as String? ?? local?.libelleFr ?? code,
-        description: brut['description'] as String? ?? local?.descriptionFr ?? '',
-        exemples: local?.exemplesFr ?? '',
-        icone: local?.icone ?? Icons.inventory_2_outlined,
-        surDevis: brut['tarification'] == 'sur_devis',
-        validationAdmin: brut['validationAdmin'] as bool? ?? local?.validationAdmin ?? true,
-        paiement: brut['paiement'] as String? ?? local?.paiement ?? 'a_la_reception',
-        photosMin: (brut['photosMin'] as num?)?.toInt() ?? local?.photosMin ?? 1,
-        modesDepot: (brut['modesDepot'] as List?)?.map((m) => '$m').toList() ?? local?.modesDepot ?? const [],
-        adresseSenegalDetaillee: brut['adresseSenegalDetaillee'] as bool? ?? local?.adresseSenegalDetaillee ?? false,
-      ));
+      final local = const [_documents, _colisMoyen, _colisXxl].where((c) => c.code == code).firstOrNull;
+      lues.add(
+        CategorieColis(
+          code: code,
+          numero: (brut['numero'] as num?)?.toInt() ?? local?.numero ?? lues.length + 1,
+          libelle: brut['libelle'] as String? ?? local?.libelleFr ?? code,
+          description: brut['description'] as String? ?? local?.descriptionFr ?? '',
+          exemples: local?.exemplesFr ?? '',
+          icone: local?.icone ?? Icons.inventory_2_outlined,
+          surDevis: brut['tarification'] == 'sur_devis',
+          validationAdmin: brut['validationAdmin'] as bool? ?? local?.validationAdmin ?? true,
+          paiement: brut['paiement'] as String? ?? local?.paiement ?? 'a_la_reception',
+          photosMin: (brut['photosMin'] as num?)?.toInt() ?? local?.photosMin ?? 1,
+          modesDepot: (brut['modesDepot'] as List?)?.map((m) => '$m').toList() ?? local?.modesDepot ?? const [],
+          adresseSenegalDetaillee: brut['adresseSenegalDetaillee'] as bool? ?? local?.adresseSenegalDetaillee ?? false,
+        ),
+      );
     }
     if (lues.isNotEmpty) {
       lues.sort((a, b) => a.numero.compareTo(b.numero));
@@ -145,9 +146,7 @@ class CategorieColis {
 }
 
 /// Libellés des modes de remise du colis, dans la langue choisie.
-Map<String, String> get libellesModeDepot => {
-      for (final e in _libellesModeDepotFr.entries) e.key: tr(e.value),
-    };
+Map<String, String> get libellesModeDepot => {for (final e in _libellesModeDepotFr.entries) e.key: tr(e.value)};
 
 const _libellesModeDepotFr = {
   'point_collecte': 'Dépôt en point de collecte',

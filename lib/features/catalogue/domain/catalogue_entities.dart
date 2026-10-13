@@ -30,14 +30,14 @@ class ServiceExpedition extends Equatable {
   bool get estAerien => modeTransport == 'aerien';
 
   factory ServiceExpedition.fromJson(Map<String, dynamic> j) => ServiceExpedition(
-        id: j['id'] as String,
-        code: j['code'] as String? ?? '',
-        nom: j['nom'] as String? ?? '',
-        description: j['description'] as String?,
-        modeTransport: j['modeTransport'] as String? ?? 'maritime',
-        delaiMinJours: j['delaiMinJours'] as int?,
-        delaiMaxJours: j['delaiMaxJours'] as int?,
-      );
+    id: j['id'] as String,
+    code: j['code'] as String? ?? '',
+    nom: j['nom'] as String? ?? '',
+    description: j['description'] as String?,
+    modeTransport: j['modeTransport'] as String? ?? 'maritime',
+    delaiMinJours: j['delaiMinJours'] as int?,
+    delaiMaxJours: j['delaiMaxJours'] as int?,
+  );
 
   @override
   List<Object?> get props => [id];
@@ -74,19 +74,19 @@ class ArticleTarif extends Equatable {
   });
 
   factory ArticleTarif.fromJson(Map<String, dynamic> j) => ArticleTarif(
-        id: j['id'] as String,
-        code: j['code'] as String? ?? '',
-        libelle: j['libelle'] as String? ?? '',
-        description: j['description'] as String?,
-        categorie: j['categorie'] as String? ?? 'colis_moyen',
-        modeTransport: j['modeTransport'] as String? ?? 'maritime',
-        prixDakar: _d(j['prixDakar']),
-        prixAutresRegions: _d(j['prixAutresRegions']),
-        devise: j['devise'] as String? ?? 'EUR',
-        prixAPartirDe: j['prixAPartirDe'] as bool? ?? false,
-        poidsMaxKg: _dn(j['poidsMaxKg']),
-        photoUrl: j['photoUrl'] as String?,
-      );
+    id: j['id'] as String,
+    code: j['code'] as String? ?? '',
+    libelle: j['libelle'] as String? ?? '',
+    description: j['description'] as String?,
+    categorie: j['categorie'] as String? ?? 'colis_moyen',
+    modeTransport: j['modeTransport'] as String? ?? 'maritime',
+    prixDakar: _d(j['prixDakar']),
+    prixAutresRegions: _d(j['prixAutresRegions']),
+    devise: j['devise'] as String? ?? 'EUR',
+    prixAPartirDe: j['prixAPartirDe'] as bool? ?? false,
+    poidsMaxKg: _dn(j['poidsMaxKg']),
+    photoUrl: j['photoUrl'] as String?,
+  );
 
   @override
   List<Object?> get props => [id];
@@ -129,22 +129,20 @@ class Emballage extends Equatable {
       : null;
 
   factory Emballage.fromJson(Map<String, dynamic> j) => Emballage(
-        id: j['id'] as String,
-        code: j['code'] as String? ?? '',
-        libelle: j['libelle'] as String? ?? '',
-        description: j['description'] as String?,
-        type: j['type'] as String? ?? 'contenant',
-        longueurCm: _dn(j['longueurCm']),
-        largeurCm: _dn(j['largeurCm']),
-        hauteurCm: _dn(j['hauteurCm']),
-        capaciteKg: _dn(j['capaciteKg']),
-        prix: _d(j['prix']),
-        devise: j['devise'] as String? ?? 'EUR',
-        photos: (j['photos'] as List? ?? [])
-            .map((p) => p is Map ? '${p['url']}' : '$p')
-            .toList(),
-        disponible: j['disponible'] as bool? ?? true,
-      );
+    id: j['id'] as String,
+    code: j['code'] as String? ?? '',
+    libelle: j['libelle'] as String? ?? '',
+    description: j['description'] as String?,
+    type: j['type'] as String? ?? 'contenant',
+    longueurCm: _dn(j['longueurCm']),
+    largeurCm: _dn(j['largeurCm']),
+    hauteurCm: _dn(j['hauteurCm']),
+    capaciteKg: _dn(j['capaciteKg']),
+    prix: _d(j['prix']),
+    devise: j['devise'] as String? ?? 'EUR',
+    photos: (j['photos'] as List? ?? []).map((p) => p is Map ? '${p['url']}' : '$p').toList(),
+    disponible: j['disponible'] as bool? ?? true,
+  );
 
   @override
   List<Object?> get props => [id];
@@ -178,22 +176,21 @@ class TourneeCollecte extends Equatable {
     this.placesRestantes,
   });
 
-  String? get horaires =>
-      heureDebut != null && heureFin != null ? tr('de $heureDebut à $heureFin') : null;
+  String? get horaires => heureDebut != null && heureFin != null ? tr('de $heureDebut à $heureFin') : null;
 
   factory TourneeCollecte.fromJson(Map<String, dynamic> j) => TourneeCollecte(
-        id: j['id'] as String,
-        reference: j['reference'] as String? ?? '',
-        titre: j['titre'] as String? ?? '',
-        pays: j['pays'] as String? ?? 'FR',
-        dateCollecte: j['dateCollecte'] as String? ?? '',
-        heureDebut: j['heureDebut'] as String?,
-        heureFin: j['heureFin'] as String?,
-        dateLimiteInscription: j['dateLimiteInscription'] as String?,
-        messageBanniere: j['messageBanniere'] as String?,
-        codesPostaux: (j['codesPostaux'] as List? ?? []).map((e) => '$e').toList(),
-        placesRestantes: j['placesRestantes'] as int?,
-      );
+    id: j['id'] as String,
+    reference: j['reference'] as String? ?? '',
+    titre: j['titre'] as String? ?? '',
+    pays: j['pays'] as String? ?? 'FR',
+    dateCollecte: j['dateCollecte'] as String? ?? '',
+    heureDebut: j['heureDebut'] as String?,
+    heureFin: j['heureFin'] as String?,
+    dateLimiteInscription: j['dateLimiteInscription'] as String?,
+    messageBanniere: j['messageBanniere'] as String?,
+    codesPostaux: (j['codesPostaux'] as List? ?? []).map((e) => '$e').toList(),
+    placesRestantes: j['placesRestantes'] as int?,
+  );
 
   @override
   List<Object?> get props => [id];
@@ -226,15 +223,15 @@ class Annonce extends Equatable {
   bool get estPopup => emplacement == 'popup';
 
   factory Annonce.fromJson(Map<String, dynamic> j) => Annonce(
-        id: j['id'] as String,
-        titre: j['titre'] as String? ?? '',
-        message: j['message'] as String? ?? '',
-        niveau: j['niveau'] as String? ?? 'info',
-        lienUrl: j['lienUrl'] as String?,
-        lienLibelle: j['lienLibelle'] as String?,
-        imageUrl: j['imageUrl'] as String?,
-        emplacement: j['emplacement'] as String? ?? 'accueil',
-      );
+    id: j['id'] as String,
+    titre: j['titre'] as String? ?? '',
+    message: j['message'] as String? ?? '',
+    niveau: j['niveau'] as String? ?? 'info',
+    lienUrl: j['lienUrl'] as String?,
+    lienLibelle: j['lienLibelle'] as String?,
+    imageUrl: j['imageUrl'] as String?,
+    emplacement: j['emplacement'] as String? ?? 'accueil',
+  );
 
   @override
   List<Object?> get props => [id];
@@ -254,30 +251,24 @@ class AdresseReception {
   final String? ville;
   final String? telephone;
   final String? instructions;
-  const AdresseReception({
-    this.nom,
-    this.adresse,
-    this.codePostal,
-    this.ville,
-    this.telephone,
-    this.instructions,
-  });
+  const AdresseReception({this.nom, this.adresse, this.codePostal, this.ville, this.telephone, this.instructions});
 
-  String get lignes => [nom, adresse, [codePostal, ville].whereType<String>().where((s) => s.isNotEmpty).join(' ')]
-      .whereType<String>()
-      .where((s) => s.trim().isNotEmpty)
-      .join('\n');
+  String get lignes => [
+    nom,
+    adresse,
+    [codePostal, ville].whereType<String>().where((s) => s.isNotEmpty).join(' '),
+  ].whereType<String>().where((s) => s.trim().isNotEmpty).join('\n');
 
   bool get estRenseignee => (adresse ?? '').trim().isNotEmpty;
 
   factory AdresseReception.fromJson(Map<String, dynamic>? j) => AdresseReception(
-        nom: j?['nom'] as String?,
-        adresse: j?['adresse'] as String?,
-        codePostal: j?['codePostal'] as String?,
-        ville: (j?['ville'] ?? j?['departement']) as String?,
-        telephone: j?['telephone'] as String?,
-        instructions: j?['instructions'] as String?,
-      );
+    nom: j?['nom'] as String?,
+    adresse: j?['adresse'] as String?,
+    codePostal: j?['codePostal'] as String?,
+    ville: (j?['ville'] ?? j?['departement']) as String?,
+    telephone: j?['telephone'] as String?,
+    instructions: j?['instructions'] as String?,
+  );
 }
 
 class PalierColissimo {
@@ -331,7 +322,9 @@ class ConfigurationPublique {
     return ConfigurationPublique(
       adresseReception: adresses.map((k, v) => MapEntry(k, AdresseReception.fromJson(v as Map<String, dynamic>?))),
       liens: (j['liens'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(k, '${v ?? ''}')),
-      whatsappContact: (j['whatsappContact'] as String?)?.trim().isEmpty == true ? null : j['whatsappContact'] as String?,
+      whatsappContact: (j['whatsappContact'] as String?)?.trim().isEmpty == true
+          ? null
+          : j['whatsappContact'] as String?,
       produitsInterdits: (j['produitsInterdits'] as List? ?? []).map((e) => '$e').toList(),
       collecteActive: collecte['active'] as bool? ?? true,
       colissimoActive: colissimo['active'] as bool? ?? true,
@@ -433,13 +426,15 @@ class OffreDevis extends Equatable {
       delaiJours: delai['delaiJours'] as int?,
       poidsFactureKg: _d((j['poids'] as Map<String, dynamic>?)?['poidsFactureKg']),
       lignesForfait: (j['lignesForfait'] as List? ?? [])
-          .map((l) => LigneDevis(
-                libelle: l['libelle'] as String? ?? '',
-                montant: _d(l['montant']),
-                quantite: (l['quantite'] as num?)?.toInt() ?? 1,
-                devise: l['devise'] as String?,
-                prixAPartirDe: l['prixAPartirDe'] as bool? ?? false,
-              ))
+          .map(
+            (l) => LigneDevis(
+              libelle: l['libelle'] as String? ?? '',
+              montant: _d(l['montant']),
+              quantite: (l['quantite'] as num?)?.toInt() ?? 1,
+              devise: l['devise'] as String?,
+              prixAPartirDe: l['prixAPartirDe'] as bool? ?? false,
+            ),
+          )
           .toList(),
       annexes: (j['detailAnnexes'] as List? ?? [])
           .map((l) => LigneDevis(libelle: l['libelle'] as String? ?? '', montant: _d(l['montant'])))
@@ -473,18 +468,18 @@ class ResultatDevis {
   });
 
   factory ResultatDevis.fromJson(Map<String, dynamic> j) => ResultatDevis(
-        offres: (j['offres'] as List? ?? [])
-            .map((o) => OffreDevis.fromJson(o as Map<String, dynamic>))
-            .toList(),
-        indisponibles: (j['servicesIndisponibles'] as List? ?? [])
-            .map((s) => ServiceIndisponible(
-                  (s['service'] as Map<String, dynamic>?)?['nom'] as String? ?? '',
-                  s['motif'] as String? ?? '',
-                ))
-            .toList(),
-        remiseParrainagePourcent: _d(j['remiseParrainagePourcent']),
-        simulationId: j['simulationId'] as String?,
-      );
+    offres: (j['offres'] as List? ?? []).map((o) => OffreDevis.fromJson(o as Map<String, dynamic>)).toList(),
+    indisponibles: (j['servicesIndisponibles'] as List? ?? [])
+        .map(
+          (s) => ServiceIndisponible(
+            (s['service'] as Map<String, dynamic>?)?['nom'] as String? ?? '',
+            s['motif'] as String? ?? '',
+          ),
+        )
+        .toList(),
+    remiseParrainagePourcent: _d(j['remiseParrainagePourcent']),
+    simulationId: j['simulationId'] as String?,
+  );
 }
 
 /// Point de collecte ou de retrait proposé au client.
@@ -497,12 +492,12 @@ class PointService extends Equatable {
   const PointService({required this.id, required this.nom, this.adresse, this.telephone, this.villeNom});
 
   factory PointService.fromJson(Map<String, dynamic> j) => PointService(
-        id: j['id'] as String,
-        nom: j['nom'] as String? ?? '',
-        adresse: j['adresse'] as String?,
-        telephone: j['telephone'] as String?,
-        villeNom: (j['ville'] as Map<String, dynamic>?)?['nom'] as String?,
-      );
+    id: j['id'] as String,
+    nom: j['nom'] as String? ?? '',
+    adresse: j['adresse'] as String?,
+    telephone: j['telephone'] as String?,
+    villeNom: (j['ville'] as Map<String, dynamic>?)?['nom'] as String?,
+  );
 
   @override
   List<Object?> get props => [id];
@@ -526,13 +521,13 @@ class VilleDesservie extends Equatable {
   });
 
   factory VilleDesservie.fromJson(Map<String, dynamic> j) => VilleDesservie(
-        id: j['id'] as String,
-        nom: j['nom'] as String? ?? '',
-        pays: j['pays'] as String? ?? 'SN',
-        zoneTarifDakar: j['zoneTarifDakar'] as bool? ?? false,
-        enlevementDomicile: j['enlevementDomicileDisponible'] as bool? ?? true,
-        livraisonDomicile: j['livraisonDomicileDisponible'] as bool? ?? true,
-      );
+    id: j['id'] as String,
+    nom: j['nom'] as String? ?? '',
+    pays: j['pays'] as String? ?? 'SN',
+    zoneTarifDakar: j['zoneTarifDakar'] as bool? ?? false,
+    enlevementDomicile: j['enlevementDomicileDisponible'] as bool? ?? true,
+    livraisonDomicile: j['livraisonDomicileDisponible'] as bool? ?? true,
+  );
 
   @override
   List<Object?> get props => [id];

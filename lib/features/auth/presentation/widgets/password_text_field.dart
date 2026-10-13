@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/i18n/langue.dart';
 import '../../../../core/theme/app_color.dart';
 
 class PasswordTextField extends StatefulWidget {
@@ -30,6 +31,7 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColor.kPrimary, size: 20),
         suffixIcon: IconButton(
+          tooltip: _obscure ? tr('Afficher le mot de passe') : tr('Masquer le mot de passe'),
           icon: Icon(
             _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
             color: AppColor.kGrayscale40,

@@ -34,10 +34,14 @@ void main() {
   setUpAll(() async {
     if (ignorer != null) return;
     dio = Dio(BaseOptions(baseUrl: url!, headers: {'Accept': 'application/json'}));
-    dio.interceptors.add(InterceptorsWrapper(onRequest: (o, h) {
-      if (jeton != null && o.extra['skipAuthInterceptor'] != true) o.headers['Authorization'] = 'Bearer $jeton';
-      h.next(o);
-    }));
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (o, h) {
+          if (jeton != null && o.extra['skipAuthInterceptor'] != true) o.headers['Authorization'] = 'Bearer $jeton';
+          h.next(o);
+        },
+      ),
+    );
     catalogue = CatalogueRemoteDataSource(dio: dio);
     colis = ColisRemoteDataSourceImpl(dio: dio);
     photo = File('${Directory.systemTemp.path}/yobante_test_$suffixe.jpg')
@@ -213,16 +217,22 @@ void main() {
     expect(resultat.colis.montantEnAttente, isTrue);
 
     // L'administrateur propose un prix (back-office)
-    final admin = await dio.post('/auth/login',
-        data: {
-          'identifiant': Platform.environment['ADMIN_EMAIL'] ?? 'admin@test.local',
-          'password': Platform.environment['ADMIN_PASSWORD'] ?? 'Admin_Test_1234!',
-        },
-        options: Options(extra: {'skipAuthInterceptor': true}));
-    await dio.post('/admin/colis/${resultat.colis.id}/proposition',
-        data: {'montantTotal': 180, 'commentaire': 'Emballage inclus'},
-        options: Options(headers: {'Authorization': 'Bearer ${admin.data['data']['accessToken']}'},
-            extra: {'skipAuthInterceptor': true}));
+    final admin = await dio.post(
+      '/auth/login',
+      data: {
+        'identifiant': Platform.environment['ADMIN_EMAIL'] ?? 'admin@test.local',
+        'password': Platform.environment['ADMIN_PASSWORD'] ?? 'Admin_Test_1234!',
+      },
+      options: Options(extra: {'skipAuthInterceptor': true}),
+    );
+    await dio.post(
+      '/admin/colis/${resultat.colis.id}/proposition',
+      data: {'montantTotal': 180, 'commentaire': 'Emballage inclus'},
+      options: Options(
+        headers: {'Authorization': 'Bearer ${admin.data['data']['accessToken']}'},
+        extra: {'skipAuthInterceptor': true},
+      ),
+    );
 
     final propose = await colis.getColisDetail(resultat.colis.id);
     expect(propose.statut, 'devis_propose');

@@ -2,15 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 import '../theme/app_color.dart';
 
-void showToast(
-  BuildContext context,
-  String title,
-  String description,
-  ToastificationType type,
-) {
-  final cfg = _toastConfig(type);
+// Dernière notification affichée : un message identique la remplace au lieu de s'empiler
+// (appuis répétés sur « Continuer », par exemple)
+ToastificationItem? _derniere;
+String? _derniereCle;
 
-  toastification.showCustom(
+void showToast(BuildContext context, String title, String description, ToastificationType type) {
+  final cfg = _toastConfig(type);
+  final cle = '$type|$title|$description';
+  final precedente = _derniere;
+  // Sans effet si elle est déjà fermée
+  if (precedente != null && _derniereCle == cle) {
+    toastification.dismiss(precedente, showRemoveAnimation: false);
+  }
+
+  _derniereCle = cle;
+  _derniere = toastification.showCustom(
     context: context,
     alignment: Alignment.topCenter,
     autoCloseDuration: const Duration(milliseconds: 3800),
@@ -37,27 +44,15 @@ class _ToastConfig {
   final IconData icon;
   final Color accent;
   final Color iconBg;
-  const _ToastConfig({
-    required this.icon,
-    required this.accent,
-    required this.iconBg,
-  });
+  const _ToastConfig({required this.icon, required this.accent, required this.iconBg});
 }
 
 _ToastConfig _toastConfig(ToastificationType type) {
   switch (type) {
     case ToastificationType.success:
-      return const _ToastConfig(
-        icon: Icons.check_rounded,
-        accent: AppColor.kSucces,
-        iconBg: AppColor.kSuccesLight,
-      );
+      return const _ToastConfig(icon: Icons.check_rounded, accent: AppColor.kSucces, iconBg: AppColor.kSuccesLight);
     case ToastificationType.error:
-      return const _ToastConfig(
-        icon: Icons.close_rounded,
-        accent: AppColor.kErreur,
-        iconBg: AppColor.kErreurLight,
-      );
+      return const _ToastConfig(icon: Icons.close_rounded, accent: AppColor.kErreur, iconBg: AppColor.kErreurLight);
     case ToastificationType.warning:
       return const _ToastConfig(
         icon: Icons.warning_amber_rounded,
@@ -103,16 +98,8 @@ class _ToastCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.grey.shade100, width: 1),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.10),
-                blurRadius: 20,
-                offset: const Offset(0, 6),
-              ),
-              BoxShadow(
-                color: accent.withValues(alpha: 0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 2),
-              ),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.10), blurRadius: 20, offset: const Offset(0, 6)),
+              BoxShadow(color: accent.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 2)),
             ],
           ),
           child: ClipRRect(
@@ -120,10 +107,7 @@ class _ToastCard extends StatelessWidget {
             child: Stack(
               children: [
                 // Barre accent gauche
-                Positioned(
-                  left: 0, top: 0, bottom: 0,
-                  child: Container(width: 4, color: accent),
-                ),
+                Positioned(left: 0, top: 0, bottom: 0, child: Container(width: 4, color: accent)),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
                   child: Row(
@@ -133,10 +117,7 @@ class _ToastCard extends StatelessWidget {
                       Container(
                         width: 38,
                         height: 38,
-                        decoration: BoxDecoration(
-                          color: iconBg,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                        decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(10)),
                         child: Icon(icon, color: accent, size: 20),
                       ),
                       const SizedBox(width: 12),
@@ -158,11 +139,7 @@ class _ToastCard extends StatelessWidget {
                               const SizedBox(height: 3),
                               Text(
                                 description,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppColor.kGrayscale40,
-                                  height: 1.4,
-                                ),
+                                style: const TextStyle(fontSize: 12, color: AppColor.kGrayscale40, height: 1.4),
                               ),
                             ],
                           ],
@@ -178,11 +155,7 @@ class _ToastCard extends StatelessWidget {
                             color: Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(
-                            Icons.close_rounded,
-                            size: 14,
-                            color: Colors.grey.shade500,
-                          ),
+                          child: Icon(Icons.close_rounded, size: 14, color: Colors.grey.shade500),
                         ),
                       ),
                     ],
@@ -190,11 +163,10 @@ class _ToastCard extends StatelessWidget {
                 ),
                 // Barre de progression en bas
                 Positioned(
-                  left: 4, right: 0, bottom: 0,
-                  child: _ProgressBar(
-                    duration: const Duration(milliseconds: 3800),
-                    color: accent,
-                  ),
+                  left: 4,
+                  right: 0,
+                  bottom: 0,
+                  child: _ProgressBar(duration: const Duration(milliseconds: 3800), color: accent),
                 ),
               ],
             ),
@@ -214,15 +186,13 @@ class _ProgressBar extends StatefulWidget {
   State<_ProgressBar> createState() => _ProgressBarState();
 }
 
-class _ProgressBarState extends State<_ProgressBar>
-    with SingleTickerProviderStateMixin {
+class _ProgressBarState extends State<_ProgressBar> with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: widget.duration)
-      ..forward();
+    _ctrl = AnimationController(vsync: this, duration: widget.duration)..forward();
   }
 
   @override
@@ -237,18 +207,14 @@ class _ProgressBarState extends State<_ProgressBar>
       animation: _ctrl,
       builder: (_, _) => Container(
         height: 2,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-        ),
+        decoration: BoxDecoration(color: Colors.grey.shade100),
         alignment: Alignment.centerLeft,
         child: FractionallySizedBox(
           widthFactor: 1 - _ctrl.value,
           child: Container(
             decoration: BoxDecoration(
               color: widget.color.withValues(alpha: 0.5),
-              borderRadius: const BorderRadius.only(
-                bottomRight: Radius.circular(2),
-              ),
+              borderRadius: const BorderRadius.only(bottomRight: Radius.circular(2)),
             ),
           ),
         ),
@@ -256,4 +222,3 @@ class _ProgressBarState extends State<_ProgressBar>
     );
   }
 }
-

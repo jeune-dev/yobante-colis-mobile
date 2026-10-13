@@ -30,10 +30,12 @@ class PaiementsRemoteDataSourceImpl implements PaiementsRemoteDataSource {
   Future<List<FactureColisModel>> getFactures({String? statut, bool impayees = false}) async {
     try {
       // Pas de pagination à l'écran : toutes les pages sont chargées (filtrées par le backend)
-      final list = await chargerToutesLesPages(dio, Env.clientFactures, 'factures', parametres: {
-        'statut': ?statut,
-        if (impayees) 'impayees': 'true',
-      });
+      final list = await chargerToutesLesPages(
+        dio,
+        Env.clientFactures,
+        'factures',
+        parametres: {'statut': ?statut, if (impayees) 'impayees': 'true'},
+      );
       return list.map(FactureColisModel.fromJson).toList();
     } on DioException catch (e) {
       throw ServerException(message: messageErreur(e, tr('Erreur lors du chargement des factures')));
@@ -52,25 +54,25 @@ class PaiementsRemoteDataSourceImpl implements PaiementsRemoteDataSource {
 
   @override
   Future<List<Reglement>> getReglements({int page = 1, int limit = 50}) => appelApi(() async {
-        final res = await dio.get(Env.clientPaiements, queryParameters: {'page': page, 'limit': limit});
-        return (res.data['data']['paiements'] as List? ?? [])
-            .map((p) => Reglement.fromJson(p as Map<String, dynamic>))
-            .toList();
-      }, tr('Impossible de charger vos règlements'));
+    final res = await dio.get(Env.clientPaiements, queryParameters: {'page': page, 'limit': limit});
+    return (res.data['data']['paiements'] as List? ?? [])
+        .map((p) => Reglement.fromJson(p as Map<String, dynamic>))
+        .toList();
+  }, tr('Impossible de charger vos règlements'));
 
   @override
   Future<Encours> getEncours() => appelApi(() async {
-        final res = await dio.get(Env.clientPaiementsEncours);
-        return Encours.fromJson(res.data['data']['encours'] as Map<String, dynamic>? ?? {});
-      }, tr('Impossible de charger votre encours'));
+    final res = await dio.get(Env.clientPaiementsEncours);
+    return Encours.fromJson(res.data['data']['encours'] as Map<String, dynamic>? ?? {});
+  }, tr('Impossible de charger votre encours'));
 
   @override
   Future<Map<String, List<String>>> getMethodes() => appelApi(() async {
-        final res = await dio.get(Env.clientPaiementsMethodes);
-        final brut = res.data['data']['methodes'];
-        if (brut is Map) {
-          return brut.map((k, v) => MapEntry('$k', (v as List? ?? []).map((m) => '$m').toList()));
-        }
-        return <String, List<String>>{};
-      }, tr('Impossible de charger les moyens de paiement'));
+    final res = await dio.get(Env.clientPaiementsMethodes);
+    final brut = res.data['data']['methodes'];
+    if (brut is Map) {
+      return brut.map((k, v) => MapEntry('$k', (v as List? ?? []).map((m) => '$m').toList()));
+    }
+    return <String, List<String>>{};
+  }, tr('Impossible de charger les moyens de paiement'));
 }

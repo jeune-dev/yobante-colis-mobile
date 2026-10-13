@@ -9,11 +9,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// remontés dans les rapports de crash : un jeton ou un mot de passe écrit
 /// dans la console fuit hors de l'application.
 void main() {
-  final sources = Directory('lib')
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((f) => f.path.endsWith('.dart'))
-      .toList();
+  final sources = Directory(
+    'lib',
+  ).listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart')).toList();
 
   Iterable<(String, int, String)> lignes() sync* {
     for (final f in sources) {

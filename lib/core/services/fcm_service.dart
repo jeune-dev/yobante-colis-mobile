@@ -35,11 +35,7 @@ class FcmService {
   static Future<void> init(BuildContext context) async {
     if (!_firebasePret) return;
     // 1. Demander la permission (iOS + Android 13+)
-    await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await _messaging.requestPermission(alert: true, badge: true, sound: true);
 
     // 2. Handler messages en arrière-plan
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);

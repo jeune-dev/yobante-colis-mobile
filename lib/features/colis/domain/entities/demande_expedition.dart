@@ -56,13 +56,13 @@ class PieceDeclaree extends Equatable {
   });
 
   Map<String, dynamic> toJson() => {
-        'poidsKg': poidsKg,
-        if (longueurCm != null) 'longueurCm': longueurCm,
-        if (largeurCm != null) 'largeurCm': largeurCm,
-        if (hauteurCm != null) 'hauteurCm': hauteurCm,
-        if (designation != null && designation!.isNotEmpty) 'designation': designation,
-        'typeEmballage': typeEmballage,
-      };
+    'poidsKg': poidsKg,
+    if (longueurCm != null) 'longueurCm': longueurCm,
+    if (largeurCm != null) 'largeurCm': largeurCm,
+    if (hauteurCm != null) 'hauteurCm': hauteurCm,
+    if (designation != null && designation!.isNotEmpty) 'designation': designation,
+    'typeEmballage': typeEmballage,
+  };
 
   @override
   List<Object?> get props => [poidsKg, longueurCm, largeurCm, hauteurCm, designation, typeEmballage];
@@ -97,20 +97,29 @@ class ContenuDeclare extends Equatable {
   });
 
   Map<String, dynamic> toJson() => {
-        'designation': designation,
-        'quantite': quantite,
-        'unite': unite,
-        'valeurUnitaire': valeurUnitaire,
-        if (etat != null) 'etat': etat,
-        if (codeSh != null && codeSh!.isNotEmpty) 'codeSh': codeSh,
-        'poidsNetKg': ?poidsNetKg,
-        if (paysOrigine != null && paysOrigine!.isNotEmpty) 'paysOrigine': paysOrigine!.toUpperCase(),
-        if (marque != null && marque!.isNotEmpty) 'marque': marque,
-      };
+    'designation': designation,
+    'quantite': quantite,
+    'unite': unite,
+    'valeurUnitaire': valeurUnitaire,
+    if (etat != null) 'etat': etat,
+    if (codeSh != null && codeSh!.isNotEmpty) 'codeSh': codeSh,
+    'poidsNetKg': ?poidsNetKg,
+    if (paysOrigine != null && paysOrigine!.isNotEmpty) 'paysOrigine': paysOrigine!.toUpperCase(),
+    if (marque != null && marque!.isNotEmpty) 'marque': marque,
+  };
 
   @override
-  List<Object?> get props =>
-      [designation, quantite, unite, valeurUnitaire, etat, codeSh, poidsNetKg, paysOrigine, marque];
+  List<Object?> get props => [
+    designation,
+    quantite,
+    unite,
+    valeurUnitaire,
+    etat,
+    codeSh,
+    poidsNetKg,
+    paysOrigine,
+    marque,
+  ];
 }
 
 /// Demande d'expédition complète, telle que saisie dans le parcours « Expédier ».
@@ -244,32 +253,30 @@ class DemandeExpedition extends Equatable {
     this.conditionsAcceptees = false,
   });
 
-  List<Map<String, dynamic>> get _emballagesJson => emballages.entries
-      .where((e) => e.value > 0)
-      .map((e) => {'emballageId': e.key, 'quantite': e.value})
-      .toList();
+  List<Map<String, dynamic>> get _emballagesJson =>
+      emballages.entries.where((e) => e.value > 0).map((e) => {'emballageId': e.key, 'quantite': e.value}).toList();
 
   /// Champs du calcul de tarif (POST /public/devis ou /client/colis/devis).
   Map<String, dynamic> versDevis() => {
-        'villeDepartId': villeDepartId,
-        'villeArriveeId': villeArriveeId,
-        'categorie': categorie,
-        if (articles.isNotEmpty) 'articles': articles.map((a) => a.toJson()).toList(),
-        if (_emballagesJson.isNotEmpty) 'emballages': _emballagesJson,
-        if (pieces.isNotEmpty) 'pieces': pieces.map((p) => p.toJson()).toList(),
-        if (pieces.isEmpty && poidsKg != null) 'poidsKg': poidsKg,
-        'optionColissimo': optionColissimo,
-        'modeDepot': modeDepot,
-        'modeLivraison': modeLivraison,
-        if (valeurDeclaree > 0) 'valeurDeclaree': valeurDeclaree,
-        'deviseValeur': deviseValeur,
-        'typeContenu': typeContenu,
-        'fragile': fragile,
-        'marchandiseDangereuse': marchandiseDangereuse,
-        'assuranceSouscrite': assuranceSouscrite,
-        'incoterm': incoterm,
-        'payeur': payeur,
-      };
+    'villeDepartId': villeDepartId,
+    'villeArriveeId': villeArriveeId,
+    'categorie': categorie,
+    if (articles.isNotEmpty) 'articles': articles.map((a) => a.toJson()).toList(),
+    if (_emballagesJson.isNotEmpty) 'emballages': _emballagesJson,
+    if (pieces.isNotEmpty) 'pieces': pieces.map((p) => p.toJson()).toList(),
+    if (pieces.isEmpty && poidsKg != null) 'poidsKg': poidsKg,
+    'optionColissimo': optionColissimo,
+    'modeDepot': modeDepot,
+    'modeLivraison': modeLivraison,
+    if (valeurDeclaree > 0) 'valeurDeclaree': valeurDeclaree,
+    'deviseValeur': deviseValeur,
+    'typeContenu': typeContenu,
+    'fragile': fragile,
+    'marchandiseDangereuse': marchandiseDangereuse,
+    'assuranceSouscrite': assuranceSouscrite,
+    'incoterm': incoterm,
+    'payeur': payeur,
+  };
 
   /// Champs du formulaire multipart de déclaration (POST /client/colis).
   /// Les tableaux et objets sont encodés en JSON, décodés côté backend.
@@ -341,81 +348,75 @@ class DemandeExpedition extends Equatable {
     return champs;
   }
 
-  DemandeExpedition copyWith({
-    String? serviceId,
-    String? simulationId,
-    bool? conditionsAcceptees,
-  }) =>
-      DemandeExpedition(
-        categorie: categorie,
-        villeDepartId: villeDepartId,
-        villeArriveeId: villeArriveeId,
-        serviceId: serviceId ?? this.serviceId,
-        simulationId: simulationId ?? this.simulationId,
-        typeDocument: typeDocument,
-        etatMarchandise: etatMarchandise,
-        description: description,
-        valeurDeclaree: valeurDeclaree,
-        deviseValeur: deviseValeur,
-        articles: articles,
-        pieces: pieces,
-        poidsKg: poidsKg,
-        contenu: contenu,
-        emballages: emballages,
-        typeContenu: typeContenu,
-        fragile: fragile,
-        marchandiseDangereuse: marchandiseDangereuse,
-        assuranceSouscrite: assuranceSouscrite,
-        typeEmballage: typeEmballage,
-        incoterm: incoterm,
-        payeur: payeur,
-        referenceClient: referenceClient,
-        modeDepot: modeDepot,
-        pointCollecteDepartId: pointCollecteDepartId,
-        adresseDepart: adresseDepart,
-        codePostalDepart: codePostalDepart,
-        optionColissimo: optionColissimo,
-        tourneeCollecteId: tourneeCollecteId,
-        infosCollecte: infosCollecte,
-        expediteurNom: expediteurNom,
-        expediteurEntreprise: expediteurEntreprise,
-        expediteurTelephone: expediteurTelephone,
-        expediteurEmail: expediteurEmail,
-        numeroEori: numeroEori,
-        numeroNinea: numeroNinea,
-        destinataireNom: destinataireNom,
-        destinataireEntreprise: destinataireEntreprise,
-        destinataireTelephone: destinataireTelephone,
-        destinataireEmail: destinataireEmail,
-        modeLivraison: modeLivraison,
-        pointRetraitId: pointRetraitId,
-        adresseLivraison: adresseLivraison,
-        codePostalArrivee: codePostalArrivee,
-        instructionsLivraison: instructionsLivraison,
-        destinataireQuartier: destinataireQuartier,
-        destinataireArrondissement: destinataireArrondissement,
-        destinataireDepartement: destinataireDepartement,
-        destinatairePointRepere: destinatairePointRepere,
-        conditionsAcceptees: conditionsAcceptees ?? this.conditionsAcceptees,
-      );
+  DemandeExpedition copyWith({String? serviceId, String? simulationId, bool? conditionsAcceptees}) => DemandeExpedition(
+    categorie: categorie,
+    villeDepartId: villeDepartId,
+    villeArriveeId: villeArriveeId,
+    serviceId: serviceId ?? this.serviceId,
+    simulationId: simulationId ?? this.simulationId,
+    typeDocument: typeDocument,
+    etatMarchandise: etatMarchandise,
+    description: description,
+    valeurDeclaree: valeurDeclaree,
+    deviseValeur: deviseValeur,
+    articles: articles,
+    pieces: pieces,
+    poidsKg: poidsKg,
+    contenu: contenu,
+    emballages: emballages,
+    typeContenu: typeContenu,
+    fragile: fragile,
+    marchandiseDangereuse: marchandiseDangereuse,
+    assuranceSouscrite: assuranceSouscrite,
+    typeEmballage: typeEmballage,
+    incoterm: incoterm,
+    payeur: payeur,
+    referenceClient: referenceClient,
+    modeDepot: modeDepot,
+    pointCollecteDepartId: pointCollecteDepartId,
+    adresseDepart: adresseDepart,
+    codePostalDepart: codePostalDepart,
+    optionColissimo: optionColissimo,
+    tourneeCollecteId: tourneeCollecteId,
+    infosCollecte: infosCollecte,
+    expediteurNom: expediteurNom,
+    expediteurEntreprise: expediteurEntreprise,
+    expediteurTelephone: expediteurTelephone,
+    expediteurEmail: expediteurEmail,
+    numeroEori: numeroEori,
+    numeroNinea: numeroNinea,
+    destinataireNom: destinataireNom,
+    destinataireEntreprise: destinataireEntreprise,
+    destinataireTelephone: destinataireTelephone,
+    destinataireEmail: destinataireEmail,
+    modeLivraison: modeLivraison,
+    pointRetraitId: pointRetraitId,
+    adresseLivraison: adresseLivraison,
+    codePostalArrivee: codePostalArrivee,
+    instructionsLivraison: instructionsLivraison,
+    destinataireQuartier: destinataireQuartier,
+    destinataireArrondissement: destinataireArrondissement,
+    destinataireDepartement: destinataireDepartement,
+    destinatairePointRepere: destinatairePointRepere,
+    conditionsAcceptees: conditionsAcceptees ?? this.conditionsAcceptees,
+  );
 
   @override
-  List<Object?> get props =>
-      [
-        categorie,
-        villeDepartId,
-        villeArriveeId,
-        serviceId,
-        articles,
-        pieces,
-        poidsKg,
-        contenu,
-        typeContenu,
-        fragile,
-        marchandiseDangereuse,
-        incoterm,
-        payeur,
-      ];
+  List<Object?> get props => [
+    categorie,
+    villeDepartId,
+    villeArriveeId,
+    serviceId,
+    articles,
+    pieces,
+    poidsKg,
+    contenu,
+    typeContenu,
+    fragile,
+    marchandiseDangereuse,
+    incoterm,
+    payeur,
+  ];
 }
 
 /// Résultat d'une déclaration : l'expédition créée et ce que le client doit

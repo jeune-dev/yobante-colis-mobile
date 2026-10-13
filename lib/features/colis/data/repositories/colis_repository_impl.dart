@@ -21,12 +21,20 @@ class ColisRepositoryImpl implements ColisRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getColis({String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) =>
-      _executer(() => remote.getColis(statut: statut, filtres: filtres, page: page, limit: limit));
+  Future<Either<Failure, Map<String, dynamic>>> getColis({
+    String? statut,
+    FiltresColis filtres = const FiltresColis(),
+    int page = 1,
+    int limit = 20,
+  }) => _executer(() => remote.getColis(statut: statut, filtres: filtres, page: page, limit: limit));
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getColisRecus({String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) =>
-      _executer(() => remote.getColisRecus(statut: statut, filtres: filtres, page: page, limit: limit));
+  Future<Either<Failure, Map<String, dynamic>>> getColisRecus({
+    String? statut,
+    FiltresColis filtres = const FiltresColis(),
+    int page = 1,
+    int limit = 20,
+  }) => _executer(() => remote.getColisRecus(statut: statut, filtres: filtres, page: page, limit: limit));
 
   @override
   Future<Either<Failure, Colis>> getColisDetail(String id) => _executer(() => remote.getColisDetail(id));
@@ -36,12 +44,10 @@ class ColisRepositoryImpl implements ColisRepository {
     DemandeExpedition demande, {
     List<String> photosPaths = const [],
     void Function(int, int)? onSendProgress,
-  }) =>
-      _executer(() => remote.creerColis(demande, photosPaths: photosPaths, onSendProgress: onSendProgress));
+  }) => _executer(() => remote.creerColis(demande, photosPaths: photosPaths, onSendProgress: onSendProgress));
 
   @override
-  Future<Either<Failure, List<SuiviEvenement>>> getSuiviColis(String id) =>
-      _executer(() => remote.getSuiviColis(id));
+  Future<Either<Failure, List<SuiviEvenement>>> getSuiviColis(String id) => _executer(() => remote.getSuiviColis(id));
 
   @override
   Future<Either<Failure, AvecMessage<Colis>>> annulerColis(String id, {String? motif}) =>

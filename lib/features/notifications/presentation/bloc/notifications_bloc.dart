@@ -7,39 +7,60 @@ import '../../../../core/services/compteur_notifications.dart';
 // Events
 abstract class NotificationsEvent extends Equatable {
   const NotificationsEvent();
-  @override List<Object?> get props => [];
+  @override
+  List<Object?> get props => [];
 }
-class LoadNotifications extends NotificationsEvent { const LoadNotifications(); }
-class LoadNonLuesCount extends NotificationsEvent { const LoadNonLuesCount(); }
+
+class LoadNotifications extends NotificationsEvent {
+  const LoadNotifications();
+}
+
+class LoadNonLuesCount extends NotificationsEvent {
+  const LoadNonLuesCount();
+}
+
 class MarquerLue extends NotificationsEvent {
   final String id;
   const MarquerLue(this.id);
-  @override List<Object?> get props => [id];
+  @override
+  List<Object?> get props => [id];
 }
-class MarquerToutesLues extends NotificationsEvent { const MarquerToutesLues(); }
+
+class MarquerToutesLues extends NotificationsEvent {
+  const MarquerToutesLues();
+}
+
 class SupprimerNotification extends NotificationsEvent {
   final String id;
   const SupprimerNotification(this.id);
-  @override List<Object?> get props => [id];
+  @override
+  List<Object?> get props => [id];
 }
 
 // States
 abstract class NotificationsState extends Equatable {
   const NotificationsState();
-  @override List<Object?> get props => [];
+  @override
+  List<Object?> get props => [];
 }
+
 class NotificationsInitial extends NotificationsState {}
+
 class NotificationsLoading extends NotificationsState {}
+
 class NotificationsLoaded extends NotificationsState {
   final List<NotificationApp> notifications;
   final int nonLues;
   const NotificationsLoaded({required this.notifications, this.nonLues = 0});
-  @override List<Object?> get props => [notifications, nonLues];
+  @override
+  List<Object?> get props => [notifications, nonLues];
 }
+
 class NotificationsFailure extends NotificationsState {
   final String message;
   const NotificationsFailure(this.message);
-  @override List<Object?> get props => [message];
+  @override
+  List<Object?> get props => [message];
 }
 
 // BLoC
@@ -63,10 +84,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     countResult.fold((_) {}, CompteurNotifications.instance.definir);
     result.fold(
       (f) => emit(NotificationsFailure(f.errorMessage)),
-      (list) => emit(NotificationsLoaded(
-        notifications: list,
-        nonLues: countResult.fold((_) => 0, (c) => c),
-      )),
+      (list) => emit(NotificationsLoaded(notifications: list, nonLues: countResult.fold((_) => 0, (c) => c))),
     );
   }
 
@@ -98,10 +116,12 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     if (courant is NotificationsLoaded) {
       final supprimee = courant.notifications.where((n) => n.id == event.id);
       if (supprimee.any((n) => !n.isRead)) CompteurNotifications.instance.notificationLue();
-      emit(NotificationsLoaded(
-        notifications: courant.notifications.where((n) => n.id != event.id).toList(),
-        nonLues: courant.nonLues - supprimee.where((n) => !n.isRead).length,
-      ));
+      emit(
+        NotificationsLoaded(
+          notifications: courant.notifications.where((n) => n.id != event.id).toList(),
+          nonLues: courant.nonLues - supprimee.where((n) => !n.isRead).length,
+        ),
+      );
     }
     final result = await repo.supprimer(event.id);
     if (result.isLeft()) add(const LoadNotifications());

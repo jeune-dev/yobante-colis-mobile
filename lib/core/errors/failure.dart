@@ -11,9 +11,7 @@ abstract class Failure {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other.runtimeType == runtimeType &&
-          other is Failure &&
-          other.errorMessage == errorMessage;
+      other.runtimeType == runtimeType && other is Failure && other.errorMessage == errorMessage;
 }
 
 class ServerFailure extends Failure {

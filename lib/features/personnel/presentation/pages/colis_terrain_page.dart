@@ -24,24 +24,24 @@ import '../widgets/ui_personnel.dart';
 /// Regroupements de statuts proposés à chaque rôle, dans l'ordre de son travail
 /// (liste vide = tous les colis du périmètre).
 Map<String, (IconData, List<String>)> _filtresPour(UserRole role) => switch (role) {
-      UserRole.coursier => {
-          tr('À livrer'): (Icons.delivery_dining_outlined, ['arrive', 'disponible_retrait', 'en_livraison']),
-          tr('À ramasser'): (Icons.move_to_inbox_outlined, ['en_attente', 'enlevement_planifie']),
-          tr('Tous'): (Icons.inventory_2_outlined, <String>[]),
-        },
-      UserRole.agentPoint => {
-          tr('À réceptionner'): (Icons.move_to_inbox_outlined, ['en_attente', 'enlevement_planifie', 'enleve']),
-          tr('En stock'): (Icons.warehouse_outlined, ['receptionne', 'en_preparation', 'arrive']),
-          tr('À retirer'): (Icons.how_to_reg_outlined, ['disponible_retrait']),
-          tr('Tous'): (Icons.inventory_2_outlined, <String>[]),
-        },
-      _ => {
-          tr('Incidents'): (Icons.report_outlined, ['incident']),
-          tr('En livraison'): (Icons.delivery_dining_outlined, ['en_livraison']),
-          tr('À retirer'): (Icons.how_to_reg_outlined, ['disponible_retrait']),
-          tr('Tous'): (Icons.inventory_2_outlined, <String>[]),
-        },
-    };
+  UserRole.coursier => {
+    tr('À livrer'): (Icons.delivery_dining_outlined, ['arrive', 'disponible_retrait', 'en_livraison']),
+    tr('À ramasser'): (Icons.move_to_inbox_outlined, ['en_attente', 'enlevement_planifie']),
+    tr('Tous'): (Icons.inventory_2_outlined, <String>[]),
+  },
+  UserRole.agentPoint => {
+    tr('À réceptionner'): (Icons.move_to_inbox_outlined, ['en_attente', 'enlevement_planifie', 'enleve']),
+    tr('En stock'): (Icons.warehouse_outlined, ['receptionne', 'en_preparation', 'arrive']),
+    tr('À retirer'): (Icons.how_to_reg_outlined, ['disponible_retrait']),
+    tr('Tous'): (Icons.inventory_2_outlined, <String>[]),
+  },
+  _ => {
+    tr('Incidents'): (Icons.report_outlined, ['incident']),
+    tr('En livraison'): (Icons.delivery_dining_outlined, ['en_livraison']),
+    tr('À retirer'): (Icons.how_to_reg_outlined, ['disponible_retrait']),
+    tr('Tous'): (Icons.inventory_2_outlined, <String>[]),
+  },
+};
 
 Color _accent(ColisTerrain c) {
   if (c.enRetard || c.statut == 'incident') return AppColor.kErreur;
@@ -94,8 +94,9 @@ class _ColisTerrainPageState extends State<ColisTerrainPage> {
   }
 
   Future<void> _ouvrir(ColisTerrain c) async {
-    final change =
-        await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => DetailColisTerrainPage(id: c.id)));
+    final change = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => DetailColisTerrainPage(id: c.id)));
     if (change == true) _charger();
   }
 
@@ -116,6 +117,7 @@ class _ColisTerrainPageState extends State<ColisTerrainPage> {
         },
         actions: [
           IconButton(
+            tooltip: tr('Notifications'),
             icon: const PastilleNotifications(child: Icon(Icons.notifications_none_rounded, color: AppColor.kWhite)),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsPage())),
           ),
@@ -214,22 +216,24 @@ class _CarteColis extends StatelessWidget {
       ],
       // Le coursier en tournée de livraison appelle et se fait guider depuis la liste
       pied: coursier && domicile && const ['arrive', 'en_livraison'].contains(c.statut)
-          ? Row(children: [
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: () => appeler(context, c.destinataireTelephone),
-                  icon: const Icon(Icons.call_outlined, size: 18),
-                  label: Text(tr('Appeler')),
+          ? Row(
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () => appeler(context, c.destinataireTelephone),
+                    icon: const Icon(Icons.call_outlined, size: 18),
+                    label: Text(tr('Appeler')),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: () => ouvrirItineraire(context, adresse),
-                  icon: const Icon(Icons.directions_outlined, size: 18),
-                  label: Text(tr('Itinéraire')),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () => ouvrirItineraire(context, adresse),
+                    icon: const Icon(Icons.directions_outlined, size: 18),
+                    label: Text(tr('Itinéraire')),
+                  ),
                 ),
-              ),
-            ])
+              ],
+            )
           : null,
     );
   }
@@ -290,71 +294,97 @@ class _RechercheColisTerrainPageState extends State<RechercheColisTerrainPage> {
               color: AppColor.kSecondary,
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
             ),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(tr('Retrouver un colis'),
-                  style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w800, color: AppColor.kPrimary)),
-              const SizedBox(height: 4),
-              Text(tr('Saisissez le numéro inscrit sur l\'étiquette du colis.'),
-                  style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kPrimary.withValues(alpha: 0.75))),
-              const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(16), boxShadow: ombreCarte),
-                padding: const EdgeInsets.fromLTRB(14, 4, 6, 4),
-                child: Row(children: [
-                  const Icon(Icons.qr_code_2_rounded, color: AppColor.kPrimary),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: _numero,
-                      textCapitalization: TextCapitalization.characters,
-                      textInputAction: TextInputAction.search,
-                      onSubmitted: (_) => _chercher(),
-                      onChanged: (_) {
-                        if (_erreur != null) setState(() => _erreur = null);
-                      },
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, letterSpacing: 0.6),
-                      decoration: InputDecoration(
-                        hintText: 'YC-FR-SN-10452',
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        filled: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tr('Retrouver un colis'),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: AppColor.kPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  tr('Saisissez le numéro inscrit sur l\'étiquette du colis.'),
+                  style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kPrimary.withValues(alpha: 0.75)),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColor.kWhite,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: ombreCarte,
+                  ),
+                  padding: const EdgeInsets.fromLTRB(14, 4, 6, 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.qr_code_2_rounded, color: AppColor.kPrimary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: _numero,
+                          textCapitalization: TextCapitalization.characters,
+                          textInputAction: TextInputAction.search,
+                          onSubmitted: (_) => _chercher(),
+                          onChanged: (_) {
+                            if (_erreur != null) setState(() => _erreur = null);
+                          },
+                          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, letterSpacing: 0.6),
+                          decoration: InputDecoration(
+                            hintText: 'YC-FR-SN-10452',
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            filled: false,
+                          ),
+                        ),
                       ),
-                    ),
+                      FilledButton(
+                        onPressed: _recherche ? null : _chercher,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColor.kPrimary,
+                          minimumSize: const Size(52, 48),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: _recherche
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColor.kWhite),
+                              )
+                            : const Icon(Icons.search),
+                      ),
+                    ],
                   ),
-                  FilledButton(
-                    onPressed: _recherche ? null : _chercher,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColor.kPrimary,
-                      minimumSize: const Size(52, 48),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: _recherche
-                        ? const SizedBox(
-                            width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColor.kWhite))
-                        : const Icon(Icons.search),
-                  ),
-                ]),
-              ),
-            ]),
+                ),
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(children: [
-              if (_erreur != null) ...[
-                Bandeau(icone: Icons.search_off, titre: _erreur!, couleur: AppColor.kErreur),
-                const SizedBox(height: 16),
-              ],
-              SectionDetail(
-                titre: tr('Où trouver le numéro ?'),
-                icone: Icons.help_outline,
-                children: [
-                  InfoIcone(Icons.label_outline, tr('Étiquette'), tr('Sous le code-barres, sur chaque colis')),
-                  InfoIcone(Icons.receipt_long_outlined, tr('Bordereau'), tr('En haut du bordereau remis au client')),
-                  InfoIcone(Icons.layers_outlined, tr('Colis en plusieurs pièces'), tr('Le numéro d\'une pièce retrouve tout l\'envoi')),
+            child: Column(
+              children: [
+                if (_erreur != null) ...[
+                  Bandeau(icone: Icons.search_off, titre: _erreur!, couleur: AppColor.kErreur),
+                  const SizedBox(height: 16),
                 ],
-              ),
-            ]),
+                SectionDetail(
+                  titre: tr('Où trouver le numéro ?'),
+                  icone: Icons.help_outline,
+                  children: [
+                    InfoIcone(Icons.label_outline, tr('Étiquette'), tr('Sous le code-barres, sur chaque colis')),
+                    InfoIcone(Icons.receipt_long_outlined, tr('Bordereau'), tr('En haut du bordereau remis au client')),
+                    InfoIcone(
+                      Icons.layers_outlined,
+                      tr('Colis en plusieurs pièces'),
+                      tr('Le numéro d\'une pièce retrouve tout l\'envoi'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -364,17 +394,17 @@ class _RechercheColisTerrainPageState extends State<RechercheColisTerrainPage> {
 
 /// Pictogramme d'une étape de suivi dans le choix des étapes.
 IconData _iconeEvenement(String code) => switch (code) {
-      'ENL_OK' => Icons.move_to_inbox_outlined,
-      'DEPOT' || 'RECEPTION' || 'ARR_AGENCE' => Icons.warehouse_outlined,
-      'DISPO' => Icons.storefront_outlined,
-      'EN_LIVRAISON' => Icons.delivery_dining_outlined,
-      'LIVRE' || 'RETIRE' => Icons.how_to_reg_outlined,
-      'ENL_ECHEC' || 'LIV_ECHEC' => Icons.event_busy_outlined,
-      'REFUSE' => Icons.block_outlined,
-      'AVARIE' => Icons.broken_image_outlined,
-      'RETARD' => Icons.schedule_outlined,
-      _ => Icons.info_outline,
-    };
+  'ENL_OK' => Icons.move_to_inbox_outlined,
+  'DEPOT' || 'RECEPTION' || 'ARR_AGENCE' => Icons.warehouse_outlined,
+  'DISPO' => Icons.storefront_outlined,
+  'EN_LIVRAISON' => Icons.delivery_dining_outlined,
+  'LIVRE' || 'RETIRE' => Icons.how_to_reg_outlined,
+  'ENL_ECHEC' || 'LIV_ECHEC' => Icons.event_busy_outlined,
+  'REFUSE' => Icons.block_outlined,
+  'AVARIE' => Icons.broken_image_outlined,
+  'RETARD' => Icons.schedule_outlined,
+  _ => Icons.info_outline,
+};
 
 /// Détail d'un colis pour le personnel : contacts, acheminement, règlement,
 /// et mise à jour du suivi limitée aux étapes de sa mission.
@@ -488,7 +518,10 @@ class _DetailColisTerrainPageState extends State<DetailColisTerrainPage> {
   }
 
   Future<void> _encaisser(FactureTerrain f) async {
-    final ok = await showDialog<bool>(context: context, builder: (_) => _DialogueEncaissement(facture: f));
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => _DialogueEncaissement(facture: f),
+    );
     if (ok == true && mounted) {
       _change = true;
       _charger();
@@ -499,21 +532,29 @@ class _DetailColisTerrainPageState extends State<DetailColisTerrainPage> {
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(color: fond, borderRadius: BorderRadius.circular(20)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icone, size: 14, color: couleur),
-          const SizedBox(width: 5),
-          Text(texte, style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: couleur)),
-        ]),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icone, size: 14, color: couleur),
+            const SizedBox(width: 5),
+            Text(
+              texte,
+              style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: couleur),
+            ),
+          ],
+        ),
       );
 
   Widget _ville(String libelle, String? ville, CrossAxisAlignment alignement) => Column(
-        crossAxisAlignment: alignement,
-        children: [
-          Text(libelle, style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kWhite.withValues(alpha: 0.7))),
-          Text(ville ?? '—',
-              style: GoogleFonts.plusJakartaSans(fontSize: 17, fontWeight: FontWeight.w800, color: AppColor.kWhite)),
-        ],
-      );
+    crossAxisAlignment: alignement,
+    children: [
+      Text(libelle, style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kWhite.withValues(alpha: 0.7))),
+      Text(
+        ville ?? '—',
+        style: GoogleFonts.plusJakartaSans(fontSize: 17, fontWeight: FontWeight.w800, color: AppColor.kWhite),
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -529,167 +570,205 @@ class _DetailColisTerrainPageState extends State<DetailColisTerrainPage> {
         appBar: barreEspace(tr('Expédition')),
         bottomNavigationBar: c == null || c.evenementsPossibles.isEmpty
             ? null
-            : BarreActions(children: [
-                FilledButton.icon(
-                  onPressed: _mettreAJour,
-                  icon: const Icon(Icons.update),
-                  label: Text(tr('Mettre à jour le suivi')),
-                  style: styleBoutonPlein(AppColor.kPrimary),
-                ),
-              ]),
+            : BarreActions(
+                children: [
+                  FilledButton.icon(
+                    onPressed: _mettreAJour,
+                    icon: const Icon(Icons.update),
+                    label: Text(tr('Mettre à jour le suivi')),
+                    style: styleBoutonPlein(AppColor.kPrimary),
+                  ),
+                ],
+              ),
         body: _erreur != null
             ? MissionIndisponible(
                 indisponible: _indisponible,
                 message: _indisponible
-                    ? tr('Ce colis ne fait plus partie de vos missions : il a pu être confié à un autre membre du personnel ou changer de point.')
+                    ? tr(
+                        'Ce colis ne fait plus partie de vos missions : il a pu être confié à un autre membre du personnel ou changer de point.',
+                      )
                     : _erreur!,
                 onReessayer: _charger,
               )
             : c == null
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-                    onRefresh: _charger,
-                    child: ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 24), children: [
-                      HeroDetail(
-                        surTitre: tr('Expédition'),
-                        reference: c.reference,
-                        statut: StatutBadge(statut: c.statut),
-                        contenu: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Row(children: [
-                            Expanded(child: _ville(tr('Départ'), c.villeDepart, CrossAxisAlignment.start)),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(color: AppColor.kSecondary, shape: BoxShape.circle),
-                              child: const Icon(Icons.flight_takeoff_rounded, size: 18, color: AppColor.kPrimary),
-                            ),
-                            Expanded(child: _ville(tr('Arrivée'), c.villeArrivee, CrossAxisAlignment.end)),
-                          ]),
-                          const SizedBox(height: 14),
-                          Wrap(spacing: 8, runSpacing: 8, children: [
-                            _puce(Icons.all_inbox_outlined, tr('{n} colis').replaceAll('{n}', '${c.nbPieces}')),
-                            if (c.poidsKg != null) _puce(Icons.scale_outlined, '${c.poidsKg!.toStringAsFixed(1)} kg'),
-                            _puce(
-                              c.modeLivraison == 'livraison_domicile' ? Icons.home_outlined : Icons.storefront_outlined,
-                              c.modeLivraison == 'livraison_domicile' ? tr('Livraison à domicile') : tr('Retrait en point'),
-                            ),
-                            if (c.fragile)
-                              _puce(Icons.wine_bar_outlined, tr('Fragile'), fond: AppColor.kSecondary, couleur: AppColor.kPrimary),
-                            if (c.enRetard)
-                              _puce(Icons.schedule_outlined, tr('En retard'), fond: AppColor.kErreur),
-                          ]),
-                        ]),
-                      ),
-                      const SizedBox(height: 14),
-                      CarteContact(
-                        role: tr('Destinataire'),
-                        nom: c.destinataireNom,
-                        telephone: c.destinataireTelephone,
-                        adresse: c.modeLivraison == 'livraison_domicile'
-                            ? [c.adresseLivraison, c.villeArrivee].whereType<String>().where((v) => v.isNotEmpty).join(', ')
-                            : null,
-                        details: [
-                          if (c.instructionsLivraison != null && c.instructionsLivraison!.isNotEmpty)
-                            Container(
-                              margin: const EdgeInsets.only(top: 10),
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: AppColor.kSecondaryLight,
-                                borderRadius: BorderRadius.circular(12),
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                onRefresh: _charger,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  children: [
+                    HeroDetail(
+                      surTitre: tr('Expédition'),
+                      reference: c.reference,
+                      statut: StatutBadge(statut: c.statut),
+                      contenu: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: _ville(tr('Départ'), c.villeDepart, CrossAxisAlignment.start)),
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(color: AppColor.kSecondary, shape: BoxShape.circle),
+                                child: const Icon(Icons.flight_takeoff_rounded, size: 18, color: AppColor.kPrimary),
                               ),
-                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Expanded(child: _ville(tr('Arrivée'), c.villeArrivee, CrossAxisAlignment.end)),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              _puce(Icons.all_inbox_outlined, tr('{n} colis').replaceAll('{n}', '${c.nbPieces}')),
+                              if (c.poidsKg != null) _puce(Icons.scale_outlined, '${c.poidsKg!.toStringAsFixed(1)} kg'),
+                              _puce(
+                                c.modeLivraison == 'livraison_domicile'
+                                    ? Icons.home_outlined
+                                    : Icons.storefront_outlined,
+                                c.modeLivraison == 'livraison_domicile'
+                                    ? tr('Livraison à domicile')
+                                    : tr('Retrait en point'),
+                              ),
+                              if (c.fragile)
+                                _puce(
+                                  Icons.wine_bar_outlined,
+                                  tr('Fragile'),
+                                  fond: AppColor.kSecondary,
+                                  couleur: AppColor.kPrimary,
+                                ),
+                              if (c.enRetard) _puce(Icons.schedule_outlined, tr('En retard'), fond: AppColor.kErreur),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    CarteContact(
+                      role: tr('Destinataire'),
+                      nom: c.destinataireNom,
+                      telephone: c.destinataireTelephone,
+                      adresse: c.modeLivraison == 'livraison_domicile'
+                          ? [
+                              c.adresseLivraison,
+                              c.villeArrivee,
+                            ].whereType<String>().where((v) => v.isNotEmpty).join(', ')
+                          : null,
+                      details: [
+                        if (c.instructionsLivraison != null && c.instructionsLivraison!.isNotEmpty)
+                          Container(
+                            margin: const EdgeInsets.only(top: 10),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColor.kSecondaryLight,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 const Icon(Icons.sticky_note_2_outlined, size: 18, color: AppColor.kSecondaryDark),
                                 const SizedBox(width: 8),
                                 Expanded(child: Text(c.instructionsLivraison!)),
-                              ]),
+                              ],
                             ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      CarteContact(role: tr('Expéditeur'), nom: c.expediteurNom, telephone: c.expediteurTelephone),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    CarteContact(role: tr('Expéditeur'), nom: c.expediteurNom, telephone: c.expediteurTelephone),
+                    const SizedBox(height: 14),
+                    SectionDetail(
+                      titre: tr('Acheminement'),
+                      icone: Icons.route_outlined,
+                      children: [
+                        InfoIcone(Icons.my_location_outlined, tr('Point actuel'), c.pointActuel ?? '—'),
+                        if (c.pointRetrait != null)
+                          InfoIcone(Icons.storefront_outlined, tr('Point de retrait'), c.pointRetrait!),
+                        if (c.description != null && c.description!.isNotEmpty)
+                          InfoIcone(Icons.category_outlined, tr('Contenu'), c.description!),
+                      ],
+                    ),
+                    if (f != null) ...[
                       const SizedBox(height: 14),
                       SectionDetail(
-                        titre: tr('Acheminement'),
-                        icone: Icons.route_outlined,
+                        titre: tr('Règlement'),
+                        icone: Icons.payments_outlined,
                         children: [
-                          InfoIcone(Icons.my_location_outlined, tr('Point actuel'), c.pointActuel ?? '—'),
-                          if (c.pointRetrait != null) InfoIcone(Icons.storefront_outlined, tr('Point de retrait'), c.pointRetrait!),
-                          if (c.description != null && c.description!.isNotEmpty)
-                            InfoIcone(Icons.category_outlined, tr('Contenu'), c.description!),
-                        ],
-                      ),
-                      if (f != null) ...[
-                        const SizedBox(height: 14),
-                        SectionDetail(
-                          titre: tr('Règlement'),
-                          icone: Icons.payments_outlined,
-                          children: [
-                            Row(children: [
+                          Row(
+                            children: [
                               Expanded(
-                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  Text(tr('Reste à payer'), style: texteDiscret(12)),
-                                  Text(
-                                    formaterMontant(f.reste, f.devise),
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w800,
-                                      color: f.reste > 0 ? AppColor.kPrimary : AppColor.kSucces,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(tr('Reste à payer'), style: texteDiscret(12)),
+                                    Text(
+                                      formaterMontant(f.reste, f.devise),
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w800,
+                                        color: f.reste > 0 ? AppColor.kPrimary : AppColor.kSucces,
+                                      ),
                                     ),
-                                  ),
-                                ]),
+                                  ],
+                                ),
                               ),
                               Text(f.reference, style: texteDiscret(12)),
-                            ]),
-                            const SizedBox(height: 10),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: LinearProgressIndicator(
-                                value: f.montantTotal <= 0 ? 1 : (f.montantPaye / f.montantTotal).clamp(0, 1).toDouble(),
-                                minHeight: 8,
-                                backgroundColor: AppColor.kPrimaryLight,
-                                color: AppColor.kSucces,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              tr('{p} payés sur {t}')
-                                  .replaceAll('{p}', formaterMontant(f.montantPaye, f.devise))
-                                  .replaceAll('{t}', formaterMontant(f.montantTotal, f.devise)),
-                              style: texteDiscret(12),
-                            ),
-                            if (f.aEncaisser) ...[
-                              const SizedBox(height: 14),
-                              FilledButton.icon(
-                                onPressed: () => _encaisser(f),
-                                icon: const Icon(Icons.point_of_sale_outlined),
-                                label: Text(tr('Encaisser')),
-                                style: styleBoutonPlein(AppColor.kSucces),
-                              ),
                             ],
+                          ),
+                          const SizedBox(height: 10),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: f.montantTotal <= 0 ? 1 : (f.montantPaye / f.montantTotal).clamp(0, 1).toDouble(),
+                              minHeight: 8,
+                              backgroundColor: AppColor.kPrimaryLight,
+                              color: AppColor.kSucces,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            tr('{p} payés sur {t}')
+                                .replaceAll('{p}', formaterMontant(f.montantPaye, f.devise))
+                                .replaceAll('{t}', formaterMontant(f.montantTotal, f.devise)),
+                            style: texteDiscret(12),
+                          ),
+                          if (f.aEncaisser) ...[
+                            const SizedBox(height: 14),
+                            FilledButton.icon(
+                              onPressed: () => _encaisser(f),
+                              icon: const Icon(Icons.point_of_sale_outlined),
+                              label: Text(tr('Encaisser')),
+                              style: styleBoutonPlein(AppColor.kSucces),
+                            ),
                           ],
-                        ),
-                      ],
-                      if (c.historique.isNotEmpty) ...[
-                        const SizedBox(height: 14),
-                        SectionDetail(
-                          titre: tr('Historique'),
-                          icone: Icons.history,
-                          children: [
-                            Chronologie(etapes: [
+                        ],
+                      ),
+                    ],
+                    if (c.historique.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      SectionDetail(
+                        titre: tr('Historique'),
+                        icone: Icons.history,
+                        children: [
+                          Chronologie(
+                            etapes: [
                               for (final etape in c.historique)
                                 (
                                   tr(etape.libelle),
-                                  [formaterDate(etape.date, avecHeure: true), etape.lieu]
-                                      .whereType<String>()
-                                      .where((v) => v.isNotEmpty)
-                                      .join(' · '),
+                                  [
+                                    formaterDate(etape.date, avecHeure: true),
+                                    etape.lieu,
+                                  ].whereType<String>().where((v) => v.isNotEmpty).join(' · '),
                                   etape.commentaire,
                                 ),
-                            ]),
-                          ],
-                        ),
-                      ],
-                    ]),
-                  ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -757,32 +836,36 @@ class _DialogueEvenementState extends State<_DialogueEvenement> {
     return AlertDialog(
       title: Text(tr(e.libelle)),
       content: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          if (e.exigeCodeRetrait(widget.colis))
-            TextField(
-              controller: _code,
-              keyboardType: TextInputType.number,
-              maxLength: 10,
-              decoration: InputDecoration(
-                labelText: tr('Code de retrait'),
-                helperText: tr('Demandez au destinataire le code de retrait qu\'il a reçu.'),
-                helperMaxLines: 2,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (e.exigeCodeRetrait(widget.colis))
+              TextField(
+                controller: _code,
+                keyboardType: TextInputType.number,
+                onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                maxLength: 10,
+                decoration: InputDecoration(
+                  labelText: tr('Code de retrait'),
+                  helperText: tr('Demandez au destinataire le code de retrait qu\'il a reçu.'),
+                  helperMaxLines: 2,
+                ),
               ),
-            ),
-          if (e.exigeMotif)
+            if (e.exigeMotif)
+              TextField(
+                controller: _motif,
+                maxLength: 255,
+                decoration: InputDecoration(labelText: tr('Motif')),
+              ),
             TextField(
-              controller: _motif,
-              maxLength: 255,
-              decoration: InputDecoration(labelText: tr('Motif')),
+              controller: _commentaire,
+              maxLength: 500,
+              maxLines: 2,
+              decoration: InputDecoration(labelText: tr('Commentaire (facultatif)')),
             ),
-          TextField(
-            controller: _commentaire,
-            maxLength: 500,
-            maxLines: 2,
-            decoration: InputDecoration(labelText: tr('Commentaire (facultatif)')),
-          ),
-          if (_erreur != null) Text(_erreur!, style: TextStyle(color: AppColor.kErreur, fontSize: 13)),
-        ]),
+            if (_erreur != null) Text(_erreur!, style: TextStyle(color: AppColor.kErreur, fontSize: 13)),
+          ],
+        ),
       ),
       actions: [
         TextButton(onPressed: _envoi ? null : () => Navigator.of(context).pop(false), child: Text(tr('Annuler'))),
@@ -821,7 +904,7 @@ class _DialogueEncaissementState extends State<_DialogueEncaissement> {
 
   Future<void> _valider() async {
     final f = widget.facture;
-    final montant = double.tryParse(_montant.text.trim().replaceAll(',', '.'));
+    final montant = lireNombre(_montant.text);
     if (montant == null || montant <= 0) {
       setState(() => _erreur = tr('Montant invalide.'));
       return;
@@ -835,8 +918,12 @@ class _DialogueEncaissementState extends State<_DialogueEncaissement> {
       _erreur = null;
     });
     try {
-      final message = await sl<PersonnelRemoteDataSource>()
-          .encaisser(f.id, methode: _methode, montant: montant, reference: _reference.text);
+      final message = await sl<PersonnelRemoteDataSource>().encaisser(
+        f.id,
+        methode: _methode,
+        montant: montant,
+        reference: _reference.text,
+      );
       if (!mounted) return;
       showToast(context, tr('Paiement enregistré'), message, ToastificationType.success);
       Navigator.of(context).pop(true);
@@ -856,31 +943,37 @@ class _DialogueEncaissementState extends State<_DialogueEncaissement> {
     return AlertDialog(
       title: Text(tr('Encaisser')),
       content: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(tr('Reste à payer : {m}').replaceAll('{m}', formaterMontant(f.reste, f.devise)), style: texteDiscret(13)),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: _methode,
-            decoration: InputDecoration(labelText: tr('Moyen de paiement')),
-            items: [
-              for (final m in f.methodes) DropdownMenuItem(value: m, child: Text(kMethodesPaiement[m] ?? m)),
-            ],
-            onChanged: (m) => setState(() => _methode = m ?? _methode),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _montant,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(labelText: tr('Montant reçu'), suffixText: f.devise == 'EUR' ? '€' : 'FCFA'),
-          ),
-          if (_methode != 'especes')
-            TextField(
-              controller: _reference,
-              maxLength: 100,
-              decoration: InputDecoration(labelText: tr('Référence de la transaction (facultatif)')),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              tr('Reste à payer : {m}').replaceAll('{m}', formaterMontant(f.reste, f.devise)),
+              style: texteDiscret(13),
             ),
-          if (_erreur != null) Text(_erreur!, style: TextStyle(color: AppColor.kErreur, fontSize: 13)),
-        ]),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _methode,
+              decoration: InputDecoration(labelText: tr('Moyen de paiement')),
+              items: [for (final m in f.methodes) DropdownMenuItem(value: m, child: Text(kMethodesPaiement[m] ?? m))],
+              onChanged: (m) => setState(() => _methode = m ?? _methode),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _montant,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+              decoration: InputDecoration(labelText: tr('Montant reçu'), suffixText: f.devise == 'EUR' ? '€' : 'FCFA'),
+            ),
+            if (_methode != 'especes')
+              TextField(
+                controller: _reference,
+                maxLength: 100,
+                decoration: InputDecoration(labelText: tr('Référence de la transaction (facultatif)')),
+              ),
+            if (_erreur != null) Text(_erreur!, style: TextStyle(color: AppColor.kErreur, fontSize: 13)),
+          ],
+        ),
       ),
       actions: [
         TextButton(onPressed: _envoi ? null : () => Navigator.of(context).pop(false), child: Text(tr('Annuler'))),

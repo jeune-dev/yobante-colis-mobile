@@ -74,39 +74,50 @@ class _FormulaireAvisState extends State<_FormulaireAvis> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.viewInsetsOf(context).bottom + 20),
-      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr('Votre avis'), style: titreSection(18)),
-        if (widget.colisReference != null) Text(tr('Expédition ${widget.colisReference}'), style: texteDiscret(13)),
-        const SizedBox(height: 12),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          for (var i = 1; i <= 5; i++)
-            IconButton(
-              onPressed: () => setState(() => _note = i),
-              icon: Icon(_note >= i ? Icons.star_rounded : Icons.star_border_rounded,
-                  size: 38, color: AppColor.kSecondary),
-            ),
-        ]),
-        TextField(
-          controller: _titre,
-          maxLength: 120,
-          decoration: InputDecoration(labelText: tr('Titre (facultatif)'), counterText: ''),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _commentaire,
-          maxLines: 4,
-          maxLength: 1000,
-          decoration: InputDecoration(labelText: tr('Votre commentaire (facultatif)')),
-        ),
-        const SizedBox(height: 12),
-        ElevatedButton(
-          onPressed: _envoi ? null : _envoyer,
-          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-          child: _envoi
-              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-              : Text(tr('Publier mon avis')),
-        ),
-      ]),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(tr('Votre avis'), style: titreSection(18)),
+          if (widget.colisReference != null) Text(tr('Expédition ${widget.colisReference}'), style: texteDiscret(13)),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (var i = 1; i <= 5; i++)
+                IconButton(
+                  tooltip: tr('Note : $i sur 5'),
+                  onPressed: () => setState(() => _note = i),
+                  icon: Icon(
+                    _note >= i ? Icons.star_rounded : Icons.star_border_rounded,
+                    size: 38,
+                    color: AppColor.kSecondary,
+                  ),
+                ),
+            ],
+          ),
+          TextField(
+            controller: _titre,
+            maxLength: 120,
+            decoration: InputDecoration(labelText: tr('Titre (facultatif)'), counterText: ''),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _commentaire,
+            maxLines: 4,
+            maxLength: 1000,
+            decoration: InputDecoration(labelText: tr('Votre commentaire (facultatif)')),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: _envoi ? null : _envoyer,
+            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            child: _envoi
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                : Text(tr('Publier mon avis')),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -117,14 +128,17 @@ class _Etoiles extends StatelessWidget {
   const _Etoiles(this.note, {this.taille = 16});
 
   @override
-  Widget build(BuildContext context) => Row(mainAxisSize: MainAxisSize.min, children: [
-        for (var i = 1; i <= 5; i++)
-          Icon(
-            note >= i ? Icons.star_rounded : (note >= i - 0.5 ? Icons.star_half_rounded : Icons.star_border_rounded),
-            size: taille,
-            color: AppColor.kSecondary,
-          ),
-      ]);
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      for (var i = 1; i <= 5; i++)
+        Icon(
+          note >= i ? Icons.star_rounded : (note >= i - 0.5 ? Icons.star_half_rounded : Icons.star_border_rounded),
+          size: taille,
+          color: AppColor.kSecondary,
+        ),
+    ],
+  );
 }
 
 /// Avis publiés par les clients et, pour un client connecté, ses propres avis.
@@ -154,7 +168,14 @@ class _AvisPageState extends State<AvisPage> {
         backgroundColor: AppColor.kBackground,
         appBar: AppBar(
           title: Text(tr('Avis clients')),
-          bottom: _connecte ? TabBar(tabs: [Tab(text: tr('Tous les avis')), Tab(text: tr('Mes avis'))]) : null,
+          bottom: _connecte
+              ? TabBar(
+                  tabs: [
+                    Tab(text: tr('Tous les avis')),
+                    Tab(text: tr('Mes avis')),
+                  ],
+                )
+              : null,
         ),
         body: _connecte ? const TabBarView(children: [_AvisPublics(), _MesAvis()]) : const _AvisPublics(),
       ),
@@ -210,58 +231,80 @@ class _AvisPublicsState extends State<_AvisPublics> {
   @override
   Widget build(BuildContext context) {
     if (_erreur != null && _avis.isEmpty) {
-      return EmptyState(icon: Icons.error_outline, title: tr('Erreur'), subtitle: _erreur!, actionLabel: tr('Réessayer'), onAction: _charger);
+      return EmptyState(
+        icon: Icons.error_outline,
+        title: tr('Erreur'),
+        subtitle: _erreur!,
+        actionLabel: tr('Réessayer'),
+        onAction: _charger,
+      );
     }
     final s = _synthese;
     if (s == null) return const ShimmerList();
     return RefreshIndicator(
       onRefresh: _charger,
-      child: ListView(padding: const EdgeInsets.all(16), children: [
-        CarteSection(children: [
-          Row(children: [
-            Text(s.noteMoyenne.toStringAsFixed(1), style: GoogleFonts.plusJakartaSans(fontSize: 36, fontWeight: FontWeight.w700)),
-            const SizedBox(width: 12),
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              _Etoiles(s.noteMoyenne, taille: 20),
-              Text(tr('${s.total} avis'), style: texteDiscret(13)),
-            ]),
-          ]),
-          const SizedBox(height: 12),
-          Wrap(spacing: 6, children: [
-            ChoiceChip(
-              label: Text(tr('Tous')),
-              selected: _filtre == null,
-              onSelected: (_) {
-                setState(() => _filtre = null);
-                _charger();
-              },
-            ),
-            for (var n = 5; n >= 1; n--)
-              ChoiceChip(
-                label: Text('$n/5 (${s.repartition[n] ?? 0})'),
-                selected: _filtre == n,
-                onSelected: (_) {
-                  setState(() => _filtre = n);
-                  _charger();
-                },
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          CarteSection(
+            children: [
+              Row(
+                children: [
+                  Text(
+                    s.noteMoyenne.toStringAsFixed(1),
+                    style: GoogleFonts.plusJakartaSans(fontSize: 36, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _Etoiles(s.noteMoyenne, taille: 20),
+                      Text(tr('${s.total} avis'), style: texteDiscret(13)),
+                    ],
+                  ),
+                ],
               ),
-          ]),
-        ]),
-        const SizedBox(height: 12),
-        if (_avis.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(tr('Aucun avis pour le moment.'), textAlign: TextAlign.center, style: texteDiscret(13)),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 6,
+                children: [
+                  ChoiceChip(
+                    label: Text(tr('Tous')),
+                    selected: _filtre == null,
+                    onSelected: (_) {
+                      setState(() => _filtre = null);
+                      _charger();
+                    },
+                  ),
+                  for (var n = 5; n >= 1; n--)
+                    ChoiceChip(
+                      label: Text('$n/5 (${s.repartition[n] ?? 0})'),
+                      selected: _filtre == n,
+                      onSelected: (_) {
+                        setState(() => _filtre = n);
+                        _charger();
+                      },
+                    ),
+                ],
+              ),
+            ],
           ),
-        for (final a in _avis) _CarteAvis(avis: a),
-        if (_page < _totalPages)
-          Center(
-            child: TextButton(
-              onPressed: _chargement ? null : () => _charger(suite: true),
-              child: Text(tr('Voir plus d\'avis')),
+          const SizedBox(height: 12),
+          if (_avis.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(tr('Aucun avis pour le moment.'), textAlign: TextAlign.center, style: texteDiscret(13)),
             ),
-          ),
-      ]),
+          for (final a in _avis) _CarteAvis(avis: a),
+          if (_page < _totalPages)
+            Center(
+              child: TextButton(
+                onPressed: _chargement ? null : () => _charger(suite: true),
+                child: Text(tr('Voir plus d\'avis')),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -323,14 +366,13 @@ class _MesAvisState extends State<_MesAvis> {
               title: tr('Aucun avis'),
               subtitle: tr('Partagez votre expérience : elle aide les autres clients.'),
             )
-          : ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 96), children: [
-              for (final a in liste)
-                _CarteAvis(
-                  avis: a,
-                  statut: kStatutsAvis[a.statut] ?? a.statut,
-                  onSupprimer: () => _supprimer(a),
-                ),
-            ]),
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              children: [
+                for (final a in liste)
+                  _CarteAvis(avis: a, statut: kStatutsAvis[a.statut] ?? a.statut, onSupprimer: () => _supprimer(a)),
+              ],
+            ),
     );
   }
 }
@@ -348,37 +390,47 @@ class _CarteAvis extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(14)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          _Etoiles(a.note),
-          const SizedBox(width: 8),
-          Expanded(child: Text(formaterDate(a.date.toIso8601String()), style: texteDiscret(11))),
-          if (onSupprimer != null)
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              onPressed: onSupprimer,
-              icon: const Icon(Icons.delete_outline, size: 20, color: AppColor.kErreur),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _Etoiles(a.note),
+              const SizedBox(width: 8),
+              Expanded(child: Text(formaterDate(a.date.toIso8601String()), style: texteDiscret(11))),
+              if (onSupprimer != null)
+                IconButton(
+                  tooltip: tr('Supprimer l\'avis'),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onSupprimer,
+                  icon: const Icon(Icons.delete_outline, size: 20, color: AppColor.kErreur),
+                ),
+            ],
+          ),
+          if ((a.titre ?? '').isNotEmpty)
+            Text(a.titre!, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 14)),
+          if ((a.commentaire ?? '').isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(a.commentaire!, style: GoogleFonts.plusJakartaSans(fontSize: 13)),
             ),
-        ]),
-        if ((a.titre ?? '').isNotEmpty)
-          Text(a.titre!, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 14)),
-        if ((a.commentaire ?? '').isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(a.commentaire!, style: GoogleFonts.plusJakartaSans(fontSize: 13)),
-          ),
-        if (a.auteur != null) Text('— ${a.auteur}', style: texteDiscret(12)),
-        if (a.colisReference != null) Text(tr('Expédition ${a.colisReference}'), style: texteDiscret(12)),
-        if (statut != null) Text(statut!, style: texteDiscret(12)),
-        if ((a.motifRejet ?? '').isNotEmpty) Text(a.motifRejet!, style: const TextStyle(color: AppColor.kErreur, fontSize: 12)),
-        if ((a.reponse ?? '').isNotEmpty)
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: AppColor.kBackground, borderRadius: BorderRadius.circular(10)),
-            child: Text(tr('Réponse de Yobante Colis : ${a.reponse}'), style: GoogleFonts.plusJakartaSans(fontSize: 12)),
-          ),
-      ]),
+          if (a.auteur != null) Text('— ${a.auteur}', style: texteDiscret(12)),
+          if (a.colisReference != null) Text(tr('Expédition ${a.colisReference}'), style: texteDiscret(12)),
+          if (statut != null) Text(statut!, style: texteDiscret(12)),
+          if ((a.motifRejet ?? '').isNotEmpty)
+            Text(a.motifRejet!, style: const TextStyle(color: AppColor.kErreur, fontSize: 12)),
+          if ((a.reponse ?? '').isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: AppColor.kBackground, borderRadius: BorderRadius.circular(10)),
+              child: Text(
+                tr('Réponse de Yobante Colis : ${a.reponse}'),
+                style: GoogleFonts.plusJakartaSans(fontSize: 12),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

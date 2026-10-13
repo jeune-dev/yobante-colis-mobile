@@ -7,13 +7,7 @@ class Ville extends Equatable {
   final String? region;
   final bool isActive;
 
-  const Ville({
-    required this.id,
-    required this.nom,
-    this.pays = 'SN',
-    this.region,
-    this.isActive = true,
-  });
+  const Ville({required this.id, required this.nom, this.pays = 'SN', this.region, this.isActive = true});
 
   @override
   List<Object?> get props => [id];

@@ -42,10 +42,7 @@ class DemoAccountRepository implements AccountRepository {
   }
 
   @override
-  Future<Either<Failure, String>> changePassword({
-    required String oldPassword,
-    required String newPassword,
-  }) async {
+  Future<Either<Failure, String>> changePassword({required String oldPassword, required String newPassword}) async {
     await Future.delayed(const Duration(milliseconds: 400));
     return const Right('Mot de passe modifié avec succès.');
   }

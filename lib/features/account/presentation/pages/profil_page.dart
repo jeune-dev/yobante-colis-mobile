@@ -14,6 +14,7 @@ import '../../../../core/utils/validateurs.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../core/widgets/ui_kit.dart';
+import '../../../../core/widgets/champ_telephone.dart';
 import '../../../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../../../features/auth/presentation/bloc/auth_event.dart';
 import '../../../../injection_container.dart';
@@ -61,10 +62,7 @@ class _ProfilPageState extends State<ProfilPage> {
         ),
       );
     }
-    return BlocProvider(
-      create: (_) => sl<AccountBloc>()..add(LoadMe()),
-      child: const _ProfilView(),
-    );
+    return BlocProvider(create: (_) => sl<AccountBloc>()..add(LoadMe()), child: const _ProfilView());
   }
 }
 
@@ -218,12 +216,12 @@ class _ProfilViewState extends State<_ProfilView> {
   }
 
   Widget _erreurChargement(BuildContext context) => EmptyState(
-        icon: Icons.person_off_outlined,
-        title: tr('Impossible de charger le profil'),
-        subtitle: tr('Vérifiez votre connexion puis réessayez.'),
-        actionLabel: tr('Réessayer'),
-        onAction: () => context.read<AccountBloc>().add(LoadMe()),
-      );
+    icon: Icons.person_off_outlined,
+    title: tr('Impossible de charger le profil'),
+    subtitle: tr('Vérifiez votre connexion puis réessayez.'),
+    actionLabel: tr('Réessayer'),
+    onAction: () => context.read<AccountBloc>().add(LoadMe()),
+  );
 }
 
 /// Carte d'en-tête : photo (modifiable), nom complet et email.
@@ -502,7 +500,7 @@ class _FeuilleProfilState extends State<_FeuilleProfil> {
   }
 
   void _valider() {
-    if (_formKey.currentState?.validate() != true) return;
+    if (!validerFormulaire(_formKey)) return;
     Navigator.pop(
       context,
       ModifierInfoPersonnellesEvent(
@@ -538,12 +536,7 @@ class _FeuilleProfilState extends State<_FeuilleProfil> {
             validator: texte(requis: true, min: 2, max: 50),
           ),
           const SizedBox(height: 14),
-          TextFormField(
-            controller: _telephone,
-            keyboardType: TextInputType.phone,
-            decoration: InputDecoration(labelText: tr('Téléphone'), prefixIcon: const Icon(Icons.phone_outlined)),
-            validator: telephone(),
-          ),
+          ChampTelephone(controller: _telephone, label: tr('Téléphone'), validator: telephone()),
           const SizedBox(height: 14),
         ],
       ),
@@ -575,14 +568,15 @@ class _FeuilleMotDePasseState extends State<_FeuilleMotDePasse> {
   }
 
   void _valider() {
-    if (_formKey.currentState?.validate() != true) return;
+    if (!validerFormulaire(_formKey)) return;
     Navigator.pop(context, ChangePasswordEvent(oldPassword: _ancien.text, newPassword: _nouveau.text));
   }
 
   Widget _oeil(bool masque, VoidCallback basculer) => IconButton(
-        icon: Icon(masque ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
-        onPressed: basculer,
-      );
+    tooltip: masque ? tr('Afficher le mot de passe') : tr('Masquer le mot de passe'),
+    icon: Icon(masque ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
+    onPressed: basculer,
+  );
 
   @override
   Widget build(BuildContext context) {

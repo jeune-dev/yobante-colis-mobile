@@ -17,8 +17,7 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
   bool logoutCalled = false;
 
   @override
-  Future<Either<Failure, User>> login(String email, String password) async =>
-      loginResult!;
+  Future<Either<Failure, User>> login(String email, String password) async => loginResult!;
 
   @override
   Future<Either<Failure, String>> register({
@@ -36,17 +35,13 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
     String? numeroTvaIntracom,
     String? codePostal,
     String? codeParrainage,
-  }) async =>
-      registerResult!;
+  }) async => registerResult!;
 
   @override
-  Future<Either<Failure, String>> forgotPassword(String email) async =>
-      forgotResult!;
+  Future<Either<Failure, String>> forgotPassword(String email) async => forgotResult!;
 
   @override
-  Future<Either<Failure, String>> resetPassword(
-          String email, String code, String newPassword) async =>
-      resetResult!;
+  Future<Either<Failure, String>> resetPassword(String email, String code, String newPassword) async => resetResult!;
 
   @override
   Future<void> logout() async {
@@ -67,8 +62,7 @@ const _kUser = User(
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
-Future<List<AuthState>> _collectStates(
-    AuthBloc bloc, AuthEvent event) async {
+Future<List<AuthState>> _collectStates(AuthBloc bloc, AuthEvent event) async {
   final states = <AuthState>[];
   final sub = bloc.stream.listen(states.add);
   bloc.add(event);
@@ -91,8 +85,7 @@ void main() {
 
       final states = await _collectStates(
         bloc,
-        const LoginRequested(
-            identifiant: 'moussa@example.com', motDePasse: 'password123'),
+        const LoginRequested(identifiant: 'moussa@example.com', motDePasse: 'password123'),
       );
 
       expect(states[0], isA<AuthLoading>());
@@ -105,10 +98,7 @@ void main() {
       fakeRepo.loginResult = Left(const ServerFailure('Identifiants invalides'));
       final bloc = AuthBloc(authRepository: fakeRepo);
 
-      final states = await _collectStates(
-        bloc,
-        const LoginRequested(identifiant: 'x@x.com', motDePasse: 'wrong'),
-      );
+      final states = await _collectStates(bloc, const LoginRequested(identifiant: 'x@x.com', motDePasse: 'wrong'));
 
       expect(states[0], isA<AuthLoading>());
       expect(states[1], isA<AuthFailure>());
@@ -178,10 +168,7 @@ void main() {
       fakeRepo.forgotResult = const Right('Si un compte existe, un email de réinitialisation a été envoyé.');
       final bloc = AuthBloc(authRepository: fakeRepo);
 
-      final states = await _collectStates(
-        bloc,
-        const ForgotPasswordRequested(email: 'moussa@example.com'),
-      );
+      final states = await _collectStates(bloc, const ForgotPasswordRequested(email: 'moussa@example.com'));
 
       expect(states[0], isA<AuthLoading>());
       expect(states[1], isA<ForgotPasswordSuccess>());

@@ -20,21 +20,20 @@ class ContactRemoteDataSource {
     String? telephone,
     String? sujet,
     required String message,
-  }) =>
-      appelApi(() async {
-        final res = await dio.post(
-          Env.publicDemandesContact,
-          data: {
-            'source': source,
-            'prenom': prenom.trim(),
-            'nom': nom.trim(),
-            'email': email.trim(),
-            if (telephone != null && telephone.trim().isNotEmpty) 'telephone': telephone.trim(),
-            if (sujet != null && sujet.trim().isNotEmpty) 'sujet': sujet.trim(),
-            'message': message.trim(),
-          },
-          options: Options(extra: {'skipAuthInterceptor': true}),
-        );
-        return messageApi(res);
-      }, tr('Envoi de votre message impossible'));
+  }) => appelApi(() async {
+    final res = await dio.post(
+      Env.publicDemandesContact,
+      data: {
+        'source': source,
+        'prenom': prenom.trim(),
+        'nom': nom.trim(),
+        'email': email.trim(),
+        if (telephone != null && telephone.trim().isNotEmpty) 'telephone': telephone.trim(),
+        if (sujet != null && sujet.trim().isNotEmpty) 'sujet': sujet.trim(),
+        'message': message.trim(),
+      },
+      options: Options(extra: {'skipAuthInterceptor': true}),
+    );
+    return messageApi(res);
+  }, tr('Envoi de votre message impossible'));
 }

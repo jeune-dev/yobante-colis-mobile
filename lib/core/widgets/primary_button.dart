@@ -1,9 +1,8 @@
-﻿
-
 import 'package:yobante_colis/core/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 class PrimaryButton extends StatefulWidget {
   final VoidCallback? onTap;
   final String text;
@@ -37,17 +36,14 @@ class PrimaryButton extends StatefulWidget {
   State<PrimaryButton> createState() => _PrimaryButtonState();
 }
 
-class _PrimaryButtonState extends State<PrimaryButton>
-    with SingleTickerProviderStateMixin {
+class _PrimaryButtonState extends State<PrimaryButton> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final Duration _animationDuration = const Duration(milliseconds: 300);
   final Tween<double> _tween = Tween<double>(begin: 1.0, end: 0.95);
   @override
   void initState() {
-    _controller = AnimationController(
-      vsync: this,
-      duration: _animationDuration,
-    )..addListener(() {
+    _controller = AnimationController(vsync: this, duration: _animationDuration)
+      ..addListener(() {
         setState(() {});
       });
     super.initState();
@@ -74,17 +70,11 @@ class _PrimaryButtonState extends State<PrimaryButton>
         opacity: enabled ? 1.0 : 0.6,
         child: ScaleTransition(
           scale: _tween.animate(
-            CurvedAnimation(
-              parent: _controller,
-              curve: Curves.easeOut,
-              reverseCurve: Curves.easeIn,
-            ),
+            CurvedAnimation(parent: _controller, curve: Curves.easeOut, reverseCurve: Curves.easeIn),
           ),
           child: Card(
             elevation: widget.elevation ?? 5,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(widget.borderRadius),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(widget.borderRadius)),
             child: Container(
               // Hauteur minimale (et non fixe) : le bouton grandit avec la taille du texte
               constraints: BoxConstraints(minHeight: widget.height ?? 55),
@@ -99,21 +89,18 @@ class _PrimaryButtonState extends State<PrimaryButton>
                   ? const SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: AppColor.kWhite,
-                      ),
+                      child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColor.kWhite),
                     )
                   : widget.child ??
-                      Text(
-                        widget.text,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: widget.fontSize ?? 14,
-                          fontWeight: FontWeight.w500,
-                          color: widget.textColor,
+                        Text(
+                          widget.text,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: widget.fontSize ?? 14,
+                            fontWeight: FontWeight.w500,
+                            color: widget.textColor,
+                          ),
                         ),
-                      ),
             ),
           ),
         ),
@@ -121,5 +108,3 @@ class _PrimaryButtonState extends State<PrimaryButton>
     );
   }
 }
-
-

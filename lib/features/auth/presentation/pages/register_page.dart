@@ -1,14 +1,16 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:toastification/toastification.dart';
 
-import '../../../../core/config/env.dart';
+import '../../../catalogue/data/catalogue_remote_datasource.dart';
+import '../../../catalogue/domain/catalogue_entities.dart';
+import '../../../../core/widgets/ui_kit.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/champ_telephone.dart';
 import 'verification_email_page.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../injection_container.dart';
@@ -19,13 +21,6 @@ import '../widgets/mise_en_page_auth.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/utils/validateurs.dart';
 import '../../../../core/utils/normalisation_nom.dart';
-
-class _VilleOption {
-  final String id;
-  final String nom;
-  const _VilleOption(this.id, this.nom);
-  factory _VilleOption.fromJson(Map<String, dynamic> j) => _VilleOption(j['id'] as String, j['nom'] as String? ?? '');
-}
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -59,8 +54,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String _pays = 'SN';
   String _typeCompte = 'particulier';
-  List<_VilleOption> _villes = [];
-  _VilleOption? _ville;
+  List<VilleDesservie> _villes = [];
+  VilleDesservie? _ville;
   bool _chargementVilles = true;
 
   bool get _isPasswordValid => _hasUpperCase && _hasDigit && _hasSpecialChar && _hasMinLength;
@@ -77,10 +72,7 @@ class _RegisterPageState extends State<RegisterPage> {
       _ville = null;
     });
     try {
-      final res = await sl<Dio>().get(Env.publicVilles, queryParameters: {'pays': _pays});
-      final list = (res.data['data']['villes'] as List)
-          .map((e) => _VilleOption.fromJson(e as Map<String, dynamic>))
-          .toList();
+      final list = await sl<CatalogueRemoteDataSource>().getVilles(pays: _pays);
       if (!mounted) return;
       setState(() {
         _villes = list;
@@ -102,14 +94,14 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _submit() {
-    if (_formKey.currentState!.validate()) {
+    if (validerFormulaire(_formKey)) {
       context.read<AuthBloc>().add(
         RegisterRequested(
           nom: normaliserNomFamille(_nomController.text.trim()),
           prenom: normaliserPrenom(_prenomController.text.trim()),
           email: _emailController.text.trim(),
           motDePasse: _passwordController.text,
-          telephone: normaliserTelephone(_telephoneController.text, paysParDefaut: _pays),
+          telephone: normaliserTelephone(_telephoneController.text),
           pays: _pays,
           villeId: _ville?.id,
           adresse: _adresseController.text.trim().isEmpty ? null : _adresseController.text.trim(),
@@ -220,15 +212,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       validator: emailDetaille(),
                     ),
                     const SizedBox(height: 16),
-                    _buildField(
-                      tr('Téléphone'),
-                      tr('Ex: 77 123 45 67'),
-                      _telephoneController,
-                      Icons.phone_outlined,
-                      keyboardType: TextInputType.phone,
-                      // Message précis (indicatif, nombre de chiffres, plage) ; sans
-                      // indicatif, le numéro est rattaché au pays choisi plus bas
-                      validator: (v) => validerTelephone(v, paysParDefaut: _pays),
+                    LibelleChamp(tr('Téléphone')),
+                    ChampTelephone(
+                      controller: _telephoneController,
+                      paysInitial: _pays,
+                      decoration: _inputDecoration(tr('Ex: 77 123 45 67'), null),
+                      validator: validerTelephone,
                     ),
                   ],
                 ),
@@ -252,7 +241,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: LinearProgressIndicator(color: AppColor.kPrimary, minHeight: 3),
                       )
                     else
-                      DropdownButtonFormField<_VilleOption>(
+                      DropdownButtonFormField<VilleDesservie>(
                         initialValue: _ville,
                         isExpanded: true,
                         icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColor.kPrimary),
@@ -443,6 +432,7 @@ class _RegisterPageState extends State<RegisterPage> {
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w500),
           decoration: _inputDecoration(hint, icon),
           validator: validator,
@@ -465,6 +455,7 @@ class _RegisterPageState extends State<RegisterPage> {
           style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w500),
           decoration: _inputDecoration(tr('Saisissez-le à nouveau'), Icons.lock_outline_rounded).copyWith(
             suffixIcon: IconButton(
+              tooltip: _obscureConfirmation ? tr('Afficher le mot de passe') : tr('Masquer le mot de passe'),
               onPressed: () => setState(() => _obscureConfirmation = !_obscureConfirmation),
               icon: Icon(
                 _obscureConfirmation ? Icons.visibility_off_outlined : Icons.visibility_outlined,
@@ -498,6 +489,7 @@ class _RegisterPageState extends State<RegisterPage> {
             style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w500),
             decoration: _inputDecoration(tr('Votre mot de passe'), Icons.lock_outline_rounded).copyWith(
               suffixIcon: IconButton(
+                tooltip: _obscurePassword ? tr('Afficher le mot de passe') : tr('Masquer le mot de passe'),
                 onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,

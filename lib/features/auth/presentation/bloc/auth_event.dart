@@ -30,8 +30,11 @@ class RegisterRequested extends AuthEvent {
   final String? codePostal;
   final String? codeParrainage;
   const RegisterRequested({
-    required this.nom, required this.prenom, required this.email,
-    required this.motDePasse, required this.telephone,
+    required this.nom,
+    required this.prenom,
+    required this.email,
+    required this.motDePasse,
+    required this.telephone,
     this.pays = 'SN',
     this.villeId,
     this.adresse,
@@ -54,6 +57,7 @@ class LogoutRequested extends AuthEvent {
   @override
   List<Object?> get props => [ouvrirConnexion];
 }
+
 class ResetAuthState extends AuthEvent {}
 
 class ForgotPasswordRequested extends AuthEvent {

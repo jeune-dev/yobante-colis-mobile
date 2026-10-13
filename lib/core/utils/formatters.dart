@@ -1,6 +1,10 @@
 import 'package:intl/intl.dart';
 import '../i18n/langue.dart';
 
+/// Nombre saisi par l'utilisateur : la virgule décimale française est acceptée (« 12,5 »).
+/// Null si le texte n'est pas un nombre.
+double? lireNombre(String texte) => double.tryParse(texte.trim().replaceAll(',', '.'));
+
 /// Montants et dates affichés dans l'application : l'euro garde ses centimes,
 /// le franc CFA n'en a pas (« 40,00 € », « 26 238 FCFA »).
 String formaterMontant(num? montant, String? devise) {
@@ -60,8 +64,8 @@ String? validerTelephone(String? v, {String paysParDefaut = 'SN'}) {
   final (String, String)? pays = n.startsWith('+221')
       ? (tr('Sénégal'), '+221')
       : n.startsWith('+33')
-          ? (tr('France'), '+33')
-          : null;
+      ? (tr('France'), '+33')
+      : null;
   if (pays == null) {
     return tr('Indicatif non pris en charge : France (+33) ou Sénégal (+221) uniquement');
   }

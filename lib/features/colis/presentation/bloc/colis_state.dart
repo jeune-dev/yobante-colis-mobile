@@ -25,12 +25,7 @@ class ColisListLoaded extends ColisState {
   final int currentPage;
   final bool hasMore;
 
-  const ColisListLoaded({
-    required this.colis,
-    this.pagination,
-    this.currentPage = 1,
-    this.hasMore = false,
-  });
+  const ColisListLoaded({required this.colis, this.pagination, this.currentPage = 1, this.hasMore = false});
 
   @override
   List<Object?> get props => [colis, currentPage];
@@ -43,12 +38,7 @@ class ColisRecusLoaded extends ColisState {
   final int currentPage;
   final bool hasMore;
 
-  const ColisRecusLoaded({
-    required this.colis,
-    this.pagination,
-    this.currentPage = 1,
-    this.hasMore = false,
-  });
+  const ColisRecusLoaded({required this.colis, this.pagination, this.currentPage = 1, this.hasMore = false});
 
   @override
   List<Object?> get props => [colis, currentPage];

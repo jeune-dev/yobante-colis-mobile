@@ -9,17 +9,23 @@ import '../../../../core/types/avec_message.dart';
 class GetColis {
   final ColisRepository repo;
   GetColis(this.repo);
-  Future<Either<Failure, Map<String, dynamic>>> call(
-          {String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) =>
-      repo.getColis(statut: statut, filtres: filtres, page: page, limit: limit);
+  Future<Either<Failure, Map<String, dynamic>>> call({
+    String? statut,
+    FiltresColis filtres = const FiltresColis(),
+    int page = 1,
+    int limit = 20,
+  }) => repo.getColis(statut: statut, filtres: filtres, page: page, limit: limit);
 }
 
 class GetColisRecus {
   final ColisRepository repo;
   GetColisRecus(this.repo);
-  Future<Either<Failure, Map<String, dynamic>>> call(
-          {String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) =>
-      repo.getColisRecus(statut: statut, filtres: filtres, page: page, limit: limit);
+  Future<Either<Failure, Map<String, dynamic>>> call({
+    String? statut,
+    FiltresColis filtres = const FiltresColis(),
+    int page = 1,
+    int limit = 20,
+  }) => repo.getColisRecus(statut: statut, filtres: filtres, page: page, limit: limit);
 }
 
 class GetColisDetail {
@@ -35,8 +41,7 @@ class CreerColis {
     DemandeExpedition demande, {
     List<String> photosPaths = const [],
     void Function(int, int)? onSendProgress,
-  }) =>
-      repo.creerColis(demande, photosPaths: photosPaths, onSendProgress: onSendProgress);
+  }) => repo.creerColis(demande, photosPaths: photosPaths, onSendProgress: onSendProgress);
 }
 
 class GetSuiviColis {
@@ -48,8 +53,7 @@ class GetSuiviColis {
 class AnnulerColis {
   final ColisRepository repo;
   AnnulerColis(this.repo);
-  Future<Either<Failure, AvecMessage<Colis>>> call(String id, {String? motif}) =>
-      repo.annulerColis(id, motif: motif);
+  Future<Either<Failure, AvecMessage<Colis>>> call(String id, {String? motif}) => repo.annulerColis(id, motif: motif);
 }
 
 class RepondreProposition {

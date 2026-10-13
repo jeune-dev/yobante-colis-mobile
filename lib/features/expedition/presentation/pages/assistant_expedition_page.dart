@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:toastification/toastification.dart';
 import '../../../../core/constants/categories.dart';
+import '../../../adresses/data/adresses_remote_datasource.dart';
 import '../../../adresses/presentation/pages/adresses_page.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../core/widgets/ui_kit.dart';
+import '../../../../core/widgets/champ_telephone.dart';
 import '../../../../injection_container.dart';
 import '../../../account/data/datasources/account_remote_datasource.dart';
 import '../../../catalogue/data/catalogue_remote_datasource.dart';
@@ -75,7 +77,7 @@ class _PieceSaisie {
   final hauteur = TextEditingController();
   String typeEmballage = 'carton';
 
-  double? _n(TextEditingController c) => double.tryParse(c.text.trim().replaceAll(',', '.'));
+  double? _n(TextEditingController c) => lireNombre(c.text);
   PieceDeclaree? versPiece() {
     final p = _n(poids);
     if (p == null || p <= 0) return null;
@@ -124,10 +126,10 @@ class _LigneDouaneSaisie {
   final marque = TextEditingController();
   String unite = 'piece';
 
-  double? _n(TextEditingController c) => double.tryParse(c.text.trim().replaceAll(',', '.'));
+  double? _n(TextEditingController c) => lireNombre(c.text);
 
-  bool get vide => [designation, valeurUnitaire, codeSh, poidsNet, paysOrigine, marque]
-      .every((c) => c.text.trim().isEmpty);
+  bool get vide =>
+      [designation, valeurUnitaire, codeSh, poidsNet, paysOrigine, marque].every((c) => c.text.trim().isEmpty);
 
   /// Mêmes règles que le schéma `articlesDouane` du backend.
   String? get erreur {
@@ -186,13 +188,21 @@ class _AssistantState extends State<_Assistant> {
     'echantillon': 'Échantillon',
     'retour': 'Retour de marchandise',
   };
-  static List<String> get _titres => [tr('Trajet'), tr('Contenu'), tr('Remise du colis'), tr('Coordonnées'), tr('Validation')];
+  static List<String> get _titres => [
+    tr('Trajet'),
+    tr('Contenu'),
+    tr('Remise du colis'),
+    tr('Coordonnées'),
+    tr('Validation'),
+  ];
   final _catalogue = sl<CatalogueRemoteDataSource>();
   int _etape = 0;
   ConfigurationPublique? _config;
 
   // ── Étape 1 : trajet et catégorie ──────────────────────────────────────────
   CategorieColis _categorie = CategorieColis.colisMoyen;
+  // Faux quand l'utilisateur désélectionne la carte : il doit en rechoisir une pour continuer
+  bool _categorieChoisie = true;
   bool _versSenegal = true;
   List<VilleDesservie> _villesFr = [];
   List<VilleDesservie> _villesSn = [];
@@ -247,6 +257,11 @@ class _AssistantState extends State<_Assistant> {
   final _destNom = TextEditingController();
   final _destTel = TextEditingController();
   final _destEmail = TextEditingController();
+  // Dernière recherche de destinataire (texte et requête en cours). Le clavier signale aussi
+  // des changements sans nouveau texte (mot en cours de saisie, curseur) : ils réutilisent
+  // la même recherche au lieu d'en lancer une autre qui rendrait la première « périmée »
+  String? _texteRecherche;
+  Future<Iterable<AdresseCarnet>>? _rechercheEnCours;
   String _modeLivraison = 'livraison_domicile';
   List<PointService> _pointsRetrait = [];
   String? _pointRetraitId;
@@ -422,7 +437,7 @@ class _AssistantState extends State<_Assistant> {
 
   // ── Construction de la demande ─────────────────────────────────────────────
 
-  double? get _valeurSaisie => double.tryParse(_valeur.text.trim().replaceAll(',', '.'));
+  double? get _valeurSaisie => lireNombre(_valeur.text);
 
   DemandeExpedition _demande() {
     final articles = _parGrille || _categorie.code == 'colis_xxl'
@@ -502,96 +517,137 @@ class _AssistantState extends State<_Assistant> {
 
   // ── Contrôles par étape ────────────────────────────────────────────────────
 
+  // Repères des champs contrôlés à chaque étape : une erreur fait défiler la page jusqu'au
+  // champ concerné, en plus du message, pour le corriger sans le chercher
+  final _reperes = <String, GlobalKey>{};
+  GlobalKey _repere(String champ) => _reperes.putIfAbsent(champ, GlobalKey.new);
+  String? _champEnErreur;
+
+  /// Erreur de l'étape [message], rattachée au [champ] à afficher.
+  String _manque(String champ, String message) {
+    _champEnErreur = champ;
+    return message;
+  }
+
   String? _erreurEtape() {
+    _champEnErreur = null;
     switch (_etape) {
       case 0:
-        if (_villeDepart == null || _villeArrivee == null) return tr('Choisissez la ville de départ et d\'arrivée.');
+        if (!_categorieChoisie) return _manque('categorie', tr('Choisissez un type d\'envoi.'));
+        if (_villeDepart == null || _villeArrivee == null) {
+          return _manque('villes', tr('Choisissez la ville de départ et d\'arrivée.'));
+        }
         return null;
       case 1:
         if (_categorie.code == 'documents' && _typeDocument.text.trim().isEmpty) {
-          return tr('Précisez le type de document envoyé.');
+          return _manque('typeDocument', tr('Précisez le type de document envoyé.'));
         }
         final limitePiece = _pieces.map((p) => p.erreurLimites).whereType<String>().firstOrNull;
-        if (limitePiece != null) return limitePiece;
+        if (limitePiece != null) return _manque('pieces', limitePiece);
         if (_categorie.code != 'documents') {
           final erreurInventaire = _inventaire.map((l) => l.erreur).whereType<String>().firstOrNull;
-          if (erreurInventaire != null) return erreurInventaire;
-          if (_inventaire.where((l) => !l.vide).length > 50) return tr('Inventaire : 50 articles au maximum.');
+          if (erreurInventaire != null) return _manque('inventaire', erreurInventaire);
+          if (_inventaire.where((l) => !l.vide).length > 50) {
+            return _manque('inventaire', tr('Inventaire : 50 articles au maximum.'));
+          }
         }
-        if (_valeur.text.trim().isNotEmpty && _valeurSaisie == null) return tr('Valeur estimée invalide.');
-        if ((_valeurSaisie ?? 0) > 50000000) return tr('Valeur estimée trop élevée.');
+        if (_valeur.text.trim().isNotEmpty && _valeurSaisie == null) {
+          return _manque('valeur', tr('Valeur estimée invalide.'));
+        }
+        if ((_valeurSaisie ?? 0) > 50000000) return _manque('valeur', tr('Valeur estimée trop élevée.'));
         if (_categorie.code != 'documents' && _assurance && (_valeurSaisie ?? 0) <= 0) {
-          return tr('Indiquez la valeur estimée du contenu pour l\'assurer.');
+          return _manque('valeur', tr('Indiquez la valeur estimée du contenu pour l\'assurer.'));
         }
         if (_categorie.code == 'colis_moyen') {
-          if (_parGrille && !_quantites.values.any((q) => q > 0)) return tr('Choisissez au moins un article.');
-          if (!_parGrille && _pieces.every((p) => p.versPiece() == null)) return tr('Indiquez le poids de votre colis.');
-          if (_etat == null) return tr('Précisez l\'état de la marchandise (neuf ou occasion).');
-          if ((_valeurSaisie ?? 0) <= 0) return tr('Indiquez la valeur estimée du contenu.');
+          if (_parGrille && !_quantites.values.any((q) => q > 0)) {
+            return _manque('articles', tr('Choisissez au moins un article.'));
+          }
+          if (!_parGrille && _pieces.every((p) => p.versPiece() == null)) {
+            return _manque('pieces', tr('Indiquez le poids de votre colis.'));
+          }
+          if (_etat == null) return _manque('etat', tr('Précisez l\'état de la marchandise (neuf ou occasion).'));
+          if ((_valeurSaisie ?? 0) <= 0) return _manque('valeur', tr('Indiquez la valeur estimée du contenu.'));
         }
         if (_categorie.code == 'colis_xxl') {
           if (_pieces.any((p) => p.versPiece() == null || !p.dimensionsCompletes)) {
-            return tr('Indiquez le poids estimé et les dimensions (L × l × h) de chaque colis.');
+            return _manque('pieces', tr('Indiquez le poids estimé et les dimensions (L × l × h) de chaque colis.'));
           }
-          if (_description.text.trim().isEmpty) return tr('Décrivez le contenu de votre colis.');
+          if (_description.text.trim().isEmpty) {
+            return _manque('description', tr('Décrivez le contenu de votre colis.'));
+          }
         }
         final nbPhotos = _photos.whereType<String>().length;
         if (nbPhotos < _categorie.photosMin) {
-          return _categorie.photosMin > 1
-              ? tr('Ajoutez ${_categorie.photosMin} photos du colis (trois angles).')
-              : tr('Ajoutez une photo de votre envoi.');
+          return _manque(
+            'photos',
+            _categorie.photosMin > 1
+                ? tr('Ajoutez ${_categorie.photosMin} photos du colis (trois angles).')
+                : tr('Ajoutez une photo de votre envoi.'),
+          );
         }
         return null;
       case 2:
         final mode = _modeDepot;
-        if (mode == null) return tr('Choisissez comment vous remettez votre colis.');
-        if (mode == 'point_collecte' && _pointDepotId == null) return tr('Choisissez un point de dépôt.');
+        if (mode == null) return _manque('modeDepot', tr('Choisissez comment vous remettez votre colis.'));
+        if (mode == 'point_collecte' && _pointDepotId == null) {
+          return _manque('pointDepot', tr('Choisissez un point de dépôt.'));
+        }
         if (mode == 'enlevement_domicile' || mode == 'boite_aux_lettres') {
           if (_adresseDepart.text.trim().length < 3 || _codePostal.text.trim().isEmpty) {
-            return tr('Si vous optez pour une collecte, veuillez indiquer les informations nécessaires : adresse et code postal.');
+            return _manque(
+              _adresseDepart.text.trim().length < 3 ? 'adresseDepart' : 'codePostal',
+              tr(
+                'Si vous optez pour une collecte, veuillez indiquer les informations nécessaires : adresse et code postal.',
+              ),
+            );
           }
         }
         if (mode == 'enlevement_domicile' && _tourneeId == null && _dateCollecte == null) {
-          return tr('Choisissez une tournée de collecte ou une date souhaitée.');
+          return _manque('tournee', tr('Choisissez une tournée de collecte ou une date souhaitée.'));
         }
         if (mode != 'point_collecte') {
           final cp = codePostal(pays: _villeDepart?.pays)(_codePostal.text);
-          if (cp != null) return cp;
+          if (cp != null) return _manque('codePostal', cp);
         }
         if (mode == 'enlevement_domicile') {
           final etage = entier(min: -5, max: 60)(_etage.text);
-          if (etage != null) return tr('Étage : $etage');
+          if (etage != null) return _manque('etage', tr('Étage : $etage'));
         }
         return null;
       case 3:
-        if (_expNom.text.trim().length < 2) return tr('Nom de l\'expéditeur requis.');
+        if (_expNom.text.trim().length < 2) return _manque('expNom', tr('Nom de l\'expéditeur requis.'));
         final emailExp = email(requis: false)(_expEmail.text);
-        if (emailExp != null) return tr('Email de l\'expéditeur : $emailExp');
+        if (emailExp != null) return _manque('expEmail', tr('Email de l\'expéditeur : $emailExp'));
         final emailDest = email(requis: false)(_destEmail.text);
-        if (emailDest != null) return tr('Email du destinataire : $emailDest');
+        if (emailDest != null) return _manque('destEmail', tr('Email du destinataire : $emailDest'));
         if (validerTelephone(_expTel.text) != null) {
-          return tr('Téléphone de l\'expéditeur : ${validerTelephone(_expTel.text)}');
+          return _manque('expTel', tr('Téléphone de l\'expéditeur : ${validerTelephone(_expTel.text)}'));
         }
-        if (_destNom.text.trim().length < 2) return tr('Nom du destinataire requis.');
+        if (_destNom.text.trim().length < 2) return _manque('destNom', tr('Nom du destinataire requis.'));
         if (validerTelephone(_destTel.text) != null) {
-          return tr('Téléphone du destinataire : ${validerTelephone(_destTel.text)}');
+          return _manque('destTel', tr('Téléphone du destinataire : ${validerTelephone(_destTel.text)}'));
         }
         if (_modeLivraison == 'livraison_domicile' && _adresseLivraison.text.trim().length < 3) {
-          return tr('Adresse de livraison requise.');
+          return _manque('adresseLivraison', tr('Adresse de livraison requise.'));
         }
-        if (_modeLivraison == 'point_retrait' && _pointRetraitId == null) return tr('Choisissez un point de retrait.');
+        if (_modeLivraison == 'point_retrait' && _pointRetraitId == null) {
+          return _manque('pointRetrait', tr('Choisissez un point de retrait.'));
+        }
         if (_modeLivraison == 'livraison_domicile' && _codePostalArrivee.text.trim().isNotEmpty) {
           final cp = codePostal(pays: _paysArrivee)(_codePostalArrivee.text);
-          if (cp != null) return tr('Code postal du destinataire : $cp');
+          if (cp != null) return _manque('codePostalArrivee', tr('Code postal du destinataire : $cp'));
         }
         if (_adresseSnObligatoire &&
             [_quartier, _arrondissement, _departement, _pointRepere].any((c) => c.text.trim().isEmpty)) {
-          return tr('Quartier, arrondissement, département et point de repère sont obligatoires au Sénégal.');
+          return _manque(
+            'precisionsSn',
+            tr('Quartier, arrondissement, département et point de repère sont obligatoires au Sénégal.'),
+          );
         }
         return null;
       default:
-        if (_offre == null) return tr('Choisissez une offre de transport.');
-        if (!_conditions) return tr('Vous devez accepter les conditions générales.');
+        if (_offre == null) return _manque('offres', tr('Choisissez une offre de transport.'));
+        if (!_conditions) return _manque('conditions', tr('Vous devez accepter les conditions générales.'));
         return null;
     }
   }
@@ -600,6 +656,8 @@ class _AssistantState extends State<_Assistant> {
     final erreur = _erreurEtape();
     if (erreur != null) {
       showToast(context, tr('Information manquante'), erreur, ToastificationType.warning);
+      final cible = _reperes[_champEnErreur]?.currentContext;
+      if (cible != null) montrerElement(cible);
       return;
     }
     if (_etape == 4) {
@@ -611,6 +669,47 @@ class _AssistantState extends State<_Assistant> {
     if (_etape == 2 && _pointsDepot.isEmpty) _chargerPoints();
     if (_etape == 2) _chargerTournees();
     if (_etape == 4) _calculerDevis();
+  }
+
+  /// Recherche du destinataire sur le serveur, à chaque saisie (après une courte pause).
+  /// « en France », « au Sénégal » : pays d'une adresse du carnet, avec sa préposition.
+  String _auPays(String code) => code == 'FR' ? 'en France' : (code == 'SN' ? 'au Sénégal' : code);
+
+  Future<Iterable<AdresseCarnet>> _chercherDestinataires(String saisie) {
+    final q = saisie.trim();
+    final enCours = _rechercheEnCours;
+    if (q == _texteRecherche && enCours != null) return enCours;
+    _texteRecherche = q;
+    return _rechercheEnCours = _interrogerCarnet(q);
+  }
+
+  Future<Iterable<AdresseCarnet>> _interrogerCarnet(String q) async {
+    // Champ vide : tout le carnet, dès qu'on touche le champ. Ensuite chaque lettre
+    // affine la liste, après une courte pause pour ne pas interroger à chaque touche.
+    if (q.isNotEmpty) {
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+      if (q != _texteRecherche) return const [];
+    }
+    try {
+      // Tout le carnet : les adresses d'un autre pays que l'arrivée sont listées après,
+      // grisées, pour que l'utilisateur comprenne pourquoi elles ne peuvent pas servir
+      final resultats = await sl<AdressesRemoteDataSource>().rechercher(
+        q,
+        type: 'destinataire',
+        limit: q.isEmpty ? 50 : 20,
+      );
+      if (q != _texteRecherche) return const [];
+      // Le serveur de production ne garde pas le filtre « destinataire » pendant une
+      // recherche : les contacts uniquement expéditeurs sont écartés ici
+      final destinataires = resultats.where((a) => a.estDestinataire);
+      return [
+        ...destinataires.where((a) => a.pays == _paysArrivee),
+        ...destinataires.where((a) => a.pays != _paysArrivee),
+      ];
+    } catch (_) {
+      // Recherche indisponible : la saisie manuelle et le bouton « Carnet » restent possibles
+      return const [];
+    }
   }
 
   /// Abandon du parcours depuis n'importe quelle étape, après confirmation :
@@ -730,22 +829,27 @@ class _AssistantState extends State<_Assistant> {
             ),
             body: _chargementVilles
                 ? const Center(child: CircularProgressIndicator())
-                : ListView(
+                // Colonne entière (et non ListView paresseuse) : les champs hors écran existent,
+                // la page peut donc défiler jusqu'à celui qui est en erreur
+                : SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
-                    children: [
-                      ...switch (_etape) {
-                        0 => _etapeTrajet(),
-                        1 => _etapeContenu(),
-                        2 => _etapeRemise(),
-                        3 => _etapeCoordonnees(),
-                        _ => _etapeValidation(),
-                      },
-                      if (state is ColisUploadProgress) ...[
-                        const SizedBox(height: 12),
-                        LinearProgressIndicator(value: state.progress),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ...switch (_etape) {
+                          0 => _etapeTrajet(),
+                          1 => _etapeContenu(),
+                          2 => _etapeRemise(),
+                          3 => _etapeCoordonnees(),
+                          _ => _etapeValidation(),
+                        },
+                        if (state is ColisUploadProgress) ...[
+                          const SizedBox(height: 12),
+                          LinearProgressIndicator(value: state.progress),
+                        ],
+                        const SizedBox(height: 90),
                       ],
-                      const SizedBox(height: 90),
-                    ],
+                    ),
                   ),
             bottomNavigationBar: SafeArea(
               child: Container(
@@ -800,10 +904,13 @@ class _AssistantState extends State<_Assistant> {
     Text(tr('Que souhaitez-vous envoyer ?'), style: titreSection(17)),
     const SizedBox(height: 12),
     ChoixCategorie(
-      selection: _categorie.code,
+      key: _repere('categorie'),
+      selection: _categorieChoisie ? _categorie.code : null,
+      onDeselectionne: () => setState(() => _categorieChoisie = false),
       onChanged: (c) {
         setState(() {
           _categorie = c;
+          _categorieChoisie = true;
           _photos = [];
           if (!c.modesDepot.contains(_modeDepot)) _modeDepot = null;
         });
@@ -833,6 +940,7 @@ class _AssistantState extends State<_Assistant> {
     ),
     const SizedBox(height: 14),
     SelecteurVille(
+      key: _repere('villes'),
       label: tr('Ville de départ'),
       villes: _versSenegal ? _villesFr : _villesSn,
       valeur: _villeDepart,
@@ -863,6 +971,7 @@ class _AssistantState extends State<_Assistant> {
         Text(tr('Vos documents'), style: titreSection(17)),
         const SizedBox(height: 12),
         ChampTexte(
+          key: _repere('typeDocument'),
           controller: _typeDocument,
           label: tr('Type de document'),
           maxLength: 100,
@@ -884,6 +993,7 @@ class _AssistantState extends State<_Assistant> {
             onSelectionChanged: (s) => setState(() => _parGrille = s.first),
           ),
         const SizedBox(height: 12),
+        SizedBox.shrink(key: _repere('articles')),
         if (_parGrille && _articles.isNotEmpty)
           SelecteurArticles(
             articles: _articles,
@@ -918,6 +1028,7 @@ class _AssistantState extends State<_Assistant> {
       if (c != 'documents') ...[
         const SizedBox(height: 8),
         ChampTexte(
+          key: _repere('description'),
           controller: _description,
           label: c == 'colis_xxl' ? tr('Description du contenu') : tr('Description du contenu (facultatif)'),
           maxLength: 500,
@@ -927,6 +1038,7 @@ class _AssistantState extends State<_Assistant> {
           children: [
             Expanded(
               child: ChampTexte(
+                key: _repere('valeur'),
                 controller: _valeur,
                 label: c == 'colis_moyen' ? tr('Valeur estimée') : tr('Valeur estimée (facultatif)'),
                 clavier: const TextInputType.numberWithOptions(decimal: true),
@@ -940,6 +1052,18 @@ class _AssistantState extends State<_Assistant> {
             ),
           ],
         ),
+        // Explication : le libellé seul n'indique pas à quoi sert ce montant
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 14),
+          child: Text(
+            tr(
+              'Prix approximatif de ce que contient le colis (ex. le prix d\'achat de l\'ordinateur envoyé). '
+              'Il sert à la déclaration en douane et, si vous l\'assurez, au remboursement en cas de perte.',
+            ),
+            style: texteDiscret(11),
+          ),
+        ),
+        SizedBox.shrink(key: _repere('etat')),
         Text(tr('État de la marchandise'), style: texteDiscret(13)),
         const SizedBox(height: 6),
         Wrap(
@@ -1002,6 +1126,7 @@ class _AssistantState extends State<_Assistant> {
       Text(c == 'documents' ? tr('Photo de l\'enveloppe') : tr('Photos du colis'), style: titreSection()),
       const SizedBox(height: 8),
       PrisePhotos(
+        key: _repere('photos'),
         minimum: _categorie.photosMin,
         libellesAngles: c == 'colis_moyen' ? ['Face', tr('Côté'), tr('Dessus')] : const [],
         photos: _photos,
@@ -1049,6 +1174,7 @@ class _AssistantState extends State<_Assistant> {
   }
 
   List<Widget> _saisiePieces({required bool dimensionsObligatoires}) => [
+    SizedBox.shrink(key: _repere('pieces')),
     ...List.generate(_pieces.length, (i) {
       final p = _pieces[i];
       return Padding(
@@ -1058,6 +1184,7 @@ class _AssistantState extends State<_Assistant> {
           icone: Icons.inventory_2_outlined,
           action: _pieces.length > 1
               ? IconButton(
+                  tooltip: tr('Retirer ce colis'),
                   icon: const Icon(Icons.delete_outline, color: AppColor.kErreur),
                   onPressed: () => setState(() => _pieces.removeAt(i).dispose()),
                 )
@@ -1071,20 +1198,37 @@ class _AssistantState extends State<_Assistant> {
             ),
             Text(tr('Dimensions du colis (en cm)'), style: texteDiscret(13)),
             const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  child: ChampTexte(controller: p.longueur, label: tr('Longueur'), hint: 'cm', clavier: TextInputType.number),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ChampTexte(controller: p.largeur, label: tr('Largeur'), hint: 'cm', clavier: TextInputType.number),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ChampTexte(controller: p.hauteur, label: tr('Hauteur'), hint: 'cm', clavier: TextInputType.number),
-                ),
-              ],
+            ChampsSerres(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ChampTexte(
+                      controller: p.longueur,
+                      label: tr('Longueur'),
+                      hint: 'cm',
+                      clavier: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ChampTexte(
+                      controller: p.largeur,
+                      label: tr('Largeur'),
+                      hint: 'cm',
+                      clavier: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ChampTexte(
+                      controller: p.hauteur,
+                      label: tr('Hauteur'),
+                      hint: 'cm',
+                      clavier: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
             ),
             if (!dimensionsObligatoires) Text(tr('Dimensions facultatives'), style: texteDiscret(11)),
             const SizedBox(height: 8),
@@ -1121,6 +1265,7 @@ class _AssistantState extends State<_Assistant> {
   /// Inventaire détaillé du contenu, repris dans la déclaration en douane et la
   /// facture commerciale (facultatif : le backend se contente sinon de la description).
   List<Widget> _saisieInventaire() => [
+    SizedBox.shrink(key: _repere('inventaire')),
     Text(tr('Inventaire du contenu (douane)'), style: titreSection()),
     const SizedBox(height: 4),
     Text(
@@ -1136,6 +1281,7 @@ class _AssistantState extends State<_Assistant> {
           titre: tr('Article ${i + 1}'),
           icone: Icons.list_alt_outlined,
           action: IconButton(
+            tooltip: tr('Retirer cet article'),
             icon: const Icon(Icons.delete_outline, color: AppColor.kErreur),
             onPressed: () => setState(() => _inventaire.removeAt(i).dispose()),
           ),
@@ -1197,7 +1343,9 @@ class _AssistantState extends State<_Assistant> {
                   child: ChampTexte(controller: l.paysOrigine, label: tr('Pays d\'origine (FR, CN…)'), maxLength: 2),
                 ),
                 const SizedBox(width: 8),
-                Expanded(child: ChampTexte(controller: l.marque, label: tr('Marque (facultatif)'), maxLength: 80)),
+                Expanded(
+                  child: ChampTexte(controller: l.marque, label: tr('Marque (facultatif)'), maxLength: 80),
+                ),
               ],
             ),
           ],
@@ -1219,7 +1367,7 @@ class _AssistantState extends State<_Assistant> {
     }).toList();
     final adresse = _config?.adresseReception[_paysDepart];
     return [
-      Text(tr('Comment remettez-vous votre colis ?'), style: titreSection(17)),
+      Text(tr('Comment remettez-vous votre colis ?'), key: _repere('modeDepot'), style: titreSection(17)),
       const SizedBox(height: 12),
       ...modes.map(
         (m) => Padding(
@@ -1266,6 +1414,7 @@ class _AssistantState extends State<_Assistant> {
             child: Bandeau(icone: Icons.place_outlined, titre: tr('Adresse de réception'), message: adresse.lignes),
           ),
         DropdownButtonFormField<String>(
+          key: _repere('pointDepot'),
           initialValue: _pointDepotId,
           isExpanded: true,
           decoration: InputDecoration(labelText: tr('Point de dépôt'), prefixIcon: Icon(Icons.storefront_outlined)),
@@ -1289,8 +1438,15 @@ class _AssistantState extends State<_Assistant> {
           titre: tr('Si vous optez pour une collecte, veuillez indiquer les informations nécessaires.'),
         ),
         const SizedBox(height: 12),
-        ChampTexte(controller: _adresseDepart, label: tr('Adresse de collecte'), icone: Icons.home_outlined, maxLength: 255),
         ChampTexte(
+          key: _repere('adresseDepart'),
+          controller: _adresseDepart,
+          label: tr('Adresse de collecte'),
+          icone: Icons.home_outlined,
+          maxLength: 255,
+        ),
+        ChampTexte(
+          key: _repere('codePostal'),
           controller: _codePostal,
           label: tr('Code postal'),
           clavier: TextInputType.number,
@@ -1306,11 +1462,14 @@ class _AssistantState extends State<_Assistant> {
         const SizedBox(height: 8),
         if (_tournees.isEmpty)
           Text(
-            tr('Aucune tournée ouverte pour le moment : indiquez la date souhaitée, nous vous confirmerons le passage.'),
+            tr(
+              'Aucune tournée ouverte pour le moment : indiquez la date souhaitée, nous vous confirmerons le passage.',
+            ),
             style: texteDiscret(12),
           )
         else
           RadioGroup<String>(
+            key: _repere('tournee'),
             groupValue: _tourneeId,
             onChanged: (v) => setState(() => _tourneeId = v),
             child: Column(
@@ -1361,6 +1520,7 @@ class _AssistantState extends State<_Assistant> {
           children: [
             Expanded(
               child: ChampTexte(
+                key: _repere('etage'),
                 controller: _etage,
                 label: tr('Étage'),
                 clavier: const TextInputType.numberWithOptions(signed: true),
@@ -1385,7 +1545,12 @@ class _AssistantState extends State<_Assistant> {
           value: _emballageSurPlace,
           onChanged: (v) => setState(() => _emballageSurPlace = v),
         ),
-        ChampTexte(controller: _instructionsCollecte, label: tr('Instructions (digicode, accès…)'), maxLines: 2, maxLength: 500),
+        ChampTexte(
+          controller: _instructionsCollecte,
+          label: tr('Instructions (digicode, accès…)'),
+          maxLines: 2,
+          maxLength: 500,
+        ),
       ],
       if (_modeDepot == 'envoi_postal') ...[
         Bandeau(
@@ -1419,32 +1584,116 @@ class _AssistantState extends State<_Assistant> {
     onPressed: () async {
       final a = await AdressesPage.choisir(context, usage: usage);
       if (a == null || !mounted) return;
-      setState(() {
-        if (usage == 'expediteur') {
-          _expNom.text = a.nom;
-          _expTel.text = a.telephone;
-          _expEmail.text = a.email ?? '';
-        } else {
-          _destNom.text = a.nom;
-          _destTel.text = a.telephone;
-          _destEmail.text = a.email ?? '';
-          _adresseLivraison.text = [
-            a.adresse,
-            a.complementAdresse,
-          ].whereType<String>().where((e) => e.isNotEmpty).join(', ');
-          if ((a.quartier ?? '').isNotEmpty) _quartier.text = a.quartier!;
-          if ((a.arrondissement ?? '').isNotEmpty) _arrondissement.text = a.arrondissement!;
-          if ((a.departement ?? '').isNotEmpty) _departement.text = a.departement!;
-          if ((a.pointRepere ?? '').isNotEmpty) _pointRepere.text = a.pointRepere!;
-          if (a.pointRetraitPrefereId != null && _pointsRetrait.any((p) => p.id == a.pointRetraitPrefereId)) {
-            _pointRetraitId = a.pointRetraitPrefereId;
-          }
-        }
-      });
+      _appliquerAdresse(a, usage);
     },
     icon: const Icon(Icons.contacts_outlined, size: 18),
     label: Text(tr('Carnet')),
   );
+
+  void _appliquerAdresse(AdresseCarnet a, String usage) => setState(() {
+    if (usage == 'expediteur') {
+      _expNom.text = a.nom;
+      _expTel.text = a.telephone;
+      _expEmail.text = a.email ?? '';
+    } else {
+      _destNom.text = a.nom;
+      _destEntreprise.text = a.entreprise ?? '';
+      _destTel.text = a.telephone;
+      _destEmail.text = a.email ?? '';
+      _adresseLivraison.text = [
+        a.adresse,
+        a.complementAdresse,
+      ].whereType<String>().where((e) => e.isNotEmpty).join(', ');
+      if ((a.quartier ?? '').isNotEmpty) _quartier.text = a.quartier!;
+      if ((a.arrondissement ?? '').isNotEmpty) _arrondissement.text = a.arrondissement!;
+      if ((a.departement ?? '').isNotEmpty) _departement.text = a.departement!;
+      if ((a.pointRepere ?? '').isNotEmpty) _pointRepere.text = a.pointRepere!;
+      if ((a.codePostal ?? '').isNotEmpty) _codePostalArrivee.text = a.codePostal!;
+      if (a.pointRetraitPrefereId != null && _pointsRetrait.any((p) => p.id == a.pointRetraitPrefereId)) {
+        _pointRetraitId = a.pointRetraitPrefereId;
+      }
+    }
+  });
+
+  /// Recherche d'un destinataire du carnet (nom, libellé, entreprise, téléphone) :
+  /// le choix pré-remplit la section, sinon l'utilisateur saisit lui-même.
+  Widget _champRechercheDestinataire() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Autocomplete<AdresseCarnet>(
+        displayStringForOption: (a) => a.nom,
+        optionsBuilder: (saisie) => _chercherDestinataires(saisie.text),
+        onSelected: (a) {
+          _appliquerAdresse(a, 'destinataire');
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+        fieldViewBuilder: (context, controle, focus, _) => TextFormField(
+          controller: controle,
+          focusNode: focus,
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+          decoration: InputDecoration(
+            labelText: tr('Rechercher dans mon carnet'),
+            // Recherche du serveur de production : nom et libellé du contact
+            hintText: tr('Nom ou libellé du contact'),
+            prefixIcon: const Icon(Icons.search, size: 20, color: AppColor.kPrimary),
+          ),
+        ),
+        optionsViewBuilder: (context, choisir, options) => Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(12),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: 280, maxWidth: MediaQuery.sizeOf(context).width - 72),
+              child: ListView(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                children: [
+                  for (final a in options)
+                    // La ville d'arrivée est fixée à l'étape 1 : une adresse d'un autre pays
+                    // est affichée grisée et ne remplit pas le formulaire
+                    if (a.pays == _paysArrivee)
+                      ListTile(
+                        leading: const Icon(Icons.person_outline, color: AppColor.kPrimary),
+                        title: Text(a.nom, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        subtitle: Text(
+                          [a.telephone, a.resume].where((e) => e.isNotEmpty).join(' · '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onTap: () => choisir(a),
+                      )
+                    else
+                      ListTile(
+                        leading: const Icon(Icons.person_off_outlined, color: AppColor.kGrayscale40),
+                        title: Text(
+                          a.nom,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: AppColor.kGrayscale40),
+                        ),
+                        subtitle: Text(
+                          tr('Adresse ${_auPays(a.pays)} : hors de ce trajet'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onTap: () => showToast(
+                          context,
+                          tr('Adresse hors trajet'),
+                          tr(
+                            'Ce contact habite ${_auPays(a.pays)}. Pour lui envoyer un colis, changez le trajet à l\'étape 1.',
+                          ),
+                          ToastificationType.info,
+                        ),
+                      ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   List<Widget> _etapeCoordonnees() => [
     CarteSection(
@@ -1452,10 +1701,24 @@ class _AssistantState extends State<_Assistant> {
       icone: Icons.person_outline,
       action: _boutonCarnet('expediteur'),
       children: [
-        ChampTexte(controller: _expNom, label: tr('Nom complet'), maxLength: 120),
+        ChampTexte(key: _repere('expNom'), controller: _expNom, label: tr('Nom complet'), maxLength: 120),
         ChampTexte(controller: _expEntreprise, label: tr('Entreprise (facultatif)'), maxLength: 120),
-        ChampTexte(controller: _expTel, label: tr('Téléphone'), clavier: TextInputType.phone, hint: tr('+33 6… ou 77…')),
-        ChampTexte(controller: _expEmail, label: tr('Email (facultatif)'), clavier: TextInputType.emailAddress, maxLength: 150),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: ChampTelephone(
+            key: _repere('expTel'),
+            controller: _expTel,
+            label: tr('Téléphone'),
+            paysInitial: _paysDepart,
+          ),
+        ),
+        ChampTexte(
+          key: _repere('expEmail'),
+          controller: _expEmail,
+          label: tr('Email (facultatif)'),
+          clavier: TextInputType.emailAddress,
+          maxLength: 150,
+        ),
       ],
     ),
     const SizedBox(height: 14),
@@ -1464,10 +1727,25 @@ class _AssistantState extends State<_Assistant> {
       icone: Icons.person_pin_circle_outlined,
       action: _boutonCarnet('destinataire'),
       children: [
-        ChampTexte(controller: _destNom, label: tr('Nom complet'), maxLength: 120),
+        _champRechercheDestinataire(),
+        ChampTexte(key: _repere('destNom'), controller: _destNom, label: tr('Nom complet'), maxLength: 120),
         ChampTexte(controller: _destEntreprise, label: tr('Entreprise (facultatif)'), maxLength: 120),
-        ChampTexte(controller: _destTel, label: tr('Téléphone'), clavier: TextInputType.phone, hint: tr('77… ou +221…')),
-        ChampTexte(controller: _destEmail, label: tr('Email (facultatif)'), clavier: TextInputType.emailAddress, maxLength: 150),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: ChampTelephone(
+            key: _repere('destTel'),
+            controller: _destTel,
+            label: tr('Téléphone'),
+            paysInitial: _paysArrivee,
+          ),
+        ),
+        ChampTexte(
+          key: _repere('destEmail'),
+          controller: _destEmail,
+          label: tr('Email (facultatif)'),
+          clavier: TextInputType.emailAddress,
+          maxLength: 150,
+        ),
         SegmentedButton<String>(
           segments: [
             ButtonSegment(value: 'livraison_domicile', label: Text(tr('Livraison'))),
@@ -1482,6 +1760,7 @@ class _AssistantState extends State<_Assistant> {
         const SizedBox(height: 12),
         if (_modeLivraison == 'point_retrait')
           DropdownButtonFormField<String>(
+            key: _repere('pointRetrait'),
             initialValue: _pointRetraitId,
             isExpanded: true,
             decoration: InputDecoration(labelText: tr('Point de retrait')),
@@ -1496,8 +1775,15 @@ class _AssistantState extends State<_Assistant> {
             onChanged: (v) => setState(() => _pointRetraitId = v),
           )
         else ...[
-          ChampTexte(controller: _adresseLivraison, label: tr('Adresse de livraison'), icone: Icons.home_outlined, maxLength: 255),
           ChampTexte(
+            key: _repere('adresseLivraison'),
+            controller: _adresseLivraison,
+            label: tr('Adresse de livraison'),
+            icone: Icons.home_outlined,
+            maxLength: 255,
+          ),
+          ChampTexte(
+            key: _repere('codePostalArrivee'),
             controller: _codePostalArrivee,
             label: tr('Code postal (facultatif)'),
             clavier: TextInputType.number,
@@ -1516,12 +1802,22 @@ class _AssistantState extends State<_Assistant> {
             ),
           ),
           const SizedBox(height: 8),
-          ChampTexte(controller: _quartier, label: tr('Quartier'), maxLength: 100),
+          ChampTexte(key: _repere('precisionsSn'), controller: _quartier, label: tr('Quartier'), maxLength: 100),
           ChampTexte(controller: _arrondissement, label: tr('Arrondissement'), maxLength: 100),
           ChampTexte(controller: _departement, label: tr('Département'), maxLength: 100),
-          ChampTexte(controller: _pointRepere, label: tr('Point de repère'), hint: tr('Ex : face à la grande mosquée'), maxLength: 255),
+          ChampTexte(
+            controller: _pointRepere,
+            label: tr('Point de repère'),
+            hint: tr('Ex : face à la grande mosquée'),
+            maxLength: 255,
+          ),
         ],
-        ChampTexte(controller: _instructionsLivraison, label: tr('Instructions de livraison (facultatif)'), maxLines: 2, maxLength: 500),
+        ChampTexte(
+          controller: _instructionsLivraison,
+          label: tr('Instructions de livraison (facultatif)'),
+          maxLines: 2,
+          maxLength: 500,
+        ),
       ],
     ),
     const SizedBox(height: 14),
@@ -1591,6 +1887,7 @@ class _AssistantState extends State<_Assistant> {
           couleur: AppColor.kErreur,
           action: TextButton(onPressed: _calculerDevis, child: Text(tr('Réessayer'))),
         ),
+      SizedBox.shrink(key: _repere('offres')),
       ...?_devis?.offres.map(
         (o) => CarteOffre(
           offre: o,
@@ -1617,7 +1914,8 @@ class _AssistantState extends State<_Assistant> {
               LigneInfo(tr('Nature'), tr(_naturesEnvoi[demande.typeContenu] ?? demande.typeContenu)),
               if (demande.fragile) LigneInfo(tr('Fragile'), tr('Oui')),
               if (demande.marchandiseDangereuse) LigneInfo(tr('Marchandise dangereuse'), tr('Oui')),
-              if (demande.contenu.isNotEmpty) LigneInfo(tr('Inventaire douane'), tr('${demande.contenu.length} article(s)')),
+              if (demande.contenu.isNotEmpty)
+                LigneInfo(tr('Inventaire douane'), tr('${demande.contenu.length} article(s)')),
               LigneInfo(tr('Assurance'), demande.assuranceSouscrite ? tr('Oui') : tr('Non')),
               LigneInfo(tr('Payé par'), demande.payeur == 'destinataire' ? tr('Le destinataire') : tr('L\'expéditeur')),
             ],
@@ -1634,16 +1932,21 @@ class _AssistantState extends State<_Assistant> {
           icone: Icons.route_outlined,
           titre: tr('La suite'),
           message: switch (_categorie.paiement) {
-            'a_la_commande' => tr('Dès l\'envoi de votre demande, votre facture est émise et le lien de paiement s\'ouvre.'),
-            'a_la_reception' =>
-              tr('Nos équipes valident votre demande sous ${_config?.delaiEtudeHeures ?? 24} h. Vous paierez à la réception de votre colis.'),
-            _ =>
-              tr('Nous étudions votre demande et vous envoyons une proposition de prix sous ${_config?.delaiEtudeHeures ?? 24} h, à accepter avant paiement.'),
+            'a_la_commande' => tr(
+              'Dès l\'envoi de votre demande, votre facture est émise et le lien de paiement s\'ouvre.',
+            ),
+            'a_la_reception' => tr(
+              'Nos équipes valident votre demande sous ${_config?.delaiEtudeHeures ?? 24} h. Vous paierez à la réception de votre colis.',
+            ),
+            _ => tr(
+              'Nous étudions votre demande et vous envoyons une proposition de prix sous ${_config?.delaiEtudeHeures ?? 24} h, à accepter avant paiement.',
+            ),
           },
         ),
       ],
       const SizedBox(height: 8),
       CheckboxListTile(
+        key: _repere('conditions'),
         contentPadding: EdgeInsets.zero,
         controlAffinity: ListTileControlAffinity.leading,
         value: _conditions,

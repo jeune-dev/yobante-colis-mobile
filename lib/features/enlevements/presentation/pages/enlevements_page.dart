@@ -46,14 +46,16 @@ class _EnlevementsPageState extends State<EnlevementsPage> {
   }
 
   Future<void> _nouvelle() async {
-    final creee = await Navigator.of(context)
-        .push<DemandeEnlevement>(MaterialPageRoute(builder: (_) => const EnlevementFormPage()));
+    final creee = await Navigator.of(
+      context,
+    ).push<DemandeEnlevement>(MaterialPageRoute(builder: (_) => const EnlevementFormPage()));
     if (creee != null) _charger();
   }
 
   Future<void> _ouvrir(DemandeEnlevement d) async {
-    final change = await Navigator.of(context)
-        .push<bool>(MaterialPageRoute(builder: (_) => DetailEnlevementPage(id: d.id)));
+    final change = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => DetailEnlevementPage(id: d.id)));
     if (change == true) _charger();
   }
 
@@ -69,49 +71,63 @@ class _EnlevementsPageState extends State<EnlevementsPage> {
         label: Text(tr('Programmer')),
       ),
       body: _erreur != null
-          ? EmptyState(icon: Icons.error_outline, title: tr('Erreur'), subtitle: _erreur!, actionLabel: tr('Réessayer'), onAction: _charger)
+          ? EmptyState(
+              icon: Icons.error_outline,
+              title: tr('Erreur'),
+              subtitle: _erreur!,
+              actionLabel: tr('Réessayer'),
+              onAction: _charger,
+            )
           : liste == null
-              ? const ShimmerList()
-              : liste.isEmpty
-                  ? EmptyState(
-                      icon: Icons.local_shipping_outlined,
-                      title: tr('Aucun enlèvement'),
-                      subtitle: tr('Un coursier peut passer récupérer vos colis à domicile, au créneau de votre choix.'),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _charger,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                        itemCount: liste.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (_, i) {
-                          final d = liste[i];
-                          return InkWell(
-                            onTap: () => _ouvrir(d),
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(16)),
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Row(children: [
-                                  Expanded(
-                                    child: Text(d.reference,
-                                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
-                                  ),
-                                  PastilleStatutEnlevement(statut: d.statut),
-                                ]),
-                                const SizedBox(height: 6),
-                                Text('${formaterDate(d.dateSouhaitee)} · ${d.creneau.replaceAll('-', ' – ')}',
-                                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 13)),
-                                Text('${d.adresse}${d.villeNom != null ? ', ${d.villeNom}' : ''}',
-                                    style: texteDiscret(12)),
-                                if (d.colisReference != null) Text(tr('Colis ${d.colisReference}'), style: texteDiscret(12)),
-                              ]),
-                            ),
-                          );
-                        },
+          ? const ShimmerList()
+          : liste.isEmpty
+          ? EmptyState(
+              icon: Icons.local_shipping_outlined,
+              title: tr('Aucun enlèvement'),
+              subtitle: tr('Un coursier peut passer récupérer vos colis à domicile, au créneau de votre choix.'),
+            )
+          : RefreshIndicator(
+              onRefresh: _charger,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                itemCount: liste.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (_, i) {
+                  final d = liste[i];
+                  return InkWell(
+                    onTap: () => _ouvrir(d),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(16)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  d.reference,
+                                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                              PastilleStatutEnlevement(statut: d.statut),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '${formaterDate(d.dateSouhaitee)} · ${d.creneau.replaceAll('-', ' – ')}',
+                            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                          Text('${d.adresse}${d.villeNom != null ? ', ${d.villeNom}' : ''}', style: texteDiscret(12)),
+                          if (d.colisReference != null) Text(tr('Colis ${d.colisReference}'), style: texteDiscret(12)),
+                        ],
                       ),
                     ),
+                  );
+                },
+              ),
+            ),
     );
   }
 }
@@ -132,8 +148,10 @@ class PastilleStatutEnlevement extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(color: couleur.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
-      child: Text(kStatutsEnlevement[statut] ?? statut,
-          style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: couleur)),
+      child: Text(
+        kStatutsEnlevement[statut] ?? statut,
+        style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: couleur),
+      ),
     );
   }
 }
@@ -169,8 +187,9 @@ class _DetailEnlevementPageState extends State<DetailEnlevementPage> {
   }
 
   Future<void> _modifier() async {
-    final maj = await Navigator.of(context)
-        .push<DemandeEnlevement>(MaterialPageRoute(builder: (_) => EnlevementFormPage(demande: _d)));
+    final maj = await Navigator.of(
+      context,
+    ).push<DemandeEnlevement>(MaterialPageRoute(builder: (_) => EnlevementFormPage(demande: _d)));
     if (maj != null && mounted) {
       setState(() {
         _d = maj;
@@ -185,7 +204,11 @@ class _DetailEnlevementPageState extends State<DetailEnlevementPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(tr('Annuler l\'enlèvement ?')),
-        content: TextField(controller: motif, maxLength: 255, decoration: InputDecoration(labelText: tr('Motif (facultatif)'))),
+        content: TextField(
+          controller: motif,
+          maxLength: 255,
+          decoration: InputDecoration(labelText: tr('Motif (facultatif)')),
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(tr('Retour'))),
           TextButton(
@@ -223,50 +246,61 @@ class _DetailEnlevementPageState extends State<DetailEnlevementPage> {
         body: _erreur != null
             ? EmptyState(icon: Icons.error_outline, title: tr('Erreur'), subtitle: _erreur!)
             : d == null
-                ? const Center(child: CircularProgressIndicator())
-                : ListView(padding: const EdgeInsets.all(16), children: [
-                    CarteSection(
-                      titre: tr('Enlèvement'),
-                      icone: Icons.local_shipping_outlined,
-                      action: PastilleStatutEnlevement(statut: d.statut),
-                      children: [
-                        LigneInfo(tr('Date souhaitée'), formaterDate(d.dateSouhaitee), fort: true),
-                        LigneInfo(tr('Créneau'), d.creneau.replaceAll('-', ' – ')),
-                        if (d.datePlanifiee != null) LigneInfo(tr('Planifié le'), formaterDate(d.datePlanifiee)),
-                        if (d.tourneeTitre != null) LigneInfo(tr('Tournée'), d.tourneeTitre!),
-                        LigneInfo(tr('Contact'), '${d.contactNom} · ${d.contactTelephone}'),
-                        LigneInfo(tr('Adresse'), [d.adresse, d.complementAdresse, d.codePostal, d.villeNom]
-                            .whereType<String>()
-                            .where((e) => e.isNotEmpty)
-                            .join(', ')),
-                        if (d.etage != null)
-                          LigneInfo(tr('Étage'), '${d.etage}${d.ascenseur == true ? tr(' (ascenseur)') : ''}'),
-                        LigneInfo(tr('Colis'), '${d.nbColis}${d.poidsEstimeKg != null ? ' · ${d.poidsEstimeKg} kg' : ''}'),
-                        if (d.emballageRequis) LigneInfo(tr('Emballage'), tr('À prévoir par le coursier')),
-                        if (d.colisReference != null) LigneInfo(tr('Expédition'), d.colisReference!),
-                        if ((d.fraisEnlevement ?? 0) > 0)
-                          LigneInfo(tr('Frais'), formaterMontant(d.fraisEnlevement, d.pays == 'FR' ? 'EUR' : 'XOF')),
-                        if (d.instructions != null) LigneInfo(tr('Instructions'), d.instructions!),
-                        if (d.motifEchec != null) LigneInfo(tr('Motif'), d.motifEchec!),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    if (d.modifiable)
-                      OutlinedButton.icon(
-                        onPressed: _modifier,
-                        icon: const Icon(Icons.edit_outlined),
-                        label: Text(tr('Modifier')),
-                        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            ? const Center(child: CircularProgressIndicator())
+            : ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  CarteSection(
+                    titre: tr('Enlèvement'),
+                    icone: Icons.local_shipping_outlined,
+                    action: PastilleStatutEnlevement(statut: d.statut),
+                    children: [
+                      LigneInfo(tr('Date souhaitée'), formaterDate(d.dateSouhaitee), fort: true),
+                      LigneInfo(tr('Créneau'), d.creneau.replaceAll('-', ' – ')),
+                      if (d.datePlanifiee != null) LigneInfo(tr('Planifié le'), formaterDate(d.datePlanifiee)),
+                      if (d.tourneeTitre != null) LigneInfo(tr('Tournée'), d.tourneeTitre!),
+                      LigneInfo(tr('Contact'), '${d.contactNom} · ${d.contactTelephone}'),
+                      LigneInfo(
+                        tr('Adresse'),
+                        [
+                          d.adresse,
+                          d.complementAdresse,
+                          d.codePostal,
+                          d.villeNom,
+                        ].whereType<String>().where((e) => e.isNotEmpty).join(', '),
                       ),
-                    if (d.annulable) ...[
-                      const SizedBox(height: 8),
-                      TextButton.icon(
-                        onPressed: _annuler,
-                        icon: const Icon(Icons.cancel_outlined, color: AppColor.kErreur),
-                        label: Text(tr('Annuler l\'enlèvement'), style: TextStyle(color: AppColor.kErreur)),
+                      if (d.etage != null)
+                        LigneInfo(tr('Étage'), '${d.etage}${d.ascenseur == true ? tr(' (ascenseur)') : ''}'),
+                      LigneInfo(
+                        tr('Colis'),
+                        '${d.nbColis}${d.poidsEstimeKg != null ? ' · ${d.poidsEstimeKg} kg' : ''}',
                       ),
+                      if (d.emballageRequis) LigneInfo(tr('Emballage'), tr('À prévoir par le coursier')),
+                      if (d.colisReference != null) LigneInfo(tr('Expédition'), d.colisReference!),
+                      if ((d.fraisEnlevement ?? 0) > 0)
+                        LigneInfo(tr('Frais'), formaterMontant(d.fraisEnlevement, d.pays == 'FR' ? 'EUR' : 'XOF')),
+                      if (d.instructions != null) LigneInfo(tr('Instructions'), d.instructions!),
+                      if (d.motifEchec != null) LigneInfo(tr('Motif'), d.motifEchec!),
                     ],
-                  ]),
+                  ),
+                  const SizedBox(height: 20),
+                  if (d.modifiable)
+                    OutlinedButton.icon(
+                      onPressed: _modifier,
+                      icon: const Icon(Icons.edit_outlined),
+                      label: Text(tr('Modifier')),
+                      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                    ),
+                  if (d.annulable) ...[
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: _annuler,
+                      icon: const Icon(Icons.cancel_outlined, color: AppColor.kErreur),
+                      label: Text(tr('Annuler l\'enlèvement'), style: TextStyle(color: AppColor.kErreur)),
+                    ),
+                  ],
+                ],
+              ),
       ),
     );
   }

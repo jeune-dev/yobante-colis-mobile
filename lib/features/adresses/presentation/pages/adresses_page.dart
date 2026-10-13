@@ -23,10 +23,9 @@ class AdressesPage extends StatefulWidget {
   const AdressesPage({super.key, this.selection = false, this.usage});
 
   /// Ouvre le carnet et renvoie l'adresse choisie.
-  static Future<AdresseCarnet?> choisir(BuildContext context, {String? usage}) =>
-      Navigator.of(context).push<AdresseCarnet>(
-        MaterialPageRoute(builder: (_) => AdressesPage(selection: true, usage: usage)),
-      );
+  static Future<AdresseCarnet?> choisir(BuildContext context, {String? usage}) => Navigator.of(
+    context,
+  ).push<AdresseCarnet>(MaterialPageRoute(builder: (_) => AdressesPage(selection: true, usage: usage)));
 
   @override
   State<AdressesPage> createState() => _AdressesPageState();
@@ -66,9 +65,9 @@ class _AdressesPageState extends State<AdressesPage> {
       } on ServerException catch (_) {}
       if (!mounted) return;
     }
-    final enregistree = await Navigator.of(context).push<AdresseCarnet>(
-      MaterialPageRoute(builder: (_) => AdresseFormPage(adresse: adresse)),
-    );
+    final enregistree = await Navigator.of(
+      context,
+    ).push<AdresseCarnet>(MaterialPageRoute(builder: (_) => AdresseFormPage(adresse: adresse)));
     if (enregistree == null || !mounted) return;
     if (widget.selection) {
       Navigator.of(context).pop(enregistree);
@@ -128,31 +127,27 @@ class _AdressesPageState extends State<AdressesPage> {
               onAction: _charger,
             )
           : liste == null
-              ? const ShimmerList()
-              : liste.isEmpty
-                  ? EmptyState(
-                      icon: Icons.contacts_outlined,
-                      title: tr('Carnet vide'),
-                      subtitle: tr('Enregistrez vos destinataires habituels pour expédier plus vite.'),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _charger,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                        itemCount: liste.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (_, i) => _CarteAdresse(
-                          adresse: liste[i],
-                          onTap: widget.selection
-                              ? () => Navigator.of(context).pop(liste[i])
-                              : () => _formulaire(liste[i]),
-                          onDefaut: liste[i].parDefaut
-                              ? null
-                              : () => _action(() => _source.definirParDefaut(liste[i].id)),
-                          onSupprimer: widget.selection ? null : () => _supprimer(liste[i]),
-                        ),
-                      ),
-                    ),
+          ? const ShimmerList()
+          : liste.isEmpty
+          ? EmptyState(
+              icon: Icons.contacts_outlined,
+              title: tr('Carnet vide'),
+              subtitle: tr('Enregistrez vos destinataires habituels pour expédier plus vite.'),
+            )
+          : RefreshIndicator(
+              onRefresh: _charger,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                itemCount: liste.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (_, i) => _CarteAdresse(
+                  adresse: liste[i],
+                  onTap: widget.selection ? () => Navigator.of(context).pop(liste[i]) : () => _formulaire(liste[i]),
+                  onDefaut: liste[i].parDefaut ? null : () => _action(() => _source.definirParDefaut(liste[i].id)),
+                  onSupprimer: widget.selection ? null : () => _supprimer(liste[i]),
+                ),
+              ),
+            ),
     );
   }
 }
@@ -173,37 +168,47 @@ class _CarteAdresse extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 4, 12),
         decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(16)),
-        child: Row(children: [
-          Icon(a.pays == 'SN' ? Icons.flag_outlined : Icons.location_on_outlined, color: AppColor.kPrimary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Flexible(
-                  child: Text(a.libelle, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
-                ),
-                if (a.parDefaut) ...[
-                  const SizedBox(width: 6),
-                  const Icon(Icons.star_rounded, size: 16, color: AppColor.kAlerte),
+        child: Row(
+          children: [
+            Icon(a.pays == 'SN' ? Icons.flag_outlined : Icons.location_on_outlined, color: AppColor.kPrimary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(a.libelle, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
+                      ),
+                      if (a.parDefaut) ...[
+                        const SizedBox(width: 6),
+                        const Icon(Icons.star_rounded, size: 16, color: AppColor.kAlerte),
+                      ],
+                    ],
+                  ),
+                  Text('${a.nom} · ${a.telephone}', style: texteDiscret(12)),
+                  Text(a.resume, style: texteDiscret(12), maxLines: 2, overflow: TextOverflow.ellipsis),
                 ],
-              ]),
-              Text('${a.nom} · ${a.telephone}', style: texteDiscret(12)),
-              Text(a.resume, style: texteDiscret(12), maxLines: 2, overflow: TextOverflow.ellipsis),
-            ]),
-          ),
-          if (onDefaut != null || onSupprimer != null)
-            PopupMenuButton<String>(
-              onSelected: (v) {
-                if (v == 'defaut') onDefaut?.call();
-                if (v == 'supprimer') onSupprimer?.call();
-              },
-              itemBuilder: (_) => [
-                if (onDefaut != null) PopupMenuItem(value: 'defaut', child: Text(tr('Définir par défaut'))),
-                if (onSupprimer != null)
-                  PopupMenuItem(value: 'supprimer', child: Text(tr('Supprimer'), style: TextStyle(color: AppColor.kErreur))),
-              ],
+              ),
             ),
-        ]),
+            if (onDefaut != null || onSupprimer != null)
+              PopupMenuButton<String>(
+                onSelected: (v) {
+                  if (v == 'defaut') onDefaut?.call();
+                  if (v == 'supprimer') onSupprimer?.call();
+                },
+                itemBuilder: (_) => [
+                  if (onDefaut != null) PopupMenuItem(value: 'defaut', child: Text(tr('Définir par défaut'))),
+                  if (onSupprimer != null)
+                    PopupMenuItem(
+                      value: 'supprimer',
+                      child: Text(tr('Supprimer'), style: TextStyle(color: AppColor.kErreur)),
+                    ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }

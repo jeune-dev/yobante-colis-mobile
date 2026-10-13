@@ -27,13 +27,13 @@ class VersionPubliee {
   });
 
   factory VersionPubliee.fromJson(Map<String, dynamic> j) => VersionPubliee(
-        derniereVersion: j['derniereVersion'] as String? ?? '0.0.0',
-        versionMinimale: j['versionMinimale'] as String? ?? '0.0.0',
-        miseAJourForcee: j['miseAJourForcee'] as bool? ?? false,
-        titre: j['titre'] as String?,
-        message: j['message'] as String?,
-        lienStore: j['lienStore'] as String? ?? '',
-      );
+    derniereVersion: j['derniereVersion'] as String? ?? '0.0.0',
+    versionMinimale: j['versionMinimale'] as String? ?? '0.0.0',
+    miseAJourForcee: j['miseAJourForcee'] as bool? ?? false,
+    titre: j['titre'] as String?,
+    message: j['message'] as String?,
+    lienStore: j['lienStore'] as String? ?? '',
+  );
 }
 
 /// Contrôle de version au démarrage : sous la version minimale (ou si
@@ -81,7 +81,8 @@ class VersionService {
     }
     if (publiee == null || !context.mounted) return;
 
-    final obligatoire = comparer(actuelle, publiee.versionMinimale) < 0 ||
+    final obligatoire =
+        comparer(actuelle, publiee.versionMinimale) < 0 ||
         (publiee.miseAJourForcee && comparer(actuelle, publiee.derniereVersion) < 0);
     final disponible = comparer(actuelle, publiee.derniereVersion) < 0;
     if (!obligatoire && !disponible) return;
@@ -93,14 +94,17 @@ class VersionService {
         canPop: !obligatoire,
         child: AlertDialog(
           title: Text(publiee!.titre ?? tr('Mise à jour disponible')),
-          content: Text(publiee.message?.isNotEmpty == true
-              ? publiee.message!
-              : obligatoire
-                  ? tr('Cette version de l\'application n\'est plus prise en charge. Installez la mise à jour pour continuer.')
-                  : tr('Une nouvelle version (${publiee.derniereVersion}) est disponible.')),
+          content: Text(
+            publiee.message?.isNotEmpty == true
+                ? publiee.message!
+                : obligatoire
+                ? tr(
+                    'Cette version de l\'application n\'est plus prise en charge. Installez la mise à jour pour continuer.',
+                  )
+                : tr('Une nouvelle version (${publiee.derniereVersion}) est disponible.'),
+          ),
           actions: [
-            if (!obligatoire)
-              TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(tr('Plus tard'))),
+            if (!obligatoire) TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(tr('Plus tard'))),
             ElevatedButton(
               onPressed: () {
                 final uri = Uri.tryParse(publiee!.lienStore);

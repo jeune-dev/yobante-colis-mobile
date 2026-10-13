@@ -38,8 +38,7 @@ class _Stockage extends Fake implements FlutterSecureStorage {
     WebOptions? webOptions,
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
-  }) async =>
-      valeurs[key];
+  }) async => valeurs[key];
 
   @override
   Future<void> write({
@@ -82,13 +81,21 @@ class _Backend implements HttpClientAdapter {
   Iterable<RequestOptions> get metier => requetes.where((r) => r.path != Env.authRefresh);
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options, Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
     // Copie : le rejeu modifie les en-têtes de la requête d'origine
     requetes.add(options.copyWith(headers: Map.of(options.headers)));
     final (statut, corps) = await repondre(options);
-    return ResponseBody.fromString(jsonEncode(corps), statut, headers: {
-      Headers.contentTypeHeader: [Headers.jsonContentType],
-    });
+    return ResponseBody.fromString(
+      jsonEncode(corps),
+      statut,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
   }
 
   @override
@@ -96,9 +103,12 @@ class _Backend implements HttpClientAdapter {
 }
 
 /// Le refresh renvoie un nouveau couple de jetons (rotation).
-(int, Object?) _refreshOk() => (200, {
-      'data': {'accessToken': _accesRenouvele, 'refreshToken': 'refresh_2'},
-    });
+(int, Object?) _refreshOk() => (
+  200,
+  {
+    'data': {'accessToken': _accesRenouvele, 'refreshToken': 'refresh_2'},
+  },
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -176,8 +186,11 @@ void main() {
 
       final refresh = backend.refreshs.single;
       expect(refresh.data, {'refreshToken': 'refresh_1'});
-      expect(refresh.headers.containsKey('Authorization'), isFalse,
-          reason: 'Le refresh ne doit pas transporter l\'ancien jeton d\'accès');
+      expect(
+        refresh.headers.containsKey('Authorization'),
+        isFalse,
+        reason: 'Le refresh ne doit pas transporter l\'ancien jeton d\'accès',
+      );
       expect(bearer(backend.metier.single), 'Bearer $_accesRenouvele');
       expect(stockage.valeurs['jwt_token'], _accesRenouvele);
       expect(stockage.valeurs['refresh_token'], 'refresh_2');
@@ -249,6 +262,56 @@ void main() {
       expect(deconnexions, 1);
     });
 
+    test('401 et serveur de renouvellement injoignable : session conservée, pas de déconnexion', () async {
+      stockage.valeurs
+        ..['jwt_token'] = _accesValide
+        ..['refresh_token'] = 'refresh_1';
+      backend.repondre = (o) {
+        if (o.path == Env.authRefresh) {
+          throw DioException(requestOptions: o, type: DioExceptionType.connectionError);
+        }
+        return (401, {});
+      };
+
+      await expectLater(dio.get('/client/colis'), throwsA(isA<DioException>()));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(stockage.valeurs['refresh_token'], 'refresh_1');
+      expect(stockage.valeurs['jwt_token'], _accesValide);
+      expect(deconnexions, 0);
+    });
+
+    test('401 et renouvellement en erreur serveur (503) : session conservée', () async {
+      stockage.valeurs
+        ..['jwt_token'] = _accesValide
+        ..['refresh_token'] = 'refresh_1';
+      backend.repondre = (o) => o.path == Env.authRefresh ? (503, {'message': 'Maintenance'}) : (401, {});
+
+      await expectLater(dio.get('/client/colis'), throwsA(isA<DioException>()));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(stockage.valeurs['refresh_token'], 'refresh_1');
+      expect(deconnexions, 0);
+    });
+
+    test('jeton expiré et réseau coupé au renouvellement : session conservée', () async {
+      stockage.valeurs
+        ..['jwt_token'] = _accesExpire
+        ..['refresh_token'] = 'refresh_1';
+      backend.repondre = (o) {
+        if (o.path == Env.authRefresh) {
+          throw DioException(requestOptions: o, type: DioExceptionType.connectionTimeout);
+        }
+        return (401, {});
+      };
+
+      await expectLater(dio.get('/client/colis'), throwsA(isA<DioException>()));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(stockage.valeurs['refresh_token'], 'refresh_1');
+      expect(deconnexions, 0);
+    });
+
     test('401 d\'un visiteur sans session : ni refresh ni déconnexion', () async {
       backend.repondre = (o) => (401, {});
 
@@ -274,8 +337,7 @@ void main() {
 
   group('rejeu réseau', () {
     test('une création (POST) n\'est jamais rejouée après une coupure', () async {
-      backend.repondre = (o) =>
-          throw DioException(requestOptions: o, type: DioExceptionType.connectionError);
+      backend.repondre = (o) => throw DioException(requestOptions: o, type: DioExceptionType.connectionError);
 
       await expectLater(dio.post('/client/colis', data: {'a': 1}), throwsA(isA<DioException>()));
       expect(backend.requetes, hasLength(1), reason: 'Un POST rejoué créerait l\'expédition en double');

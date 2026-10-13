@@ -6,8 +6,11 @@ abstract class AuthRepository {
   Future<Either<Failure, User>> login(String email, String password);
   // Inscription, mot de passe oublié, réinitialisation : message du backend en retour
   Future<Either<Failure, String>> register({
-    required String nom, required String prenom,
-    required String email, required String motDePasse, required String telephone,
+    required String nom,
+    required String prenom,
+    required String email,
+    required String motDePasse,
+    required String telephone,
     String pays = 'SN',
     String? villeId,
     String? adresse,

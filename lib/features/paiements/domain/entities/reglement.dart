@@ -47,15 +47,15 @@ class Reglement extends Equatable {
   String get statutLibelle => kLibellesStatutPaiement[statut] ?? statut;
 
   factory Reglement.fromJson(Map<String, dynamic> j) => Reglement(
-        id: j['id'] as String? ?? '',
-        reference: j['reference'] as String? ?? '',
-        montant: _d(j['montant']),
-        devise: j['devise'] as String? ?? 'XOF',
-        methode: j['methode'] as String? ?? '',
-        statut: j['statut'] as String? ?? '',
-        factureReference: (j['facture'] as Map<String, dynamic>?)?['reference'] as String?,
-        date: DateTime.tryParse((j['payeAt'] ?? j['createdAt'] ?? '') as String) ?? DateTime.now(),
-      );
+    id: j['id'] as String? ?? '',
+    reference: j['reference'] as String? ?? '',
+    montant: _d(j['montant']),
+    devise: j['devise'] as String? ?? 'XOF',
+    methode: j['methode'] as String? ?? '',
+    statut: j['statut'] as String? ?? '',
+    factureReference: (j['facture'] as Map<String, dynamic>?)?['reference'] as String?,
+    date: DateTime.tryParse((j['payeAt'] ?? j['createdAt'] ?? '') as String) ?? DateTime.now(),
+  );
 
   @override
   List<Object?> get props => [id, statut];
@@ -70,8 +70,8 @@ class Encours {
   const Encours({this.nbFacturesImpayees = 0, this.parDevise = const {}, this.nbFacturesEchues = 0});
 
   factory Encours.fromJson(Map<String, dynamic> j) => Encours(
-        nbFacturesImpayees: (j['nbFacturesImpayees'] as num?)?.toInt() ?? 0,
-        parDevise: (j['parDevise'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(k, _d(v))),
-        nbFacturesEchues: (j['facturesEchues'] as List? ?? const []).length,
-      );
+    nbFacturesImpayees: (j['nbFacturesImpayees'] as num?)?.toInt() ?? 0,
+    parDevise: (j['parDevise'] as Map<String, dynamic>? ?? {}).map((k, v) => MapEntry(k, _d(v))),
+    nbFacturesEchues: (j['facturesEchues'] as List? ?? const []).length,
+  );
 }

@@ -25,11 +25,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     final result = await authRepository.login(event.identifiant, event.motDePasse);
     await result.fold(
-      (f) async => emit(AuthFailure(
-        message: f.errorMessage,
-        emailNonConfirme: f is EmailNonConfirmeFailure,
-        email: f is EmailNonConfirmeFailure ? f.email : null,
-      )),
+      (f) async => emit(
+        AuthFailure(
+          message: f.errorMessage,
+          emailNonConfirme: f is EmailNonConfirmeFailure,
+          email: f is EmailNonConfirmeFailure ? f.email : null,
+        ),
+      ),
       (user) => _connecte(user, emit),
     );
   }
@@ -38,10 +40,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onVerificationEmail(VerificationEmailRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     final result = await authRepository.verifierEmail(event.email, event.code);
-    await result.fold(
-      (f) async => emit(AuthFailure(message: f.errorMessage)),
-      (user) => _connecte(user, emit),
-    );
+    await result.fold((f) async => emit(AuthFailure(message: f.errorMessage)), (user) => _connecte(user, emit));
   }
 
   Future<void> _connecte(User user, Emitter<AuthState> emit) async {

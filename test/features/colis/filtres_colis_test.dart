@@ -27,12 +27,7 @@ void main() {
     });
 
     test('colis reçus : seule la période est transmise', () {
-      final f = FiltresColis(
-        reference: 'YBC',
-        categorie: 'colis_xxl',
-        enCours: true,
-        dateDebut: DateTime(2026, 3, 1),
-      );
+      final f = FiltresColis(reference: 'YBC', categorie: 'colis_xxl', enCours: true, dateDebut: DateTime(2026, 3, 1));
       expect(f.versRequete(recus: true), {'dateDebut': '2026-03-01'});
     });
 

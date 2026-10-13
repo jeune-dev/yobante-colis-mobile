@@ -10,11 +10,8 @@ class VilleRef extends Equatable {
   final String? pays;
   const VilleRef({required this.id, required this.nom, this.pays});
 
-  factory VilleRef.fromJson(Map<String, dynamic> json) => VilleRef(
-        id: json['id'] as String? ?? '',
-        nom: json['nom'] as String? ?? '',
-        pays: json['pays'] as String?,
-      );
+  factory VilleRef.fromJson(Map<String, dynamic> json) =>
+      VilleRef(id: json['id'] as String? ?? '', nom: json['nom'] as String? ?? '', pays: json['pays'] as String?);
 
   @override
   List<Object?> get props => [id];
@@ -28,10 +25,10 @@ class ServiceRef extends Equatable {
   const ServiceRef({required this.id, required this.code, required this.nom});
 
   factory ServiceRef.fromJson(Map<String, dynamic> json) => ServiceRef(
-        id: json['id'] as String? ?? '',
-        code: json['code'] as String? ?? '',
-        nom: json['nom'] as String? ?? '',
-      );
+    id: json['id'] as String? ?? '',
+    code: json['code'] as String? ?? '',
+    nom: json['nom'] as String? ?? '',
+  );
 
   @override
   List<Object?> get props => [id];
@@ -45,23 +42,16 @@ class PointRef extends Equatable {
   final String? adresse;
   final String? telephone;
   final Map<String, dynamic>? horaires;
-  const PointRef({
-    required this.id,
-    this.code,
-    required this.nom,
-    this.adresse,
-    this.telephone,
-    this.horaires,
-  });
+  const PointRef({required this.id, this.code, required this.nom, this.adresse, this.telephone, this.horaires});
 
   factory PointRef.fromJson(Map<String, dynamic> json) => PointRef(
-        id: json['id'] as String? ?? '',
-        code: json['code'] as String?,
-        nom: json['nom'] as String? ?? '',
-        adresse: json['adresse'] as String?,
-        telephone: json['telephone'] as String?,
-        horaires: json['horaires'] as Map<String, dynamic>?,
-      );
+    id: json['id'] as String? ?? '',
+    code: json['code'] as String?,
+    nom: json['nom'] as String? ?? '',
+    adresse: json['adresse'] as String?,
+    telephone: json['telephone'] as String?,
+    horaires: json['horaires'] as Map<String, dynamic>?,
+  );
 
   @override
   List<Object?> get props => [id];
@@ -88,23 +78,23 @@ class ColisPiece extends Equatable {
   });
 
   factory ColisPiece.fromJson(Map<String, dynamic> json) => ColisPiece(
-        id: json['id'] as String?,
-        designation: json['designation'] as String?,
-        typeEmballage: json['typeEmballage'] as String? ?? 'carton',
-        poidsKg: versDouble(json['poidsKg']) ?? 0,
-        longueurCm: versDouble(json['longueurCm']),
-        largeurCm: versDouble(json['largeurCm']),
-        hauteurCm: versDouble(json['hauteurCm']),
-      );
+    id: json['id'] as String?,
+    designation: json['designation'] as String?,
+    typeEmballage: json['typeEmballage'] as String? ?? 'carton',
+    poidsKg: versDouble(json['poidsKg']) ?? 0,
+    longueurCm: versDouble(json['longueurCm']),
+    largeurCm: versDouble(json['largeurCm']),
+    hauteurCm: versDouble(json['hauteurCm']),
+  );
 
   Map<String, dynamic> toJson() => {
-        if (designation != null && designation!.isNotEmpty) 'designation': designation,
-        'typeEmballage': typeEmballage,
-        'poidsKg': poidsKg,
-        if (longueurCm != null) 'longueurCm': longueurCm,
-        if (largeurCm != null) 'largeurCm': largeurCm,
-        if (hauteurCm != null) 'hauteurCm': hauteurCm,
-      };
+    if (designation != null && designation!.isNotEmpty) 'designation': designation,
+    'typeEmballage': typeEmballage,
+    'poidsKg': poidsKg,
+    if (longueurCm != null) 'longueurCm': longueurCm,
+    if (largeurCm != null) 'largeurCm': largeurCm,
+    if (hauteurCm != null) 'hauteurCm': hauteurCm,
+  };
 
   @override
   List<Object?> get props => [id, poidsKg, designation];
@@ -127,12 +117,12 @@ class LigneForfaitColis extends Equatable {
   });
 
   factory LigneForfaitColis.fromJson(Map<String, dynamic> json) => LigneForfaitColis(
-        libelle: json['libelle'] as String? ?? '',
-        quantite: (json['quantite'] as num?)?.toInt() ?? 1,
-        prixUnitaire: versDouble(json['prixUnitaire']) ?? 0,
-        montant: versDouble(json['montant']) ?? 0,
-        devise: json['devise'] as String? ?? 'EUR',
-      );
+    libelle: json['libelle'] as String? ?? '',
+    quantite: (json['quantite'] as num?)?.toInt() ?? 1,
+    prixUnitaire: versDouble(json['prixUnitaire']) ?? 0,
+    montant: versDouble(json['montant']) ?? 0,
+    devise: json['devise'] as String? ?? 'EUR',
+  );
 
   @override
   List<Object?> get props => [libelle, quantite, montant];
@@ -322,8 +312,7 @@ class Colis extends Equatable {
   bool get montantEnAttente => montantTotal <= 0 && categorie == 'colis_xxl';
 
   /// Vrai si le trajet traverse une frontière (France ⇄ Sénégal).
-  bool get estInternational =>
-      paysDepart != null && paysArrivee != null && paysDepart != paysArrivee;
+  bool get estInternational => paysDepart != null && paysArrivee != null && paysDepart != paysArrivee;
 
   @override
   List<Object?> get props => [id, reference, statut];
@@ -350,15 +339,14 @@ class SuiviEvenement extends Equatable {
   });
 
   factory SuiviEvenement.fromJson(Map<String, dynamic> json) => SuiviEvenement(
-        code: (json['code'] ?? json['codeEvenement']) as String?,
-        statut: json['statut'] as String? ?? '',
-        libelle: json['libelle'] as String? ?? '',
-        lieu: json['lieu'] as String?,
-        pays: json['pays'] as String?,
-        commentaire: json['commentaire'] as String?,
-        date: DateTime.tryParse((json['date'] ?? json['dateEvenement'] ?? '').toString()) ??
-            DateTime.now(),
-      );
+    code: (json['code'] ?? json['codeEvenement']) as String?,
+    statut: json['statut'] as String? ?? '',
+    libelle: json['libelle'] as String? ?? '',
+    lieu: json['lieu'] as String?,
+    pays: json['pays'] as String?,
+    commentaire: json['commentaire'] as String?,
+    date: DateTime.tryParse((json['date'] ?? json['dateEvenement'] ?? '').toString()) ?? DateTime.now(),
+  );
 
   @override
   List<Object?> get props => [code, statut, date];

@@ -5,15 +5,44 @@
 /// Un texte absent de ce dictionnaire reste affiché en français.
 const Map<String, String> traductionsEn = {
   'Client': 'Customer',
+  'Pas de compte': 'No account',
+  'Choisissez la ville de départ.': 'Choose the departure city.',
+  'Choisissez la ville de destination.': 'Choose the destination city.',
+  'Choisissez un type d\'envoi.': 'Choose a shipment type.',
+  'Rechercher un pays': 'Search country',
+  'Menu': 'Menu',
+  'Diminuer': 'Decrease',
+  'Augmenter': 'Increase',
+  'Afficher le mot de passe': 'Show password',
+  'Masquer le mot de passe': 'Hide password',
+  'Note : {} sur 5': 'Rating: {} out of 5',
+  'Supprimer l\'avis': 'Delete review',
+  'Effacer la période': 'Clear period',
+  'Effacer la recherche': 'Clear search',
+  'Retirer ce colis': 'Remove this parcel',
+  'Retirer cet article': 'Remove this item',
+  'Copier le numéro de suivi': 'Copy tracking number',
+  'Rechercher dans mon carnet': 'Search my address book',
+  'Nom ou libellé du contact': 'Contact name or label',
+  'Adresse {} : hors de ce trajet': 'Address {}: not on this route',
+  'Adresse hors trajet': 'Address not on this route',
+  'au Sénégal': 'in Senegal',
+  'en France': 'in France',
+  'Ce contact habite {}. Pour lui envoyer un colis, changez le trajet à l\'étape 1.':
+      'This contact lives {}. To send them a parcel, change the route in step 1.',
+  'Prix approximatif de ce que contient le colis (ex. le prix d\'achat de l\'ordinateur envoyé). Il sert à la déclaration en douane et, si vous l\'assurez, au remboursement en cas de perte.':
+      'Approximate price of what the parcel contains (e.g. the purchase price of the laptop you are sending). It is used for the customs declaration and, if you insure it, for reimbursement in case of loss.',
   'Administrateur': 'Administrator',
   'Inconnu': 'Unknown',
   'Prix fixe · paiement immédiat': 'Fixed price · immediate payment',
-  'Prix fixe · validation sous 24 h · paiement à la réception du colis': 'Fixed price · approval within 24 h · payment when your parcel is received',
+  'Prix fixe · validation sous 24 h · paiement à la réception du colis':
+      'Fixed price · approval within 24 h · payment when your parcel is received',
   'Prix proposé sous 24 h · paiement après acceptation': 'Price offered within 24 h · payment after acceptance',
   'Langue de l\'application': 'App language',
   'Langue': 'Language',
   'Mise à jour disponible': 'Update available',
-  'Cette version de l\'application n\'est plus prise en charge. Installez la mise à jour pour continuer.': 'This version of the app is no longer supported. Install the update to continue.',
+  'Cette version de l\'application n\'est plus prise en charge. Installez la mise à jour pour continuer.':
+      'This version of the app is no longer supported. Install the update to continue.',
   'Une nouvelle version ({}) est disponible.': 'A new version ({}) is available.',
   'Plus tard': 'Later',
   'Mettre à jour': 'Update',
@@ -39,7 +68,8 @@ const Map<String, String> traductionsEn = {
   'Sensibilisation à la fraude': 'Fraud awareness',
   'Mon compte': 'My account',
   'Gérez votre profil, vos factures et vos envois.': 'Manage your profile, invoices and shipments.',
-  'Inscrivez-vous pour déverrouiller d\'autres fonctionnalités de l\'application': 'Sign up to unlock more features of the app',
+  'Inscrivez-vous pour déverrouiller d\'autres fonctionnalités de l\'application':
+      'Sign up to unlock more features of the app',
   'Mon profil': 'My profile',
   'Se déconnecter': 'Log out',
   'Connexion': 'Log in',
@@ -48,14 +78,19 @@ const Map<String, String> traductionsEn = {
   'Confidentialité des données': 'Data privacy',
   'Nous contacter': 'Contact us',
   '© {} Yobante Colis. Tous droits réservés.': '© {} Yobante Colis. All rights reserved.',
-  'Les données personnelles collectées (identité, coordonnées, adresses, contenu des expéditions) sont utilisées pour l\'exécution du contrat de transport. Elles ne sont ni vendues ni utilisées à des fins publicitaires.': 'The personal data collected (identity, contact details, addresses, shipment contents) is used to perform the contract of carriage. It is never sold or used for advertising.',
+  'Les données personnelles collectées (identité, coordonnées, adresses, contenu des expéditions) sont utilisées pour l\'exécution du contrat de transport. Elles ne sont ni vendues ni utilisées à des fins publicitaires.':
+      'The personal data collected (identity, contact details, addresses, shipment contents) is used to perform the contract of carriage. It is never sold or used for advertising.',
   'Lire les règles de confidentialité': 'Read the privacy policy',
   'Suppression de votre compte': 'Deleting your account',
-  'Vous pouvez supprimer votre compte depuis Réglages du compte, ou en suivant la procédure décrite sur notre site.': 'You can delete your account from Account settings, or by following the procedure described on our website.',
+  'Vous pouvez supprimer votre compte depuis Réglages du compte, ou en suivant la procédure décrite sur notre site.':
+      'You can delete your account from Account settings, or by following the procedure described on our website.',
   'Procédure de suppression du compte': 'Account deletion procedure',
-  'Pour toute question sur une expédition, une facture ou votre compte, contactez le support Yobante Colis.': 'For any question about a shipment, an invoice or your account, contact Yobante Colis support.',
-  'Yobante Colis ne vous demandera jamais vos identifiants, code de retrait ou informations bancaires par téléphone, SMS ou email non sollicité. Ne communiquez votre code de retrait qu\'à un agent Yobante Colis en point de service, et vérifiez toujours l\'expéditeur d\'un message avant d\'y répondre.': 'Yobante Colis will never ask for your login details, pickup code or bank details by unsolicited phone call, text message or email. Only give your pickup code to a Yobante Colis agent at a service point, and always check who sent a message before replying.',
-  'Si vous recevez une communication suspecte se présentant comme émanant de Yobante Colis, signalez-la au support avant toute action.': 'If you receive a suspicious message claiming to come from Yobante Colis, report it to support before taking any action.',
+  'Pour toute question sur une expédition, une facture ou votre compte, contactez le support Yobante Colis.':
+      'For any question about a shipment, an invoice or your account, contact Yobante Colis support.',
+  'Yobante Colis ne vous demandera jamais vos identifiants, code de retrait ou informations bancaires par téléphone, SMS ou email non sollicité. Ne communiquez votre code de retrait qu\'à un agent Yobante Colis en point de service, et vérifiez toujours l\'expéditeur d\'un message avant d\'y répondre.':
+      'Yobante Colis will never ask for your login details, pickup code or bank details by unsolicited phone call, text message or email. Only give your pickup code to a Yobante Colis agent at a service point, and always check who sent a message before replying.',
+  'Si vous recevez une communication suspecte se présentant comme émanant de Yobante Colis, signalez-la au support avant toute action.':
+      'If you receive a suspicious message claiming to come from Yobante Colis, report it to support before taking any action.',
   'Rejoignez Yobante Colis pour suivre vos envois': 'Join Yobante Colis to track your shipments',
   'Questions fréquentes': 'Frequently asked questions',
   'Restez vigilant': 'Stay alert',
@@ -93,15 +128,18 @@ const Map<String, String> traductionsEn = {
   'Mon espace': 'My space',
   'Réglages et tarif pro': 'Settings and business rate',
   'Nous écrire sur WhatsApp': 'Message us on WhatsApp',
-  'Envoie tes colis entre la France et le Sénégal avec Yobante Colis ! Inscris-toi avec mon code {} et profite de {} % de réduction sur ton premier envoi.': 'Send your parcels between France and Senegal with Yobante Colis! Sign up with my code {} and get {} % off your first shipment.',
+  'Envoie tes colis entre la France et le Sénégal avec Yobante Colis ! Inscris-toi avec mon code {} et profite de {} % de réduction sur ton premier envoi.':
+      'Send your parcels between France and Senegal with Yobante Colis! Sign up with my code {} and get {} % off your first shipment.',
   'Parrainez vos proches': 'Refer your friends and family',
-  'Ils gagnent {} % sur leur premier envoi, vous gagnez {} de crédit.': 'They get {} % off their first shipment, you earn {} in credit.',
+  'Ils gagnent {} % sur leur premier envoi, vous gagnez {} de crédit.':
+      'They get {} % off their first shipment, you earn {} in credit.',
   'Copié': 'Copied',
   'Code de parrainage copié.': 'Referral code copied.',
   'Partager sur WhatsApp': 'Share on WhatsApp',
   'Mon crédit': 'My credit',
   'Disponible': 'Available',
-  'Votre crédit est déduit automatiquement de vos prochaines expéditions.': 'Your credit is automatically deducted from your next shipments.',
+  'Votre crédit est déduit automatiquement de vos prochaines expéditions.':
+      'Your credit is automatically deducted from your next shipments.',
   'Bonus de bienvenue': 'Welcome bonus',
   '{} % de réduction sur votre premier envoi.': '{} % off your first shipment.',
   'Mes filleuls ({})': 'My referrals ({})',
@@ -147,7 +185,8 @@ const Map<String, String> traductionsEn = {
   'Mes données Yobante Colis': 'My Yobante Colis data',
   'Le fichier n\'a pas pu être partagé.': 'The file could not be shared.',
   'Supprimer mon compte': 'Delete my account',
-  'Vos données personnelles seront effacées et vous serez déconnecté. Vos expéditions et factures passées restent archivées (obligations comptables). Cette action est définitive.': 'Your personal data will be erased and you will be logged out. Your past shipments and invoices remain archived (accounting obligations). This action is permanent.',
+  'Vos données personnelles seront effacées et vous serez déconnecté. Vos expéditions et factures passées restent archivées (obligations comptables). Cette action est définitive.':
+      'Your personal data will be erased and you will be logged out. Your past shipments and invoices remain archived (accounting obligations). This action is permanent.',
   'Mot de passe': 'Password',
   'Motif (facultatif)': 'Reason (optional)',
   'Supprimer': 'Delete',
@@ -156,16 +195,19 @@ const Map<String, String> traductionsEn = {
   'Compte supprimé': 'Account deleted',
   'Réglages du compte': 'Account settings',
   'Domiciliation': 'Home address',
-  'Votre code postal permet de vous prévenir des tournées de collecte dans votre secteur.': 'Your postcode lets us notify you of pickup rounds in your area.',
+  'Votre code postal permet de vous prévenir des tournées de collecte dans votre secteur.':
+      'Your postcode lets us notify you of pickup rounds in your area.',
   'Code postal': 'Postcode',
   'Code postal enregistré.': 'Postcode saved.',
-  'Vérifiez votre numéro pour retrouver les colis qui vous sont adressés.': 'Verify your number to find the parcels sent to you.',
+  'Vérifiez votre numéro pour retrouver les colis qui vous sont adressés.':
+      'Verify your number to find the parcels sent to you.',
   'Vérifier mon numéro': 'Verify my number',
   'Notifications sur le téléphone': 'Phone notifications',
   'Messages WhatsApp': 'WhatsApp messages',
   'Réception de votre colis, arrivée à Dakar…': 'Parcel received, arrival in Dakar…',
   'Tarif professionnel': 'Business rate',
-  'Titulaire d\'un NINEA ou d\'un Kbis ? Transmettez votre justificatif pour bénéficier de {} % de remise sur vos envois.': 'Do you hold a NINEA or a Kbis? Send us your supporting document to get {} % off your shipments.',
+  'Titulaire d\'un NINEA ou d\'un Kbis ? Transmettez votre justificatif pour bénéficier de {} % de remise sur vos envois.':
+      'Do you hold a NINEA or a Kbis? Send us your supporting document to get {} % off your shipments.',
   'Tarif professionnel actif': 'Business rate active',
   'Justificatif en cours de vérification': 'Document being verified',
   'Numéro NINEA ou SIRET': 'NINEA or SIRET number',
@@ -176,7 +218,8 @@ const Map<String, String> traductionsEn = {
   'Exporter mes données personnelles': 'Export my personal data',
   'Saisissez les 6 chiffres reçus.': 'Enter the 6 digits you received.',
   'Saisissez le code reçu par WhatsApp.': 'Enter the code received on WhatsApp.',
-  'Pour voir les colis qui vous sont adressés, confirmez que ce numéro vous appartient. Un code à 6 chiffres vous sera envoyé par WhatsApp.': 'To see the parcels sent to you, confirm that this number belongs to you. A 6-digit code will be sent to you on WhatsApp.',
+  'Pour voir les colis qui vous sont adressés, confirmez que ce numéro vous appartient. Un code à 6 chiffres vous sera envoyé par WhatsApp.':
+      'To see the parcels sent to you, confirm that this number belongs to you. A 6-digit code will be sent to you on WhatsApp.',
   'Code de vérification': 'Verification code',
   'Renvoyer': 'Resend',
   'Valider': 'Confirm',
@@ -227,7 +270,8 @@ const Map<String, String> traductionsEn = {
   'Code envoyé': 'Code sent',
   'Un code a été envoyé à votre adresse email.': 'A code has been sent to your email address.',
   'Mot de passe oublié ?': 'Forgot your password?',
-  'Entrez votre adresse email et nous vous enverrons un code de réinitialisation.': 'Enter your email address and we will send you a reset code.',
+  'Entrez votre adresse email et nous vous enverrons un code de réinitialisation.':
+      'Enter your email address and we will send you a reset code.',
   'Adresse email': 'Email address',
   'Veuillez entrer votre email': 'Please enter your email',
   'Format d\'email invalide': 'Invalid email format',
@@ -246,7 +290,8 @@ const Map<String, String> traductionsEn = {
   'Email ou numéro de téléphone invalide': 'Invalid email or phone number',
   'Minimum 6 caractères': 'Minimum 6 characters',
   'Pas encore de compte ? ': 'No account yet? ',
-  'Envoyez et suivez vos colis\npartout au Sénégal, simplement.': 'Send and track your parcels\nanywhere in Senegal, simply.',
+  'Envoyez et suivez vos colis\npartout au Sénégal, simplement.':
+      'Send and track your parcels\nanywhere in Senegal, simply.',
   'Suivi en temps réel de vos envois': 'Real-time tracking of your shipments',
   'Factures et paiements en un clic': 'Invoices and payments in one tap',
   'Notifications à chaque étape': 'Notifications at every step',
@@ -288,7 +333,8 @@ const Map<String, String> traductionsEn = {
   'Un chiffre (0–9)': 'One digit (0–9)',
   'Un caractère spécial (!@#\$%...)': 'One special character (!@#\$%...)',
   'Mot de passe réinitialisé avec succès.': 'Password reset successfully.',
-  'Saisissez le code reçu par email à {} et choisissez un nouveau mot de passe.': 'Enter the code sent by email to {} and choose a new password.',
+  'Saisissez le code reçu par email à {} et choisissez un nouveau mot de passe.':
+      'Enter the code sent by email to {} and choose a new password.',
   'Code reçu par email': 'Code received by email',
   'Ex: AB12CD34': 'E.g. AB12CD34',
   'Veuillez entrer le code reçu par email': 'Please enter the code received by email',
@@ -305,7 +351,8 @@ const Map<String, String> traductionsEn = {
   'Confirmez votre email': 'Confirm your email',
   'Vérifiez votre boîte mail': 'Check your inbox',
   'Nous avons envoyé un lien de confirmation à\n': 'We have sent a confirmation link to\n',
-  '.\nCliquez dessus pour activer votre compte, puis connectez-vous.': '.\nClick it to activate your account, then log in.',
+  '.\nCliquez dessus pour activer votre compte, puis connectez-vous.':
+      '.\nClick it to activate your account, then log in.',
   'Pensez à regarder dans vos courriers indésirables.': 'Remember to check your spam folder.',
   'J\'ai confirmé, me connecter': 'I\'ve confirmed, log me in',
   'En attente de vérification': 'Awaiting review',
@@ -354,7 +401,8 @@ const Map<String, String> traductionsEn = {
   'Filtrer': 'Filter',
   'Tournées indisponibles': 'Pickup rounds unavailable',
   'Aucune tournée ouverte pour le moment': 'No pickup round open at the moment',
-  'Vous pouvez tout de même demander une collecte en indiquant la date souhaitée lors de votre envoi.': 'You can still request a pickup by giving your preferred date when you send your parcel.',
+  'Vous pouvez tout de même demander une collecte en indiquant la date souhaitée lors de votre envoi.':
+      'You can still request a pickup by giving your preferred date when you send your parcel.',
   'Horaires': 'Time',
   'Secteur': 'Area',
   'Inscription avant le': 'Register before',
@@ -463,7 +511,8 @@ const Map<String, String> traductionsEn = {
   'Livraison estimée : {}': 'Estimated delivery: {}',
   'Voir toutes les étapes': 'See all steps',
   'Reçus': 'Received',
-  'Cette fonctionnalité n\'est disponible que pour les clients connectés': 'This feature is only available to logged-in customers',
+  'Cette fonctionnalité n\'est disponible que pour les clients connectés':
+      'This feature is only available to logged-in customers',
   'Connectez-vous pour retrouver les colis qui vous sont destinés.': 'Log in to find the parcels sent to you.',
   'Vérifiez votre numéro': 'Verify your number',
   'Aucun colis reçu': 'No parcels received',
@@ -510,7 +559,8 @@ const Map<String, String> traductionsEn = {
   'Saisissez un numéro de téléphone.': 'Enter a phone number.',
   'Alertes activées': 'Alerts enabled',
   'Alertes de suivi': 'Tracking alerts',
-  'Chaque étape de l\'expédition sera envoyée à cette adresse.': 'Every step of the shipment will be sent to this address.',
+  'Chaque étape de l\'expédition sera envoyée à cette adresse.':
+      'Every step of the shipment will be sent to this address.',
   'Pour qui ?': 'For whom?',
   'Le destinataire': 'The recipient',
   'L\'expéditeur': 'The sender',
@@ -548,7 +598,8 @@ const Map<String, String> traductionsEn = {
   'Impossible d\'annuler la demande': 'Unable to cancel the request',
   'Programmer': 'Schedule',
   'Aucun enlèvement': 'No pickups',
-  'Un coursier peut passer récupérer vos colis à domicile, au créneau de votre choix.': 'A courier can collect your parcels from home, at the time slot of your choice.',
+  'Un coursier peut passer récupérer vos colis à domicile, au créneau de votre choix.':
+      'A courier can collect your parcels from home, at the time slot of your choice.',
   'Colis {}': 'Parcel {}',
   'Annuler l\'enlèvement ?': 'Cancel the pickup?',
   'Annuler l\'enlèvement': 'Cancel the pickup',
@@ -586,13 +637,15 @@ const Map<String, String> traductionsEn = {
   'Indiquez le poids de votre colis.': 'Enter the weight of your parcel.',
   'Précisez l\'état de la marchandise (neuf ou occasion).': 'Specify the condition of the goods (new or used).',
   'Indiquez la valeur estimée du contenu.': 'Enter the estimated value of the contents.',
-  'Indiquez le poids estimé et les dimensions (L × l × h) de chaque colis.': 'Enter the estimated weight and the dimensions (L × W × H) of each parcel.',
+  'Indiquez le poids estimé et les dimensions (L × l × h) de chaque colis.':
+      'Enter the estimated weight and the dimensions (L × W × H) of each parcel.',
   'Décrivez le contenu de votre colis.': 'Describe the contents of your parcel.',
   'Ajoutez {} photos du colis (trois angles).': 'Add {} photos of the parcel (three angles).',
   'Ajoutez une photo de votre envoi.': 'Add a photo of your shipment.',
   'Choisissez comment vous remettez votre colis.': 'Choose how you will hand over your parcel.',
   'Choisissez un point de dépôt.': 'Choose a drop-off point.',
-  'Si vous optez pour une collecte, veuillez indiquer les informations nécessaires : adresse et code postal.': 'If you choose a pickup, please provide the required information: address and postcode.',
+  'Si vous optez pour une collecte, veuillez indiquer les informations nécessaires : adresse et code postal.':
+      'If you choose a pickup, please provide the required information: address and postcode.',
   'Choisissez une tournée de collecte ou une date souhaitée.': 'Choose a pickup round or a preferred date.',
   'Nom de l\'expéditeur requis.': 'Sender\'s name required.',
   'Téléphone de l\'expéditeur : {}': 'Sender\'s phone: {}',
@@ -600,7 +653,8 @@ const Map<String, String> traductionsEn = {
   'Téléphone du destinataire : {}': 'Recipient\'s phone: {}',
   'Adresse de livraison requise.': 'Delivery address required.',
   'Choisissez un point de retrait.': 'Choose a pickup point.',
-  'Quartier, arrondissement, département et point de repère sont obligatoires au Sénégal.': 'Neighbourhood, district, department and landmark are mandatory in Senegal.',
+  'Quartier, arrondissement, département et point de repère sont obligatoires au Sénégal.':
+      'Neighbourhood, district, department and landmark are mandatory in Senegal.',
   'Choisissez une offre de transport.': 'Choose a transport offer.',
   'Vous devez accepter les conditions générales.': 'You must accept the general terms.',
   'Information manquante': 'Missing information',
@@ -620,7 +674,8 @@ const Map<String, String> traductionsEn = {
   'Votre colis': 'Your parcel',
   'Carton au poids': 'Box by weight',
   'Votre colis XXL': 'Your XXL parcel',
-  'Le prix vous sera proposé sous {} h après étude de votre demande.': 'The price will be offered within {} h after reviewing your request.',
+  'Le prix vous sera proposé sous {} h après étude de votre demande.':
+      'The price will be offered within {} h after reviewing your request.',
   'Il s\'agit de… (facultatif, pour estimer le prix)': 'It contains… (optional, to estimate the price)',
   'Description du contenu': 'Description of the contents',
   'Description du contenu (facultatif)': 'Description of the contents (optional)',
@@ -631,7 +686,8 @@ const Map<String, String> traductionsEn = {
   'Côté': 'Side',
   'Dessus': 'Top',
   'Besoin d\'un emballage ?': 'Need packaging?',
-  'Barigots, cartons ou emballage par nos équipes (option payante).': 'Barrels, boxes or packing by our team (paid option).',
+  'Barigots, cartons ou emballage par nos équipes (option payante).':
+      'Barrels, boxes or packing by our team (paid option).',
   'Dimensions facultatives': 'Dimensions optional',
   'Dimensions du colis (en cm)': 'Parcel dimensions (in cm)',
   'Longueur': 'Length',
@@ -642,10 +698,12 @@ const Map<String, String> traductionsEn = {
   'Mesurer': 'Measure',
   'Comment remettez-vous votre colis ?': 'How will you hand over your parcel?',
   'Adresse de réception': 'Receiving address',
-  'Si vous optez pour une collecte, veuillez indiquer les informations nécessaires.': 'If you choose a pickup, please provide the required information.',
+  'Si vous optez pour une collecte, veuillez indiquer les informations nécessaires.':
+      'If you choose a pickup, please provide the required information.',
   'Adresse de collecte': 'Pickup address',
   'Tournées de collecte dans votre secteur': 'Pickup rounds in your area',
-  'Aucune tournée ouverte pour le moment : indiquez la date souhaitée, nous vous confirmerons le passage.': 'No pickup round open at the moment: give your preferred date and we will confirm the visit.',
+  'Aucune tournée ouverte pour le moment : indiquez la date souhaitée, nous vous confirmerons le passage.':
+      'No pickup round open at the moment: give your preferred date and we will confirm the visit.',
   'Choisir une autre date': 'Choose another date',
   'Heure souhaitée (facultatif)': 'Preferred time (optional)',
   'Emballage à prévoir par nos équipes': 'Packaging to be provided by our team',
@@ -668,16 +726,22 @@ const Map<String, String> traductionsEn = {
   'Remise': 'Discount',
   'Estimation': 'Estimate',
   'La suite': 'What happens next',
-  'Votre facture et le lien de paiement vous sont envoyés dès la validation.': 'Your invoice and payment link are sent to you as soon as it is approved.',
-  'Nos équipes valident votre demande sous {} h. Vous paierez à la réception de votre colis.': 'Our team approves your request within {} h. You will pay when your parcel is received.',
-  'Nous étudions votre demande et vous envoyons une proposition de prix sous {} h, à accepter avant paiement.': 'We review your request and send you a price offer within {} h, to accept before payment.',
+  'Votre facture et le lien de paiement vous sont envoyés dès la validation.':
+      'Your invoice and payment link are sent to you as soon as it is approved.',
+  'Nos équipes valident votre demande sous {} h. Vous paierez à la réception de votre colis.':
+      'Our team approves your request within {} h. You will pay when your parcel is received.',
+  'Nous étudions votre demande et vous envoyons une proposition de prix sous {} h, à accepter avant paiement.':
+      'We review your request and send you a price offer within {} h, to accept before payment.',
   'J\'accepte les conditions générales de vente et de transport': 'I accept the general terms of sale and carriage',
   'Lire les conditions': 'Read the terms',
   'Expédition enregistrée': 'Shipment saved',
-  'Réglez votre facture puis remettez votre enveloppe selon le mode choisi.': 'Pay your invoice, then hand over your envelope using the chosen method.',
-  'Nos équipes étudient votre demande sous 24 h. Un accusé de réception vous a été envoyé par email. Vous paierez à la réception de votre colis.': 'Our team reviews your request within 24 h. An acknowledgement has been sent to you by email. You will pay when your parcel is received.',
+  'Réglez votre facture puis remettez votre enveloppe selon le mode choisi.':
+      'Pay your invoice, then hand over your envelope using the chosen method.',
+  'Nos équipes étudient votre demande sous 24 h. Un accusé de réception vous a été envoyé par email. Vous paierez à la réception de votre colis.':
+      'Our team reviews your request within 24 h. An acknowledgement has been sent to you by email. You will pay when your parcel is received.',
   'Demande de devis reçue': 'Quote request received',
-  'Nous vous envoyons une proposition de prix sous 24 h, par notification et par email. Vous pourrez l\'accepter depuis le suivi de votre colis.': 'We will send you a price offer within 24 h, by notification and email. You can accept it from your parcel\'s tracking.',
+  'Nous vous envoyons une proposition de prix sous 24 h, par notification et par email. Vous pourrez l\'accepter depuis le suivi de votre colis.':
+      'We will send you a price offer within 24 h, by notification and email. You can accept it from your parcel\'s tracking.',
   'Numéro de suivi': 'Tracking number',
   'Adresse d\'envoi': 'Shipping address',
   'Adresse de dépôt': 'Drop-off address',
@@ -696,7 +760,8 @@ const Map<String, String> traductionsEn = {
   'Choisir dans la galerie': 'Choose from gallery',
   'Recommencer': 'Retake',
   'Valider la photo': 'Use this photo',
-  'Prenez {} photos de votre colis sous des angles différents ({}/{}).': 'Take {} photos of your parcel from different angles ({}/{}).',
+  'Prenez {} photos de votre colis sous des angles différents ({}/{}).':
+      'Take {} photos of your parcel from different angles ({}/{}).',
   'Ajoutez au moins une photo ({}/{}).': 'Add at least one photo ({}/{}).',
   'Aucun article disponible pour cette catégorie.': 'No items available for this category.',
   'Sélectionner': 'Select',
@@ -741,7 +806,8 @@ const Map<String, String> traductionsEn = {
   'Règlements': 'Payments',
   'Aucune facture': 'No invoices',
   'Connectez-vous pour consulter vos factures.': 'Log in to view your invoices.',
-  'Vos factures apparaîtront ici après création d\'un colis.': 'Your invoices will appear here once you create a parcel.',
+  'Vos factures apparaîtront ici après création d\'un colis.':
+      'Your invoices will appear here once you create a parcel.',
   'Transport : {}': 'Transport: {}',
   'Remise : -{}': 'Discount: -{}',
   'Total TTC : {}': 'Total incl. VAT: {}',
@@ -798,7 +864,8 @@ const Map<String, String> traductionsEn = {
   'Réclamation rejetée': 'Claim rejected',
   'Résolution': 'Resolution',
   'Échanges': 'Messages',
-  'Aucun message pour le moment. Notre service client vous répondra ici.': 'No messages yet. Our customer service will reply here.',
+  'Aucun message pour le moment. Notre service client vous répondra ici.':
+      'No messages yet. Our customer service will reply here.',
   'Merci pour votre retour.': 'Thank you for your feedback.',
   'Votre message…': 'Your message…',
   'Vous': 'You',
@@ -823,7 +890,8 @@ const Map<String, String> traductionsEn = {
   'Jusqu\'à {} images (colis abîmé, emballage, facture…).': 'Up to {} images (damaged parcel, packaging, invoice…).',
   'Envoyer la réclamation': 'Send the claim',
   'Aucune réclamation': 'No claims',
-  'Un souci avec un envoi (perte, avarie, retard, facture) ? Ouvrez une réclamation, notre service client vous répond ici.': 'A problem with a shipment (loss, damage, delay, invoice)? Open a claim, our customer service will reply here.',
+  'Un souci avec un envoi (perte, avarie, retard, facture) ? Ouvrez une réclamation, notre service client vous répond ici.':
+      'A problem with a shipment (loss, damage, delay, invoice)? Open a claim, our customer service will reply here.',
   'Suivre un colis': 'Track a parcel',
   'Aucune expédition trouvée pour ce numéro.': 'No shipment found for this number.',
   'N° de suivi': 'Tracking number',
@@ -832,7 +900,8 @@ const Map<String, String> traductionsEn = {
   'Colis XXL': 'XXL parcel',
   'Documents administratifs, sous enveloppe': 'Administrative documents, in an envelope',
   'Documents administratifs sous enveloppe': 'Administrative documents in an envelope',
-  'Smartphones, ordinateurs, petit électroménager, valises, sacs, barigots': 'Smartphones, computers, small appliances, suitcases, bags, barrels',
+  'Smartphones, ordinateurs, petit électroménager, valises, sacs, barigots':
+      'Smartphones, computers, small appliances, suitcases, bags, barrels',
   'Réfrigérateurs, machines, gros cartons de plus de 30 kg': 'Fridges, machines, large boxes over 30 kg',
   'Valises, sacs, barigots, électronique': 'Suitcases, bags, barrels, electronics',
   'Actes, diplômes, courriers': 'Certificates, diplomas, letters',
@@ -873,7 +942,8 @@ const Map<String, String> traductionsEn = {
   'Retard d\'acheminement': 'Transit delay',
   'Expédition annulée': 'Shipment cancelled',
   'Prix forfaitaire, livraison incluse.': 'Flat-rate price, delivery included.',
-  'Estimation indicative : le prix définitif vous sera proposé sous {} h après étude de votre demande.': 'Indicative estimate: the final price will be offered within {} h after reviewing your request.',
+  'Estimation indicative : le prix définitif vous sera proposé sous {} h après étude de votre demande.':
+      'Indicative estimate: the final price will be offered within {} h after reviewing your request.',
   'fret aérien': 'air freight',
   'fret maritime': 'sea freight',
   ' (à partir de)': ' (from)',
@@ -883,12 +953,14 @@ const Map<String, String> traductionsEn = {
 
   // Contrôles de saisie et envoi de fichiers
   'Fichier trop volumineux (maximum {} Mo).': 'File too large (maximum {} MB).',
-  'Format non accepté : choisissez une image JPEG, PNG ou un PDF.': 'Unsupported format: choose a JPEG or PNG image or a PDF.',
+  'Format non accepté : choisissez une image JPEG, PNG ou un PDF.':
+      'Unsupported format: choose a JPEG or PNG image or a PDF.',
   'Format non accepté : choisissez une image JPEG ou PNG.': 'Unsupported format: choose a JPEG or PNG image.',
   'Au moins {} caractères': 'At least {} characters',
   '{} caractères maximum': '{} characters maximum',
   'Email requis': 'Email required',
-  '8 caractères minimum, avec une majuscule, un chiffre et un caractère spécial': 'At least 8 characters, with an uppercase letter, a digit and a special character',
+  '8 caractères minimum, avec une majuscule, un chiffre et un caractère spécial':
+      'At least 8 characters, with an uppercase letter, a digit and a special character',
   'Code postal requis': 'Postcode required',
   'Code postal à 5 chiffres': '5-digit postcode',
   'Code à 6 chiffres': '6-digit code',
@@ -900,7 +972,8 @@ const Map<String, String> traductionsEn = {
   'Nombre entier attendu': 'Whole number expected',
   'Entre {} et {}': 'Between {} and {}',
   'Cat. {} · {}': 'Cat. {} · {}',
-  '8 caractères min., une majuscule, un chiffre, un caractère spécial': '8 characters min., an uppercase letter, a digit, a special character',
+  '8 caractères min., une majuscule, un chiffre, un caractère spécial':
+      '8 characters min., an uppercase letter, a digit, a special character',
   '8 à 72 caractères': '8 to 72 characters',
   '8 caractères, majuscule, chiffre, spécial': '8 characters, uppercase, digit, special',
   'Poids ou dimensions : {}': 'Weight or dimensions: {}',
@@ -917,14 +990,17 @@ const Map<String, String> traductionsEn = {
   'Vérifiez votre connexion puis réessayez.': 'Check your connection and try again.',
   // Mot de passe oublié
   'Email envoyé': 'Email sent',
-  'Saisissez l\'adresse email de votre compte : nous vous enverrons un code pour choisir un nouveau mot de passe.': 'Enter your account email address: we\'ll send you a code to choose a new password.',
+  'Saisissez l\'adresse email de votre compte : nous vous enverrons un code pour choisir un nouveau mot de passe.':
+      'Enter your account email address: we\'ll send you a code to choose a new password.',
   'Recevoir un code': 'Get a code',
-  'Saisissez le code reçu par email, puis choisissez votre nouveau mot de passe.': 'Enter the code you received by email, then choose your new password.',
+  'Saisissez le code reçu par email, puis choisissez votre nouveau mot de passe.':
+      'Enter the code you received by email, then choose your new password.',
   'Renvoyer le code dans {} s': 'Resend code in {} s',
   'Renvoyer le code': 'Resend code',
   'Enregistrer le mot de passe': 'Save password',
   'Un caractère spécial': 'A special character',
-  'Dès l\'envoi de votre demande, votre facture est émise et le lien de paiement s\'ouvre.': 'As soon as you send your request, your invoice is issued and the payment link opens.',
+  'Dès l\'envoi de votre demande, votre facture est émise et le lien de paiement s\'ouvre.':
+      'As soon as you send your request, your invoice is issued and the payment link opens.',
   'Marchandise': 'Goods',
   'Cadeau': 'Gift',
   'Effets personnels': 'Personal effects',
@@ -961,12 +1037,16 @@ const Map<String, String> traductionsEn = {
   'Total HT : {}': 'Total excl. VAT: {}',
   'TVA : {}': 'VAT: {}',
   'Droits de douane : {}': 'Customs duties: {}',
-  'Service temporairement indisponible, réessayez dans un instant.': 'Service temporarily unavailable, please try again shortly.',
+  'Service temporairement indisponible, réessayez dans un instant.':
+      'Service temporarily unavailable, please try again shortly.',
   'Retour de marchandise': 'Returned goods',
   'estimation': 'estimate',
   '{} avis': '{} reviews',
-  'Connexion au serveur impossible. Vérifiez votre accès internet.': 'Unable to reach the server. Check your internet connection.',
+  'Connexion au serveur impossible. Vérifiez votre accès internet.':
+      'Unable to reach the server. Check your internet connection.',
   'Une erreur est survenue': 'An error occurred',
+  'Position indisponible. Vérifiez que la localisation est activée.':
+      'Location unavailable. Check that location services are on.',
   'Quitter l\'expédition ?': 'Leave this shipment?',
   'Les informations saisies seront perdues.': 'The information you entered will be lost.',
   'Continuer la saisie': 'Keep editing',
@@ -982,20 +1062,24 @@ const Map<String, String> traductionsEn = {
   'Aucun colis reçu ne correspond à ces critères.': 'No received parcel matches these criteria.',
   'Aucun résultat': 'No results',
   'Aucune expédition ne correspond à ces critères.': 'No shipment matches these criteria.',
+  'Aucun envoi ne correspond à la référence « {} ».': 'No shipment matches the reference “{}”.',
   'Aucune facture dans cette catégorie.': 'No invoice in this category.',
   'Aucune réclamation ne correspond à ces critères.': 'No claim matches these criteria.',
-  'Autorisez l\'accès à votre position pour trouver les points proches.': 'Allow access to your location to find nearby points.',
+  'Autorisez l\'accès à votre position pour trouver les points proches.':
+      'Allow access to your location to find nearby points.',
   'Autour de moi': 'Near me',
   'Barigot': 'Barrel',
   'Basse': 'Low',
-  'Batteries, parfums, aérosols, produits inflammables… (contrôle et supplément éventuels)': 'Batteries, perfumes, aerosols, flammable products… (checks and possible surcharge)',
+  'Batteries, parfums, aérosols, produits inflammables… (contrôle et supplément éventuels)':
+      'Batteries, perfumes, aerosols, flammable products… (checks and possible surcharge)',
   'Carton': 'Box',
   'Clôturées': 'Closed',
   'Code SH (facultatif)': 'HS code (optional)',
   'Collez le lien complet reçu par email.': 'Paste the full link received by email.',
   'Confirmer mon adresse': 'Confirm my address',
   'Consignes': 'Lockers',
-  'Copiez le lien de l\'email et collez-le ici pour confirmer votre adresse.': 'Copy the link from the email and paste it here to confirm your address.',
+  'Copiez le lien de l\'email et collez-le ici pour confirmer votre adresse.':
+      'Copy the link from the email and paste it here to confirm your address.',
   'Coursier': 'Courier',
   'Critique': 'Critical',
   'Délai : {}–{} jours': 'Lead time: {}–{} days',
@@ -1008,14 +1092,16 @@ const Map<String, String> traductionsEn = {
   'Enveloppe': 'Envelope',
   'Envoi de votre message impossible': 'Your message could not be sent',
   'Envois en cours uniquement': 'Ongoing shipments only',
-  'Facultatif : détaillez les articles pour accélérer le dédouanement et la facture commerciale.': 'Optional: list the items to speed up customs clearance and the commercial invoice.',
+  'Facultatif : détaillez les articles pour accélérer le dédouanement et la facture commerciale.':
+      'Optional: list the items to speed up customs clearance and the commercial invoice.',
   'Formalités douanières': 'Customs formalities',
   'Fût': 'Drum',
   'Haute': 'High',
   'Inventaire : 50 articles au maximum.': 'Inventory: 50 items maximum.',
   'Inventaire : indiquez la valeur unitaire de chaque article.': 'Inventory: enter the unit value of each item.',
   'Inventaire : le code SH compte 6 à 10 chiffres.': 'Inventory: the HS code has 6 to 10 digits.',
-  'Inventaire : le pays d\'origine s\'écrit en deux lettres (FR, CN…).': 'Inventory: the country of origin is a two-letter code (FR, CN…).',
+  'Inventaire : le pays d\'origine s\'écrit en deux lettres (FR, CN…).':
+      'Inventory: the country of origin is a two-letter code (FR, CN…).',
   'Inventaire : poids net invalide.': 'Inventory: invalid net weight.',
   'Inventaire : précisez la désignation de chaque article.': 'Inventory: describe each item.',
   'Inventaire : quantité invalide.': 'Inventory: invalid quantity.',
@@ -1066,7 +1152,8 @@ const Map<String, String> traductionsEn = {
   'Toutes les dates': 'All dates',
   'Type de point': 'Point type',
   'Téléphone ou WhatsApp (facultatif)': 'Phone or WhatsApp (optional)',
-  'Une question sur nos services ? Écrivez-nous, notre équipe vous répond par email.': 'A question about our services? Write to us, our team will reply by email.',
+  'Une question sur nos services ? Écrivez-nous, notre équipe vous répond par email.':
+      'A question about our services? Write to us, our team will reply by email.',
   'Unité': 'Unit',
   'Urgence': 'Urgency',
   'Valeur unitaire ({})': 'Unit value ({})',
@@ -1079,7 +1166,8 @@ const Map<String, String> traductionsEn = {
   '{} points trouvés': '{} points found',
   // Refonte du design (2026-10)
   'Avantages et réglages': 'Benefits and settings',
-  'Cliquez sur le lien reçu pour activer votre compte, puis connectez-vous.': 'Click the link you received to activate your account, then sign in.',
+  'Cliquez sur le lien reçu pour activer votre compte, puis connectez-vous.':
+      'Click the link you received to activate your account, then sign in.',
   'Copier': 'Copy',
   'De ': 'From ',
   'Pour ': 'For ',
@@ -1104,7 +1192,8 @@ const Map<String, String> traductionsEn = {
   'Code renvoyé': 'Code resent',
   'Compte activé': 'Account activated',
   'Bienvenue chez Yobante Colis !': 'Welcome to Yobante Colis!',
-  'Saisissez le code à 6 chiffres reçu par email pour activer votre compte.': 'Enter the 6-digit code you received by email to activate your account.',
+  'Saisissez le code à 6 chiffres reçu par email pour activer votre compte.':
+      'Enter the 6-digit code you received by email to activate your account.',
   'Déjà confirmé ? ': 'Already confirmed? ',
   'Confirmez le mot de passe': 'Confirm password',
   'Saisissez-le à nouveau': 'Enter it again',
@@ -1118,11 +1207,13 @@ const Map<String, String> traductionsEn = {
   "L'adresse email doit contenir un seul @": 'The email address must contain a single @',
   'La partie avant le @ est vide': 'The part before the @ is empty',
   'La partie avant le @ contient un caractère non autorisé': 'The part before the @ contains a forbidden character',
-  'La partie avant le @ ne peut pas commencer, finir ou doubler un point': 'The part before the @ cannot start, end with or repeat a dot',
+  'La partie avant le @ ne peut pas commencer, finir ou doubler un point':
+      'The part before the @ cannot start, end with or repeat a dot',
   "Le domaine de l'adresse email est incomplet": 'The email domain is incomplete',
   "Le domaine de l'adresse email est invalide": 'The email domain is invalid',
   'Le numéro ne doit contenir que des chiffres': 'The number must contain digits only',
-  'Indicatif non pris en charge : France (+33) ou Sénégal (+221) uniquement': 'Country code not supported: France (+33) or Senegal (+221) only',
+  'Indicatif non pris en charge : France (+33) ou Sénégal (+221) uniquement':
+      'Country code not supported: France (+33) or Senegal (+221) only',
 
   // ── Espace du personnel ──
   'Acheminement': 'Routing',
@@ -1164,7 +1255,8 @@ const Map<String, String> traductionsEn = {
   'Indiquez le motif.': 'Enter the reason.',
   'Instructions': 'Instructions',
   'Je suis en route': "I'm on my way",
-  'La validation des demandes, la planification et les réglages se font sur le back-office web.': 'Request approval, scheduling and settings are handled in the web back office.',
+  'La validation des demandes, la planification et les réglages se font sur le back-office web.':
+      'Request approval, scheduling and settings are handled in the web back office.',
   'Le montant dépasse le reste à payer.': 'The amount exceeds the balance due.',
   'Les enlèvements qui vous sont confiés apparaissent ici.': 'Pickups assigned to you appear here.',
   'Livraison à domicile': 'Home delivery',
@@ -1229,8 +1321,10 @@ const Map<String, String> traductionsEn = {
   '{p} payés sur {t}': '{p} paid out of {t}',
   'Échec': 'Failed',
   'Étiquette': 'Label',
-  'Cet enlèvement ne fait plus partie de vos missions : il a pu être réaffecté, annulé ou supprimé.': 'This pickup is no longer one of your missions: it may have been reassigned, cancelled or deleted.',
-  'Ce colis ne fait plus partie de vos missions : il a pu être confié à un autre membre du personnel ou changer de point.': 'This parcel is no longer one of your missions: it may have been assigned to another staff member or moved to another point.',
+  'Cet enlèvement ne fait plus partie de vos missions : il a pu être réaffecté, annulé ou supprimé.':
+      'This pickup is no longer one of your missions: it may have been reassigned, cancelled or deleted.',
+  'Ce colis ne fait plus partie de vos missions : il a pu être confié à un autre membre du personnel ou changer de point.':
+      'This parcel is no longer one of your missions: it may have been assigned to another staff member or moved to another point.',
   'Mission indisponible': 'Mission unavailable',
   'Chargement impossible': 'Could not load',
 };

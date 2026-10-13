@@ -36,10 +36,7 @@ class EmptyState extends StatelessWidget {
         Container(
           width: 88,
           height: 88,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.07),
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.07), shape: BoxShape.circle),
           child: Icon(icon, size: 44, color: color.withValues(alpha: 0.45)),
         ),
         const SizedBox(height: 20),
@@ -72,20 +69,12 @@ class EmptyState extends StatelessWidget {
                 color: color,
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.25),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
+                  BoxShadow(color: color.withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 6)),
                 ],
               ),
               child: Text(
                 actionLabel!,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -109,4 +98,3 @@ class EmptyState extends StatelessWidget {
     );
   }
 }
-

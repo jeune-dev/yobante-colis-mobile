@@ -19,16 +19,25 @@ class EnvoisPage extends StatelessWidget {
           leading: const BoutonMenuOuRetour(),
           title: Text(tr('Mes envois')),
           bottom: TabBar(
+            // Changer d'onglet ferme le clavier : la recherche des « Envoyés » n'est plus à l'écran
+            onTap: (_) => FocusManager.instance.primaryFocus?.unfocus(),
             indicatorColor: AppColor.kSecondary,
             indicatorWeight: 3,
             labelColor: AppColor.kPrimary,
-            tabs: [Tab(text: tr('Envoyés')), Tab(text: tr('Reçus'))],
+            tabs: [
+              Tab(text: tr('Envoyés')),
+              Tab(text: tr('Reçus')),
+            ],
           ),
         ),
-        body: const TabBarView(children: [
-          ColisListePage(integre: true),
-          RecusColisPage(integre: true),
-        ]),
+        body: NotificationListener<ScrollStartNotification>(
+          // Même chose quand on glisse d'un onglet à l'autre (défilement horizontal uniquement)
+          onNotification: (n) {
+            if (n.metrics.axis == Axis.horizontal) FocusManager.instance.primaryFocus?.unfocus();
+            return false;
+          },
+          child: const TabBarView(children: [ColisListePage(integre: true), RecusColisPage(integre: true)]),
+        ),
       ),
     );
   }

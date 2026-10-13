@@ -65,7 +65,9 @@ class AccountRemoteDataSourceImpl implements AccountRemoteDataSource {
   @override
   Future<String> changePassword(String oldPassword, String newPassword) async {
     try {
-      return messageApi(await dio.put(Env.authChangePass, data: {'oldPassword': oldPassword, 'newPassword': newPassword}));
+      return messageApi(
+        await dio.put(Env.authChangePass, data: {'oldPassword': oldPassword, 'newPassword': newPassword}),
+      );
     } on DioException catch (e) {
       throw ServerException(message: messageErreur(e, tr('Erreur')));
     }

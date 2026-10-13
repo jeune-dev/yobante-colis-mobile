@@ -94,13 +94,16 @@ class _DetailReclamationPageState extends State<DetailReclamationPage> {
               onAction: _charger,
             )
           : r == null
-              ? const Center(child: CircularProgressIndicator())
-              : Column(children: [
-                  if (_envoi) const LinearProgressIndicator(),
-                  Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: _charger,
-                      child: ListView(padding: const EdgeInsets.all(16), children: [
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                if (_envoi) const LinearProgressIndicator(),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: _charger,
+                    child: ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
                         CarteSection(
                           titre: r.objet,
                           icone: Icons.support_agent_outlined,
@@ -130,26 +133,27 @@ class _DetailReclamationPageState extends State<DetailReclamationPage> {
                         Text(tr('Échanges'), style: titreSection()),
                         const SizedBox(height: 8),
                         if (r.messages.isEmpty)
-                          Text(tr('Aucun message pour le moment. Notre service client vous répondra ici.'),
-                              style: texteDiscret(13)),
+                          Text(
+                            tr('Aucun message pour le moment. Notre service client vous répondra ici.'),
+                            style: texteDiscret(13),
+                          ),
                         for (final m in r.messages) _Bulle(message: m),
                         if (r.estClose) ...[
                           const SizedBox(height: 16),
-                          _Notation(
-                            note: r.noteSatisfaction,
-                            onNoter: (n) => _action(() => _source.noter(r.id, n)),
-                          ),
+                          _Notation(note: r.noteSatisfaction, onNoter: (n) => _action(() => _source.noter(r.id, n))),
                         ],
-                      ]),
+                      ],
                     ),
                   ),
-                  if (!r.estClose)
-                    SafeArea(
-                      top: false,
-                      child: Container(
-                        color: AppColor.kWhite,
-                        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-                        child: Row(children: [
+                ),
+                if (!r.estClose)
+                  SafeArea(
+                    top: false,
+                    child: Container(
+                      color: AppColor.kWhite,
+                      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                      child: Row(
+                        children: [
                           Expanded(
                             child: TextField(
                               controller: _reponse,
@@ -164,13 +168,16 @@ class _DetailReclamationPageState extends State<DetailReclamationPage> {
                             ),
                           ),
                           IconButton(
+                            tooltip: tr('Envoyer'),
                             onPressed: _envoi ? null : _repondre,
                             icon: const Icon(Icons.send_rounded, color: AppColor.kPrimary),
                           ),
-                        ]),
+                        ],
                       ),
                     ),
-                ]),
+                  ),
+              ],
+            ),
     );
   }
 }
@@ -192,20 +199,29 @@ class _Bulle extends StatelessWidget {
           color: client ? AppColor.kPrimary.withValues(alpha: 0.12) : AppColor.kWhite,
           borderRadius: BorderRadius.circular(14),
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(client ? tr('Vous') : tr('Service client'),
-              style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColor.kGrayscale40)),
-          const SizedBox(height: 4),
-          Text(message.message, style: GoogleFonts.plusJakartaSans(fontSize: 13)),
-          for (final url in message.piecesJointes)
-            TextButton.icon(
-              onPressed: () => ouvrirLien(context, url),
-              icon: const Icon(Icons.attach_file, size: 16),
-              label: Text(tr('Pièce jointe')),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              client ? tr('Vous') : tr('Service client'),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppColor.kGrayscale40,
+              ),
             ),
-          const SizedBox(height: 4),
-          Text(formaterDate(message.createdAt.toIso8601String(), avecHeure: true), style: texteDiscret(10)),
-        ]),
+            const SizedBox(height: 4),
+            Text(message.message, style: GoogleFonts.plusJakartaSans(fontSize: 13)),
+            for (final url in message.piecesJointes)
+              TextButton.icon(
+                onPressed: () => ouvrirLien(context, url),
+                icon: const Icon(Icons.attach_file, size: 16),
+                label: Text(tr('Pièce jointe')),
+              ),
+            const SizedBox(height: 4),
+            Text(formaterDate(message.createdAt.toIso8601String(), avecHeure: true), style: texteDiscret(10)),
+          ],
+        ),
       ),
     );
   }
@@ -218,17 +234,29 @@ class _Notation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CarteSection(titre: tr('Votre satisfaction'), icone: Icons.star_outline, children: [
-      Text(note == null ? tr('Comment évaluez-vous le traitement de votre réclamation ?') : tr('Merci pour votre note.'),
-          style: texteDiscret(13)),
-      Row(children: [
-        for (var i = 1; i <= 5; i++)
-          IconButton(
-            onPressed: note == null ? () => onNoter(i) : null,
-            icon: Icon((note ?? 0) >= i ? Icons.star_rounded : Icons.star_border_rounded,
-                color: AppColor.kSecondary, size: 30),
-          ),
-      ]),
-    ]);
+    return CarteSection(
+      titre: tr('Votre satisfaction'),
+      icone: Icons.star_outline,
+      children: [
+        Text(
+          note == null ? tr('Comment évaluez-vous le traitement de votre réclamation ?') : tr('Merci pour votre note.'),
+          style: texteDiscret(13),
+        ),
+        Row(
+          children: [
+            for (var i = 1; i <= 5; i++)
+              IconButton(
+                tooltip: tr('Note : $i sur 5'),
+                onPressed: note == null ? () => onNoter(i) : null,
+                icon: Icon(
+                  (note ?? 0) >= i ? Icons.star_rounded : Icons.star_border_rounded,
+                  color: AppColor.kSecondary,
+                  size: 30,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
   }
 }

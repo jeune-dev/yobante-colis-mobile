@@ -17,11 +17,19 @@ class _FakeAdapter implements HttpClientAdapter {
   RequestOptions? derniere;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options, Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
     derniere = options;
-    return ResponseBody.fromString(jsonEncode(corps), statut, headers: {
-      Headers.contentTypeHeader: [Headers.jsonContentType],
-    });
+    return ResponseBody.fromString(
+      jsonEncode(corps),
+      statut,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
   }
 
   @override
@@ -73,7 +81,9 @@ void main() {
       backend.corps = {
         'data': {'colis': [], 'pagination': null},
       };
-      await ds.getColisRecus(filtres: FiltresColis(reference: 'X', dateDebut: DateTime(2026, 5, 1)));
+      await ds.getColisRecus(
+        filtres: FiltresColis(reference: 'X', dateDebut: DateTime(2026, 5, 1)),
+      );
       expect(backend.derniere!.path, '/client/colis/recus');
       expect(backend.derniere!.queryParameters, {'dateDebut': '2026-05-01', 'page': 1, 'limit': 20});
     });
@@ -204,9 +214,11 @@ void main() {
         ..corps = {'message': 'Modification impossible', 'code': 'COLIS_NON_MODIFIABLE'};
       await expectLater(
         ds.modifierColis('c1', const {}),
-        throwsA(isA<ServerException>()
-            .having((e) => e.message, 'message', 'Modification impossible')
-            .having((e) => e.code, 'code', 'COLIS_NON_MODIFIABLE')),
+        throwsA(
+          isA<ServerException>()
+              .having((e) => e.message, 'message', 'Modification impossible')
+              .having((e) => e.code, 'code', 'COLIS_NON_MODIFIABLE'),
+        ),
       );
     });
 

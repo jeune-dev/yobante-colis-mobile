@@ -71,8 +71,9 @@ class AppTheme {
       chipTheme: ChipThemeData(
         selectedColor: AppColor.kPrimary,
         backgroundColor: AppColor.kWhite,
-        side: WidgetStateBorderSide.resolveWith((s) =>
-            BorderSide(color: s.contains(WidgetState.selected) ? AppColor.kPrimary : AppColor.kLine)),
+        side: WidgetStateBorderSide.resolveWith(
+          (s) => BorderSide(color: s.contains(WidgetState.selected) ? AppColor.kPrimary : AppColor.kLine),
+        ),
         checkmarkColor: AppColor.kWhite,
         showCheckmark: false,
         // Couleur dépendant de l'état dans un style ordinaire : la puce la résout
@@ -80,7 +81,8 @@ class AppTheme {
         // styles par défaut, et le libellé devenait invisible).
         labelStyle: GoogleFonts.plusJakartaSans(
           color: WidgetStateColor.resolveWith(
-              (s) => s.contains(WidgetState.selected) ? AppColor.kWhite : AppColor.kPrimary),
+            (s) => s.contains(WidgetState.selected) ? AppColor.kWhite : AppColor.kPrimary,
+          ),
           fontWeight: FontWeight.w600,
           fontSize: 13,
         ),
@@ -92,11 +94,14 @@ class AppTheme {
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.resolveWith(
-              (s) => s.contains(WidgetState.selected) ? AppColor.kPrimary : AppColor.kWhite),
+            (s) => s.contains(WidgetState.selected) ? AppColor.kPrimary : AppColor.kWhite,
+          ),
           foregroundColor: WidgetStateProperty.resolveWith(
-              (s) => s.contains(WidgetState.selected) ? AppColor.kWhite : AppColor.kPrimary),
+            (s) => s.contains(WidgetState.selected) ? AppColor.kWhite : AppColor.kPrimary,
+          ),
           iconColor: WidgetStateProperty.resolveWith(
-              (s) => s.contains(WidgetState.selected) ? AppColor.kSecondary : AppColor.kPrimary),
+            (s) => s.contains(WidgetState.selected) ? AppColor.kSecondary : AppColor.kPrimary,
+          ),
           side: const WidgetStatePropertyAll(BorderSide(color: AppColor.kLine)),
           textStyle: WidgetStatePropertyAll(GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13)),
           shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
@@ -106,15 +111,18 @@ class AppTheme {
       // Interrupteurs : piste bleue, pastille jaune
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
-            (s) => s.contains(WidgetState.selected) ? AppColor.kSecondary : AppColor.kWhite),
+          (s) => s.contains(WidgetState.selected) ? AppColor.kSecondary : AppColor.kWhite,
+        ),
         trackColor: WidgetStateProperty.resolveWith(
-            (s) => s.contains(WidgetState.selected) ? AppColor.kPrimary : AppColor.kLine),
+          (s) => s.contains(WidgetState.selected) ? AppColor.kPrimary : AppColor.kLine,
+        ),
         trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
       ),
 
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith(
-            (s) => s.contains(WidgetState.selected) ? AppColor.kPrimary : Colors.transparent),
+          (s) => s.contains(WidgetState.selected) ? AppColor.kPrimary : Colors.transparent,
+        ),
         checkColor: const WidgetStatePropertyAll(AppColor.kSecondary),
       ),
 
@@ -128,7 +136,10 @@ class AppTheme {
       listTileTheme: ListTileThemeData(
         iconColor: AppColor.kPrimary,
         titleTextStyle: GoogleFonts.plusJakartaSans(
-            fontSize: 14, fontWeight: FontWeight.w600, color: AppColor.kGrayscaleDark100),
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColor.kGrayscaleDark100,
+        ),
         subtitleTextStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -149,7 +160,10 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         titleTextStyle: GoogleFonts.plusJakartaSans(
-            fontSize: 18, fontWeight: FontWeight.w700, color: AppColor.kGrayscaleDark100),
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          color: AppColor.kGrayscaleDark100,
+        ),
         contentTextStyle: GoogleFonts.plusJakartaSans(fontSize: 14, height: 1.5, color: AppColor.kGrayscaleDark100),
       ),
 
@@ -177,42 +191,29 @@ class AppTheme {
           foregroundColor: AppColor.kWhite,
           disabledBackgroundColor: AppColor.kPrimary.withValues(alpha: 0.4),
           disabledForegroundColor: AppColor.kWhite,
-          textStyle: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w700,
-            fontSize: 15,
-          ),
+          textStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 15),
           elevation: 0,
           minimumSize: const Size(0, 50),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColor.kPrimary,
-          textStyle: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-          ),
+          textStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 14),
           side: const BorderSide(color: AppColor.kPrimary, width: 1.3),
           minimumSize: const Size(0, 48),
           padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
 
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColor.kPrimary,
-          textStyle: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
+          textStyle: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
@@ -221,15 +222,8 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColor.kBackground,
-        hintStyle: GoogleFonts.plusJakartaSans(
-          color: AppColor.kGrayscale40,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        labelStyle: GoogleFonts.plusJakartaSans(
-          color: AppColor.kGrayscaleDark100,
-          fontWeight: FontWeight.w500,
-        ),
+        hintStyle: GoogleFonts.plusJakartaSans(color: AppColor.kGrayscale40, fontSize: 14, fontWeight: FontWeight.w500),
+        labelStyle: GoogleFonts.plusJakartaSans(color: AppColor.kGrayscaleDark100, fontWeight: FontWeight.w500),
         prefixIconColor: AppColor.kPrimary,
         suffixIconColor: AppColor.kGrayscale40,
         floatingLabelStyle: GoogleFonts.plusJakartaSans(color: AppColor.kPrimary, fontWeight: FontWeight.w600),
@@ -260,19 +254,15 @@ class AppTheme {
       // SnackBar stylé
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColor.kPrimaryDark,
-        contentTextStyle: GoogleFonts.plusJakartaSans(
-          color: Colors.white,
-          fontSize: 14,
-        ),
+        contentTextStyle: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 14),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
 
       // Typographie générale
-      textTheme: GoogleFonts.plusJakartaSansTextTheme(base.textTheme).apply(
-        bodyColor: AppColor.kGrayscaleDark100,
-        displayColor: AppColor.kGrayscaleDark100,
-      ),
+      textTheme: GoogleFonts.plusJakartaSansTextTheme(
+        base.textTheme,
+      ).apply(bodyColor: AppColor.kGrayscaleDark100, displayColor: AppColor.kGrayscaleDark100),
 
       // Barre de navigation : indicateur jaune façon transporteur express
       navigationBarTheme: NavigationBarThemeData(
@@ -282,16 +272,18 @@ class AppTheme {
         shadowColor: AppColor.kPrimary.withValues(alpha: 0.1),
         indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         indicatorColor: AppColor.kSecondary.withValues(alpha: 0.35),
-        labelTextStyle: WidgetStateProperty.resolveWith((states) => GoogleFonts.plusJakartaSans(
-              fontSize: 11,
-              fontWeight: states.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500,
-              color: states.contains(WidgetState.selected) ? AppColor.kPrimary : AppColor.kGrayscale40,
-            )),
-        iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
-              color: states.contains(WidgetState.selected) ? AppColor.kPrimary : AppColor.kGrayscale40,
-            )),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            fontWeight: states.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500,
+            color: states.contains(WidgetState.selected) ? AppColor.kPrimary : AppColor.kGrayscale40,
+          ),
+        ),
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) =>
+              IconThemeData(color: states.contains(WidgetState.selected) ? AppColor.kPrimary : AppColor.kGrayscale40),
+        ),
       ),
     );
   }
 }
-

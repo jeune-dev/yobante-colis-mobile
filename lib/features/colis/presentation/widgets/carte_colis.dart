@@ -174,7 +174,13 @@ class _Trajet extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(arrivee, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.end, style: style),
+              child: Text(
+                arrivee,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.end,
+                style: style,
+              ),
             ),
           ],
         ),

@@ -51,8 +51,12 @@ class _EnregistreurVocalState extends State<_EnregistreurVocal> {
   Future<void> _demarrer() async {
     if (!await _enregistreur.hasPermission()) {
       if (mounted) {
-        showToast(context, tr('Micro indisponible'), tr('Autorisez l\'accès au micro dans les réglages du téléphone.'),
-            ToastificationType.warning);
+        showToast(
+          context,
+          tr('Micro indisponible'),
+          tr('Autorisez l\'accès au micro dans les réglages du téléphone.'),
+          ToastificationType.warning,
+        );
       }
       return;
     }
@@ -111,50 +115,63 @@ class _EnregistreurVocalState extends State<_EnregistreurVocal> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(24),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text(tr('Message vocal'), style: titreSection(18)),
-        const SizedBox(height: 6),
-        Text(tr('Décrivez votre colis de vive voix (2 minutes maximum).'), style: texteDiscret(13), textAlign: TextAlign.center),
-        const SizedBox(height: 24),
-        Text(_chrono, style: titreSection(32)),
-        const SizedBox(height: 16),
-        GestureDetector(
-          onTap: _envoi ? null : (_enCours ? _arreter : _demarrer),
-          child: CircleAvatar(
-            radius: 36,
-            backgroundColor: _enCours ? AppColor.kErreur : AppColor.kPrimary,
-            child: Icon(_enCours ? Icons.stop_rounded : Icons.mic_rounded, color: Colors.white, size: 36),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(tr('Message vocal'), style: titreSection(18)),
+          const SizedBox(height: 6),
+          Text(
+            tr('Décrivez votre colis de vive voix (2 minutes maximum).'),
+            style: texteDiscret(13),
+            textAlign: TextAlign.center,
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          _enCours ? tr('Enregistrement… touchez pour arrêter') : _fichier == null ? tr('Touchez pour enregistrer') : tr('Enregistrement prêt'),
-          style: texteDiscret(12),
-        ),
-        const SizedBox(height: 24),
-        Row(children: [
-          Expanded(
-            child: OutlinedButton(
-              onPressed: _envoi
-                  ? null
-                  : () async {
-                      if (_enCours) await _enregistreur.cancel();
-                      if (context.mounted) Navigator.of(context).pop(false);
-                    },
-              child: Text(tr('Annuler')),
+          const SizedBox(height: 24),
+          Text(_chrono, style: titreSection(32)),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: _envoi ? null : (_enCours ? _arreter : _demarrer),
+            child: CircleAvatar(
+              radius: 36,
+              backgroundColor: _enCours ? AppColor.kErreur : AppColor.kPrimary,
+              child: Icon(_enCours ? Icons.stop_rounded : Icons.mic_rounded, color: Colors.white, size: 36),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _fichier == null || _envoi || _enCours ? null : _envoyer,
-              child: _envoi
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                  : Text(tr('Envoyer')),
-            ),
+          const SizedBox(height: 8),
+          Text(
+            _enCours
+                ? tr('Enregistrement… touchez pour arrêter')
+                : _fichier == null
+                ? tr('Touchez pour enregistrer')
+                : tr('Enregistrement prêt'),
+            style: texteDiscret(12),
           ),
-        ]),
-      ]),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _envoi
+                      ? null
+                      : () async {
+                          if (_enCours) await _enregistreur.cancel();
+                          if (context.mounted) Navigator.of(context).pop(false);
+                        },
+                  child: Text(tr('Annuler')),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _fichier == null || _envoi || _enCours ? null : _envoyer,
+                  child: _envoi
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : Text(tr('Envoyer')),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -49,7 +49,7 @@ class AppDrawer extends StatelessWidget {
             final isAuth = snap.data == true;
             return Column(
               children: [
-                _Header(isAuth: isAuth),
+                _Header(isAuth: isAuth, chargement: snap.connectionState != ConnectionState.done),
                 const Divider(height: 1),
                 Expanded(
                   child: ListView(
@@ -188,7 +188,10 @@ class AppDrawer extends StatelessWidget {
 
 class _Header extends StatefulWidget {
   final bool isAuth;
-  const _Header({required this.isAuth});
+
+  /// Statut de connexion pas encore connu.
+  final bool chargement;
+  const _Header({required this.isAuth, this.chargement = false});
 
   @override
   State<_Header> createState() => _HeaderState();
@@ -196,6 +199,8 @@ class _Header extends StatefulWidget {
 
 class _HeaderState extends State<_Header> {
   AccountUser? _utilisateur;
+  // Profil indisponible (hors ligne…) : on se rabat sur « Mon compte »
+  bool _echec = false;
 
   bool get isAuth => widget.isAuth;
 
@@ -217,48 +222,76 @@ class _HeaderState extends State<_Header> {
   void _chargerUtilisateur() {
     if (!isAuth || _utilisateur != null) return;
     sl<AccountRepository>().getMe().then(
-          (res) => res.fold((_) {}, (u) {
-            if (mounted) setState(() => _utilisateur = u);
-          }),
-        );
+      (res) => res.fold(
+        (_) {
+          if (mounted) setState(() => _echec = true);
+        },
+        (u) {
+          if (mounted) setState(() => _utilisateur = u);
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final u = _utilisateur;
     final email = u?.email ?? '';
+    // Pendant le chargement, des emplacements gris plutôt qu'un texte provisoire
+    // (« Mon compte », « Pas de compte ») remplacé une fraction de seconde après
+    final enAttente = widget.chargement || (isAuth && u == null && !_echec);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              AvatarUtilisateur(prenom: u?.prenom, nom: u?.nom, photoUrl: u?.avatarUrl, rayon: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isAuth ? (u?.fullName ?? tr('Mon compte')) : tr('Client'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700),
-                    ),
-                    if (isAuth && email.isNotEmpty)
+          if (enAttente)
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: const BoxDecoration(color: AppColor.kLine, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [_emplacement(140, 16), const SizedBox(height: 8), _emplacement(190, 11)],
+                  ),
+                ),
+              ],
+            )
+          else
+            Row(
+              children: [
+                AvatarUtilisateur(prenom: u?.prenom, nom: u?.nom, photoUrl: u?.avatarUrl, rayon: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        email,
+                        isAuth ? (u?.fullName ?? tr('Mon compte')) : tr('Pas de compte'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40),
+                        style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700),
                       ),
-                  ],
+                      if (isAuth && email.isNotEmpty)
+                        Text(
+                          // Adresse longue : retour à la ligne après « @ » (espace invisible),
+                          // sur deux lignes au plus, plutôt que coupée au milieu
+                          email.replaceFirst('@', '\u200B@'),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          if (!isAuth) ...[
+              ],
+            ),
+          if (!isAuth && !widget.chargement) ...[
             const SizedBox(height: 12),
             Text(
               tr('Inscrivez-vous pour déverrouiller d\'autres fonctionnalités de l\'application'),
@@ -266,7 +299,9 @@ class _HeaderState extends State<_Header> {
             ),
           ],
           const SizedBox(height: 14),
-          if (isAuth)
+          if (widget.chargement)
+            const SizedBox(height: 40)
+          else if (isAuth)
             Row(
               children: [
                 OutlinedButton(
@@ -314,6 +349,12 @@ class _HeaderState extends State<_Header> {
       ),
     );
   }
+
+  Widget _emplacement(double largeur, double hauteur) => Container(
+    width: largeur,
+    height: hauteur,
+    decoration: BoxDecoration(color: AppColor.kLine, borderRadius: BorderRadius.circular(6)),
+  );
 }
 
 class _MenuTile extends StatelessWidget {
@@ -331,11 +372,14 @@ class _MenuTile extends StatelessWidget {
       leading: Icon(icon, color: AppColor.kGrayscaleDark100),
       title: Text(label, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 14)),
       trailing: compteur
-          ? const Row(mainAxisSize: MainAxisSize.min, children: [
-              CompteurNotificationsLigne(),
-              SizedBox(width: 4),
-              Icon(Icons.chevron_right_rounded, color: AppColor.kGrayscale40),
-            ])
+          ? const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CompteurNotificationsLigne(),
+                SizedBox(width: 4),
+                Icon(Icons.chevron_right_rounded, color: AppColor.kGrayscale40),
+              ],
+            )
           : const Icon(Icons.chevron_right_rounded, color: AppColor.kGrayscale40),
       onTap: onTap,
     );

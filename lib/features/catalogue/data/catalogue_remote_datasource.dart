@@ -20,88 +20,91 @@ class CatalogueRemoteDataSource {
     if (_configuration != null && !forcer) return _configuration!;
     return appelApi(() async {
       final res = await dio.get(Env.publicConfiguration);
-      return _configuration =
-          ConfigurationPublique.fromJson(_data(res)['configuration'] as Map<String, dynamic>);
+      return _configuration = ConfigurationPublique.fromJson(_data(res)['configuration'] as Map<String, dynamic>);
     });
   }
 
   /// Règles des catégories de colis (photos minimales, modes de dépôt, paiement…),
   /// appliquées aux constantes de l'application.
   Future<void> chargerCategories() => appelApi(() async {
-        final res = await dio.get(Env.publicCategories);
-        CategorieColis.appliquerRegles(_data(res)['categories'] as List? ?? const []);
-      });
+    final res = await dio.get(Env.publicCategories);
+    CategorieColis.appliquerRegles(_data(res)['categories'] as List? ?? const []);
+  });
 
   /// [emplacement] : `accueil`, `banniere` ou `popup` (toutes les annonces sinon).
   Future<ContenuAccueil> getAccueil({String? codePostal, String? pays, String? villeId, String? emplacement}) =>
       appelApi(() async {
-        final res = await dio.get(Env.publicAccueil, queryParameters: {
-          if (codePostal != null && codePostal.isNotEmpty) 'codePostal': codePostal,
-          'pays': ?pays,
-          'villeId': ?villeId,
-          'emplacement': ?emplacement,
-        });
+        final res = await dio.get(
+          Env.publicAccueil,
+          queryParameters: {
+            if (codePostal != null && codePostal.isNotEmpty) 'codePostal': codePostal,
+            'pays': ?pays,
+            'villeId': ?villeId,
+            'emplacement': ?emplacement,
+          },
+        );
         final d = _data(res);
         return ContenuAccueil(
-          annonces: (d['annonces'] as List? ?? [])
-              .map((a) => Annonce.fromJson(a as Map<String, dynamic>))
-              .toList(),
+          annonces: (d['annonces'] as List? ?? []).map((a) => Annonce.fromJson(a as Map<String, dynamic>)).toList(),
           tournees: (d['tourneesCollecte'] as List? ?? [])
               .map((t) => TourneeCollecte.fromJson(t as Map<String, dynamic>))
               .toList(),
         );
       });
 
-  Future<List<TourneeCollecte>> getTournees({String? pays, String? codePostal, String? villeId}) =>
-      appelApi(() async {
-        final res = await dio.get(Env.publicTournees, queryParameters: {
-          'pays': ?pays,
-          if (codePostal != null && codePostal.isNotEmpty) 'codePostal': codePostal,
-          'villeId': ?villeId,
-        });
-        return (_data(res)['tournees'] as List? ?? [])
-            .map((t) => TourneeCollecte.fromJson(t as Map<String, dynamic>))
-            .toList();
-      });
+  Future<List<TourneeCollecte>> getTournees({String? pays, String? codePostal, String? villeId}) => appelApi(() async {
+    final res = await dio.get(
+      Env.publicTournees,
+      queryParameters: {
+        'pays': ?pays,
+        if (codePostal != null && codePostal.isNotEmpty) 'codePostal': codePostal,
+        'villeId': ?villeId,
+      },
+    );
+    return (_data(res)['tournees'] as List? ?? [])
+        .map((t) => TourneeCollecte.fromJson(t as Map<String, dynamic>))
+        .toList();
+  });
 
-  Future<List<ArticleTarif>> getTarifs(
-          {String? categorie, String? modeTransport, String? paysDepart, String? paysArrivee}) =>
-      appelApi(() async {
-        final res = await dio.get(Env.publicTarifs, queryParameters: {
-          'categorie': ?categorie,
-          'modeTransport': ?modeTransport,
-          'paysDepart': ?paysDepart,
-          'paysArrivee': ?paysArrivee,
-        });
-        return (_data(res)['articles'] as List? ?? [])
-            .map((a) => ArticleTarif.fromJson(a as Map<String, dynamic>))
-            .toList();
-      });
+  Future<List<ArticleTarif>> getTarifs({
+    String? categorie,
+    String? modeTransport,
+    String? paysDepart,
+    String? paysArrivee,
+  }) => appelApi(() async {
+    final res = await dio.get(
+      Env.publicTarifs,
+      queryParameters: {
+        'categorie': ?categorie,
+        'modeTransport': ?modeTransport,
+        'paysDepart': ?paysDepart,
+        'paysArrivee': ?paysArrivee,
+      },
+    );
+    return (_data(res)['articles'] as List? ?? [])
+        .map((a) => ArticleTarif.fromJson(a as Map<String, dynamic>))
+        .toList();
+  });
 
   /// [type] : `contenant` (carton, barigot…) ou `prestation` (emballage par nos équipes).
   Future<List<Emballage>> getEmballages({String? categorie, String? type}) => appelApi(() async {
-        final res = await dio.get(Env.publicEmballages, queryParameters: {
-          'categorie': ?categorie,
-          'type': ?type,
-        });
-        return (_data(res)['emballages'] as List? ?? [])
-            .map((e) => Emballage.fromJson(e as Map<String, dynamic>))
-            .toList();
-      });
+    final res = await dio.get(Env.publicEmballages, queryParameters: {'categorie': ?categorie, 'type': ?type});
+    return (_data(res)['emballages'] as List? ?? []).map((e) => Emballage.fromJson(e as Map<String, dynamic>)).toList();
+  });
 
   Future<List<ServiceExpedition>> getServices() => appelApi(() async {
-        final res = await dio.get(Env.publicServices);
-        return (_data(res)['services'] as List? ?? [])
-            .map((s) => ServiceExpedition.fromJson(s as Map<String, dynamic>))
-            .toList();
-      });
+    final res = await dio.get(Env.publicServices);
+    return (_data(res)['services'] as List? ?? [])
+        .map((s) => ServiceExpedition.fromJson(s as Map<String, dynamic>))
+        .toList();
+  });
 
   Future<List<VilleDesservie>> getVilles({String? pays}) => appelApi(() async {
-        final res = await dio.get(Env.publicVilles, queryParameters: {'pays': ?pays});
-        return (_data(res)['villes'] as List? ?? [])
-            .map((v) => VilleDesservie.fromJson(v as Map<String, dynamic>))
-            .toList();
-      });
+    final res = await dio.get(Env.publicVilles, queryParameters: {'pays': ?pays});
+    return (_data(res)['villes'] as List? ?? [])
+        .map((v) => VilleDesservie.fromJson(v as Map<String, dynamic>))
+        .toList();
+  });
 
   Future<List<PointService>> getPoints({
     String? villeId,
@@ -112,32 +115,31 @@ class CatalogueRemoteDataSource {
     double? latitude,
     double? longitude,
     double? rayonKm,
-  }) =>
-      appelApi(() async {
-        final res = await dio.get(Env.publicPointsCollecte, queryParameters: {
-          'villeId': ?villeId,
-          'pays': ?pays,
-          'service': ?service,
-          'type': ?type,
-          if (codePostal != null && codePostal.isNotEmpty) 'codePostal': codePostal,
-          'latitude': ?latitude,
-          'longitude': ?longitude,
-          'rayonKm': ?rayonKm,
-        });
-        return (_data(res)['points'] as List? ?? [])
-            .map((p) => PointService.fromJson(p as Map<String, dynamic>))
-            .toList();
-      });
+  }) => appelApi(() async {
+    final res = await dio.get(
+      Env.publicPointsCollecte,
+      queryParameters: {
+        'villeId': ?villeId,
+        'pays': ?pays,
+        'service': ?service,
+        'type': ?type,
+        if (codePostal != null && codePostal.isNotEmpty) 'codePostal': codePostal,
+        'latitude': ?latitude,
+        'longitude': ?longitude,
+        'rayonKm': ?rayonKm,
+      },
+    );
+    return (_data(res)['points'] as List? ?? []).map((p) => PointService.fromJson(p as Map<String, dynamic>)).toList();
+  });
 
   /// Compare les offres pour un besoin d'expédition. Connecté, le devis intègre
   /// les remises (professionnel, parrainage) et le crédit du compte.
-  Future<ResultatDevis> devis(Map<String, dynamic> besoin, {bool connecte = false}) =>
-      appelApi(() async {
-        final res = await dio.post(
-          connecte ? Env.clientDevis : Env.publicDevis,
-          data: besoin,
-          options: connecte ? null : Options(extra: {'skipAuthInterceptor': true}),
-        );
-        return ResultatDevis.fromJson(_data(res)['devis'] as Map<String, dynamic>);
-      }, tr('Impossible de calculer le tarif'));
+  Future<ResultatDevis> devis(Map<String, dynamic> besoin, {bool connecte = false}) => appelApi(() async {
+    final res = await dio.post(
+      connecte ? Env.clientDevis : Env.publicDevis,
+      data: besoin,
+      options: connecte ? null : Options(extra: {'skipAuthInterceptor': true}),
+    );
+    return ResultatDevis.fromJson(_data(res)['devis'] as Map<String, dynamic>);
+  }, tr('Impossible de calculer le tarif'));
 }

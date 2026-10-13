@@ -40,29 +40,39 @@ class SelecteurArticles extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: quantite > 0 ? AppColor.kSecondary : AppColor.kLine, width: quantite > 0 ? 2 : 1),
           ),
-          child: Row(children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: a.photoUrl != null
-                  ? CachedNetworkImage(imageUrl: a.photoUrl!, width: 44, height: 44, fit: BoxFit.cover)
-                  : Container(
-                      width: 44,
-                      height: 44,
-                      color: AppColor.kPrimary.withValues(alpha: 0.07),
-                      child: const Icon(Icons.luggage_outlined, color: AppColor.kPrimary),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: a.photoUrl != null
+                    ? CachedNetworkImage(imageUrl: a.photoUrl!, width: 44, height: 44, fit: BoxFit.cover)
+                    : Container(
+                        width: 44,
+                        height: 44,
+                        color: AppColor.kPrimary.withValues(alpha: 0.07),
+                        child: const Icon(Icons.luggage_outlined, color: AppColor.kPrimary),
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(a.libelle, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13)),
+                    Text(
+                      '${a.prixAPartirDe ? tr('à partir de ') : ''}${formaterMontant(prix, a.devise)}',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColor.kPrimary,
+                      ),
                     ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(a.libelle, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13)),
-                Text('${a.prixAPartirDe ? tr('à partir de ') : ''}${formaterMontant(prix, a.devise)}',
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12, fontWeight: FontWeight.w700, color: AppColor.kPrimary)),
-              ]),
-            ),
-            CompteurQuantite(valeur: quantite, onChanged: (q) => onChanged(a, q)),
-          ]),
+                  ],
+                ),
+              ),
+              CompteurQuantite(valeur: quantite, onChanged: (q) => onChanged(a, q)),
+            ],
+          ),
         );
       }).toList(),
     );

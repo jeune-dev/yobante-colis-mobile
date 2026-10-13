@@ -24,9 +24,7 @@ extension UserRoleX on UserRole {
     }
   }
 
-  bool get isClient     => this == UserRole.client;
-  bool get isAdmin      => this == UserRole.admin || this == UserRole.superAdmin;
-  bool get isSuperAdmin => this == UserRole.superAdmin;
+  bool get isAdmin => this == UserRole.admin || this == UserRole.superAdmin;
   bool get isPersonnelTerrain => this == UserRole.coursier || this == UserRole.agentPoint;
 
   /// Membre du personnel : ouvre l'espace de travail au lieu de l'espace client.
@@ -34,23 +32,34 @@ extension UserRoleX on UserRole {
 
   String get label {
     switch (this) {
-      case UserRole.client:     return tr('Client');
-      case UserRole.coursier:   return tr('Coursier');
-      case UserRole.agentPoint: return tr('Agent de point');
-      case UserRole.admin:      return tr('Administrateur');
-      case UserRole.superAdmin: return tr('Super Admin');
-      case UserRole.unknown:    return tr('Inconnu');
+      case UserRole.client:
+        return tr('Client');
+      case UserRole.coursier:
+        return tr('Coursier');
+      case UserRole.agentPoint:
+        return tr('Agent de point');
+      case UserRole.admin:
+        return tr('Administrateur');
+      case UserRole.superAdmin:
+        return tr('Super Admin');
+      case UserRole.unknown:
+        return tr('Inconnu');
     }
   }
 
   Color get badgeColor {
     switch (this) {
-      case UserRole.client:     return AppColor.kSucces.withValues(alpha: 0.2);
+      case UserRole.client:
+        return AppColor.kSucces.withValues(alpha: 0.2);
       case UserRole.coursier:
-      case UserRole.agentPoint: return AppColor.kAlerte.withValues(alpha: 0.2);
-      case UserRole.admin:      return AppColor.kInfo.withValues(alpha: 0.2);
-      case UserRole.superAdmin: return AppColor.kInfo.withValues(alpha: 0.2);
-      default:                  return Colors.grey.withValues(alpha: 0.15);
+      case UserRole.agentPoint:
+        return AppColor.kAlerte.withValues(alpha: 0.2);
+      case UserRole.admin:
+        return AppColor.kInfo.withValues(alpha: 0.2);
+      case UserRole.superAdmin:
+        return AppColor.kInfo.withValues(alpha: 0.2);
+      default:
+        return Colors.grey.withValues(alpha: 0.15);
     }
   }
 }

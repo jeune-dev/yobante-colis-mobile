@@ -8,10 +8,12 @@ class DemoPaiementsRepository implements PaiementsRepository {
   @override
   Future<Either<Failure, List<FactureColis>>> getFactures({String? statut, bool impayees = false}) async {
     await Future.delayed(const Duration(milliseconds: 400));
-    return Right(DemoData.factures
-        .where((f) => statut == null || f.statut == statut)
-        .where((f) => !impayees || const ['en_attente', 'partiellement_payee'].contains(f.statut))
-        .toList());
+    return Right(
+      DemoData.factures
+          .where((f) => statut == null || f.statut == statut)
+          .where((f) => !impayees || const ['en_attente', 'partiellement_payee'].contains(f.statut))
+          .toList(),
+    );
   }
 
   @override

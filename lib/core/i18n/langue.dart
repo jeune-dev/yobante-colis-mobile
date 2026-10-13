@@ -69,10 +69,7 @@ class LangueApp extends ValueNotifier<Langue> {
     _prefs = prefs;
     final memorisee = prefs.getString(_cle);
     final systeme = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-    value = Langue.values.firstWhere(
-      (l) => l.code == (memorisee ?? systeme),
-      orElse: () => Langue.fr,
-    );
+    value = Langue.values.firstWhere((l) => l.code == (memorisee ?? systeme), orElse: () => Langue.fr);
   }
 
   /// Choix de l'utilisateur : appliqué tout de suite et enregistré sur le compte.
@@ -103,13 +100,10 @@ List<(RegExp, String)>? _motifs;
 final Map<String, String> _cacheMotifs = {};
 
 List<(RegExp, String)> _compilerMotifs() => [
-      for (final e in traductionsEn.entries)
-        if (e.key.contains('{}'))
-          (
-            RegExp('^${e.key.split('{}').map(RegExp.escape).join(r'(.+?)')}\$', dotAll: true),
-            e.value,
-          ),
-    ];
+  for (final e in traductionsEn.entries)
+    if (e.key.contains('{}'))
+      (RegExp('^${e.key.split('{}').map(RegExp.escape).join(r'(.+?)')}\$', dotAll: true), e.value),
+];
 
 /// Traduit un texte de l'interface écrit en français.
 ///

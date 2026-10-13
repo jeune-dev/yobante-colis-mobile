@@ -5,6 +5,7 @@ import '../../../../core/theme/app_color.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../core/widgets/ui_kit.dart';
+import '../../../../core/widgets/champ_telephone.dart';
 import '../../../../injection_container.dart';
 import '../../../adresses/presentation/pages/adresses_page.dart';
 import '../../../catalogue/data/catalogue_remote_datasource.dart';
@@ -117,7 +118,7 @@ class _EnlevementFormPageState extends State<EnlevementFormPage> {
   String? _texte(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
 
   Future<void> _enregistrer() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!validerFormulaire(_formKey)) return;
     if (_date == null) {
       showToast(context, tr('Date requise'), tr('Choisissez la date de l\'enlèvement.'), ToastificationType.warning);
       return;
@@ -153,7 +154,7 @@ class _EnlevementFormPageState extends State<EnlevementFormPage> {
           'pays': _pays,
           'villeId': _ville!.id,
           'codePostal': _texte(_codePostal),
-          'poidsEstimeKg': double.tryParse(_poids.text.trim().replaceAll(',', '.')),
+          'poidsEstimeKg': lireNombre(_poids.text),
         });
         if (!mounted) return;
         showToast(context, tr('Enlèvement programmé'), r.message, ToastificationType.success);
@@ -176,153 +177,187 @@ class _EnlevementFormPageState extends State<EnlevementFormPage> {
         absorbing: _envoi,
         child: Form(
           key: _formKey,
-          child: ListView(padding: const EdgeInsets.all(20), children: [
-            if (_envoi) const LinearProgressIndicator(),
-            if (widget.colis != null) ...[
-              Bandeau(icone: Icons.inventory_2_outlined, titre: tr('Expédition ${widget.colis!.reference}')),
-              const SizedBox(height: 16),
-            ],
-            CarteSection(
-              titre: tr('Où récupérer le colis'),
-              icone: Icons.home_work_outlined,
-              action: _edition
-                  ? null
-                  : TextButton.icon(
-                      onPressed: _depuisCarnet,
-                      icon: const Icon(Icons.contacts_outlined, size: 18),
-                      label: Text(tr('Carnet')),
-                    ),
-              children: [
-                ChampTexte(
-                  controller: _contactNom,
-                  label: tr('Personne à contacter'),
-                  maxLength: 120,
-                  validator: texte(requis: true, min: 2, max: 120, message: tr('Nom requis')),
-                ),
-                ChampTexte(
-                  controller: _contactTel,
-                  label: tr('Téléphone'),
-                  clavier: TextInputType.phone,
-                  validator: validerTelephone,
-                ),
-                if (!_edition) ...[
-                  SegmentedButton<String>(
-                    segments: [
-                      ButtonSegment(value: 'FR', label: Text(tr('France'))),
-                      ButtonSegment(value: 'SN', label: Text(tr('Sénégal'))),
-                    ],
-                    selected: {_pays},
-                    onSelectionChanged: (s) {
-                      setState(() => _pays = s.first);
-                      _chargerVilles();
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  SelecteurVille(
-                    label: tr('Ville'),
-                    villes: _villes,
-                    valeur: _ville,
-                    onChanged: (v) => setState(() => _ville = v),
-                  ),
-                  const SizedBox(height: 12),
-                ] else
-                  LigneInfo(tr('Ville'), _d!.villeNom ?? '—'),
-                ChampTexte(
-                  controller: _adresse,
-                  label: tr('Adresse'),
-                  maxLength: 255,
-                  validator: texte(requis: true, min: 3, max: 255, message: tr('Adresse requise')),
-                ),
-                ChampTexte(controller: _complement, label: tr('Complément (bâtiment, code…)'), maxLength: 255),
-                if (!_edition)
-                  ChampTexte(
-                    controller: _codePostal,
-                    label: tr('Code postal'),
-                    clavier: TextInputType.number,
-                    maxLength: 10,
-                    validator: codePostal(pays: _pays),
-                  ),
-                Row(children: [
-                  Expanded(
-                    child: ChampTexte(
-                      controller: _etage,
-                      label: tr('Étage'),
-                      clavier: const TextInputType.numberWithOptions(signed: true),
-                      maxLength: 3,
-                      validator: entier(min: -5, max: 60),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: DropdownButtonFormField<bool?>(
-                      initialValue: _ascenseur,
-                      decoration: InputDecoration(labelText: tr('Ascenseur')),
-                      items: [
-                        DropdownMenuItem(value: null, child: Text('—')),
-                        DropdownMenuItem(value: true, child: Text(tr('Oui'))),
-                        DropdownMenuItem(value: false, child: Text(tr('Non'))),
-                      ],
-                      onChanged: (v) => setState(() => _ascenseur = v),
-                    ),
-                  ),
-                ]),
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              if (_envoi) const LinearProgressIndicator(),
+              if (widget.colis != null) ...[
+                Bandeau(icone: Icons.inventory_2_outlined, titre: tr('Expédition ${widget.colis!.reference}')),
+                const SizedBox(height: 16),
               ],
-            ),
-            const SizedBox(height: 16),
-            CarteSection(titre: tr('Quand'), icone: Icons.event_outlined, children: [
-              Wrap(spacing: 8, runSpacing: 8, children: [
-                for (final d in dates)
-                  ChoiceChip(
-                    label: Text(formaterDate(d)),
-                    selected: _date == d,
-                    onSelected: (_) => setState(() => _date = d),
+              CarteSection(
+                titre: tr('Où récupérer le colis'),
+                icone: Icons.home_work_outlined,
+                action: _edition
+                    ? null
+                    : TextButton.icon(
+                        onPressed: _depuisCarnet,
+                        icon: const Icon(Icons.contacts_outlined, size: 18),
+                        label: Text(tr('Carnet')),
+                      ),
+                children: [
+                  ChampTexte(
+                    controller: _contactNom,
+                    label: tr('Personne à contacter'),
+                    maxLength: 120,
+                    validator: texte(requis: true, min: 2, max: 120, message: tr('Nom requis')),
                   ),
-                ActionChip(
-                  avatar: const Icon(Icons.calendar_month, size: 18),
-                  label: Text(tr('Autre date')),
-                  onPressed: _choisirDate,
-                ),
-              ]),
-              const SizedBox(height: 12),
-              Text(tr('Créneau'), style: texteDiscret(13)),
-              const SizedBox(height: 6),
-              Wrap(spacing: 8, children: [
-                for (final c in _creneaux.creneaux)
-                  ChoiceChip(
-                    label: Text(c.replaceAll('-', ' – ')),
-                    selected: _creneau == c,
-                    onSelected: (_) => setState(() => _creneau = c),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: ChampTelephone(
+                      controller: _contactTel,
+                      label: tr('Téléphone'),
+                      paysInitial: _pays,
+                      validator: validerTelephone,
+                    ),
                   ),
-              ]),
-            ]),
-            const SizedBox(height: 16),
-            CarteSection(titre: tr('Colis'), icone: Icons.inventory_2_outlined, children: [
-              Row(children: [
-                Expanded(child: Text(tr('Nombre de colis'), style: texteDiscret(13))),
-                CompteurQuantite(valeur: _nbColis, max: 100, onChanged: (v) => setState(() => _nbColis = v < 1 ? 1 : v)),
-              ]),
-              if (!_edition)
-                ChampTexte(
-                  controller: _poids,
-                  label: tr('Poids estimé total (kg, facultatif)'),
-                  clavier: const TextInputType.numberWithOptions(decimal: true),
-                  validator: nombre(max: 1000, strictementPositif: true),
-                ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(tr('Emballage à prévoir par le coursier')),
-                value: _emballage,
-                onChanged: (v) => setState(() => _emballage = v),
+                  if (!_edition) ...[
+                    SegmentedButton<String>(
+                      segments: [
+                        ButtonSegment(value: 'FR', label: Text(tr('France'))),
+                        ButtonSegment(value: 'SN', label: Text(tr('Sénégal'))),
+                      ],
+                      selected: {_pays},
+                      onSelectionChanged: (s) {
+                        setState(() => _pays = s.first);
+                        _chargerVilles();
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    SelecteurVille(
+                      label: tr('Ville'),
+                      villes: _villes,
+                      valeur: _ville,
+                      onChanged: (v) => setState(() => _ville = v),
+                    ),
+                    const SizedBox(height: 12),
+                  ] else
+                    LigneInfo(tr('Ville'), _d!.villeNom ?? '—'),
+                  ChampTexte(
+                    controller: _adresse,
+                    label: tr('Adresse'),
+                    maxLength: 255,
+                    validator: texte(requis: true, min: 3, max: 255, message: tr('Adresse requise')),
+                  ),
+                  ChampTexte(controller: _complement, label: tr('Complément (bâtiment, code…)'), maxLength: 255),
+                  if (!_edition)
+                    ChampTexte(
+                      controller: _codePostal,
+                      label: tr('Code postal'),
+                      clavier: TextInputType.number,
+                      maxLength: 10,
+                      validator: codePostal(pays: _pays),
+                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ChampTexte(
+                          controller: _etage,
+                          label: tr('Étage'),
+                          clavier: const TextInputType.numberWithOptions(signed: true),
+                          maxLength: 3,
+                          validator: entier(min: -5, max: 60),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: DropdownButtonFormField<bool?>(
+                          initialValue: _ascenseur,
+                          decoration: InputDecoration(labelText: tr('Ascenseur')),
+                          items: [
+                            DropdownMenuItem(value: null, child: Text('—')),
+                            DropdownMenuItem(value: true, child: Text(tr('Oui'))),
+                            DropdownMenuItem(value: false, child: Text(tr('Non'))),
+                          ],
+                          onChanged: (v) => setState(() => _ascenseur = v),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              ChampTexte(controller: _instructions, label: tr('Instructions pour le coursier'), maxLines: 2, maxLength: 500),
-            ]),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _enregistrer,
-              style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
-              child: Text(_edition ? tr('Enregistrer') : tr('Programmer l\'enlèvement')),
-            ),
-          ]),
+              const SizedBox(height: 16),
+              CarteSection(
+                titre: tr('Quand'),
+                icone: Icons.event_outlined,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final d in dates)
+                        ChoiceChip(
+                          label: Text(formaterDate(d)),
+                          selected: _date == d,
+                          onSelected: (_) => setState(() => _date = d),
+                        ),
+                      ActionChip(
+                        avatar: const Icon(Icons.calendar_month, size: 18),
+                        label: Text(tr('Autre date')),
+                        onPressed: _choisirDate,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(tr('Créneau'), style: texteDiscret(13)),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final c in _creneaux.creneaux)
+                        ChoiceChip(
+                          label: Text(c.replaceAll('-', ' – ')),
+                          selected: _creneau == c,
+                          onSelected: (_) => setState(() => _creneau = c),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              CarteSection(
+                titre: tr('Colis'),
+                icone: Icons.inventory_2_outlined,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: Text(tr('Nombre de colis'), style: texteDiscret(13))),
+                      CompteurQuantite(
+                        valeur: _nbColis,
+                        max: 100,
+                        onChanged: (v) => setState(() => _nbColis = v < 1 ? 1 : v),
+                      ),
+                    ],
+                  ),
+                  if (!_edition)
+                    ChampTexte(
+                      controller: _poids,
+                      label: tr('Poids estimé total (kg, facultatif)'),
+                      clavier: const TextInputType.numberWithOptions(decimal: true),
+                      validator: nombre(max: 1000, strictementPositif: true),
+                    ),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(tr('Emballage à prévoir par le coursier')),
+                    value: _emballage,
+                    onChanged: (v) => setState(() => _emballage = v),
+                  ),
+                  ChampTexte(
+                    controller: _instructions,
+                    label: tr('Instructions pour le coursier'),
+                    maxLines: 2,
+                    maxLength: 500,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _enregistrer,
+                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+                child: Text(_edition ? tr('Enregistrer') : tr('Programmer l\'enlèvement')),
+              ),
+            ],
+          ),
         ),
       ),
     );

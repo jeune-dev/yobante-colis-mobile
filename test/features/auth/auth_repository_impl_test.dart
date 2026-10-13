@@ -22,8 +22,7 @@ class _FakeStorage extends Fake implements FlutterSecureStorage {
     WebOptions? webOptions,
     AppleOptions? mOptions,
     WindowsOptions? wOptions,
-  }) async =>
-      _store[key];
+  }) async => _store[key];
 
   @override
   Future<void> write({
@@ -95,8 +94,7 @@ class _FakeAuthDataSource extends Fake implements AuthRemoteDataSource {
   Future<String> forgotPassword(String email) async => '';
 
   @override
-  Future<String> resetPassword(
-      String email, String code, String newPassword) async => '';
+  Future<String> resetPassword(String email, String code, String newPassword) async => '';
 }
 
 // ── Données de test ───────────────────────────────────────────────────────────
@@ -119,11 +117,7 @@ final _kUser = UserModel(
   refreshToken: _kRefreshToken,
 );
 
-final _kAuthResponse = AuthResponseModel(
-  user: _kUser,
-  accessToken: _kValidToken,
-  refreshToken: _kRefreshToken,
-);
+final _kAuthResponse = AuthResponseModel(user: _kUser, accessToken: _kValidToken, refreshToken: _kRefreshToken);
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
@@ -137,11 +131,7 @@ void main() {
     fakeStorage = _FakeStorage();
     fakeDs = _FakeAuthDataSource();
     tokenService = TokenService(secureStorage: fakeStorage);
-    repo = AuthRepositoryImpl(
-      remoteDataSource: fakeDs,
-      tokenService: tokenService,
-      secureStorage: fakeStorage,
-    );
+    repo = AuthRepositoryImpl(remoteDataSource: fakeDs, tokenService: tokenService, secureStorage: fakeStorage);
   });
 
   group('AuthRepositoryImpl.login', () {
@@ -167,10 +157,7 @@ void main() {
       final result = await repo.login('x@x.com', 'wrong');
 
       expect(result, isA<Left>());
-      result.fold(
-        (failure) => expect(failure, isA<ServerFailure>()),
-        (_) => fail('devait être Left'),
-      );
+      result.fold((failure) => expect(failure, isA<ServerFailure>()), (_) => fail('devait être Left'));
     });
   });
 
@@ -189,8 +176,7 @@ void main() {
       expect(await fakeStorage.read(key: 'user_role'), isNull);
     });
 
-    test('appelle le endpoint logout sur le backend si refresh token présent',
-        () async {
+    test('appelle le endpoint logout sur le backend si refresh token présent', () async {
       await fakeStorage.write(key: 'refresh_token', value: _kRefreshToken);
 
       await repo.logout();

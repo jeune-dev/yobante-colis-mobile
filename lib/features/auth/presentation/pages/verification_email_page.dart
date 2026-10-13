@@ -73,7 +73,7 @@ class _VerificationEmailPageState extends State<VerificationEmailPage> {
   }
 
   void _verifier() {
-    if (!(_cleFormulaire.currentState?.validate() ?? false)) return;
+    if (!validerFormulaire(_cleFormulaire)) return;
     FocusScope.of(context).unfocus();
     context.read<AuthBloc>().add(VerificationEmailRequested(email: widget.email, code: _code.text.trim()));
   }
@@ -83,13 +83,12 @@ class _VerificationEmailPageState extends State<VerificationEmailPage> {
     final resultat = await sl<AuthRepository>().renvoyerCodeVerification(widget.email);
     if (!mounted) return;
     setState(() => _renvoi = false);
-    resultat.fold(
-      (f) => showToast(context, tr('Envoi impossible'), f.errorMessage, ToastificationType.error),
-      (message) {
-        _demarrerAttenteRenvoi();
-        showToast(context, tr('Code renvoyé'), message, ToastificationType.info);
-      },
-    );
+    resultat.fold((f) => showToast(context, tr('Envoi impossible'), f.errorMessage, ToastificationType.error), (
+      message,
+    ) {
+      _demarrerAttenteRenvoi();
+      showToast(context, tr('Code renvoyé'), message, ToastificationType.info);
+    });
   }
 
   void _retourConnexion() => Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.loginRoute, (_) => false);
@@ -168,6 +167,7 @@ class _VerificationEmailPageState extends State<VerificationEmailPage> {
                 TextFormField(
                   controller: _code,
                   keyboardType: TextInputType.number,
+                  onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   textAlign: TextAlign.center,
                   autofillHints: const [AutofillHints.oneTimeCode],
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
@@ -201,11 +201,7 @@ class _VerificationEmailPageState extends State<VerificationEmailPage> {
             ),
           ),
         ),
-        LienAuth(
-          question: tr('Déjà confirmé ? '),
-          action: tr('Se connecter'),
-          onTap: _retourConnexion,
-        ),
+        LienAuth(question: tr('Déjà confirmé ? '), action: tr('Se connecter'), onTap: _retourConnexion),
         const SizedBox(height: 24),
       ],
     );

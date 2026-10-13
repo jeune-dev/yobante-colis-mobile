@@ -27,9 +27,13 @@ void main() {
   });
 
   testWidgets('sans photo : affiche les initiales', (tester) async {
-    await tester.pumpWidget(const MaterialApp(
-      home: Scaffold(body: AvatarUtilisateur(prenom: 'Ali', nom: 'Sow')),
-    ));
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: AvatarUtilisateur(prenom: 'Ali', nom: 'Sow'),
+        ),
+      ),
+    );
     expect(find.text('AS'), findsOneWidget);
   });
 

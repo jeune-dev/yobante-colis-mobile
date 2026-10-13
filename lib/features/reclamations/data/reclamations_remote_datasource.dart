@@ -57,14 +57,12 @@ class MessageReclamation extends Equatable {
   bool get deClient => origine == 'client';
 
   factory MessageReclamation.fromJson(Map<String, dynamic> j) => MessageReclamation(
-        id: j['id'] as String? ?? '',
-        origine: j['origine'] as String? ?? 'support',
-        message: j['message'] as String? ?? '',
-        piecesJointes: (j['piecesJointes'] as List? ?? [])
-            .map((p) => p is Map ? '${p['url']}' : '$p')
-            .toList(),
-        createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
-      );
+    id: j['id'] as String? ?? '',
+    origine: j['origine'] as String? ?? 'support',
+    message: j['message'] as String? ?? '',
+    piecesJointes: (j['piecesJointes'] as List? ?? []).map((p) => p is Map ? '${p['url']}' : '$p').toList(),
+    createdAt: DateTime.tryParse(j['createdAt'] as String? ?? '') ?? DateTime.now(),
+  );
 
   @override
   List<Object?> get props => [id];
@@ -136,9 +134,7 @@ class Reclamation extends Equatable {
       noteSatisfaction: (j['noteSatisfaction'] as num?)?.toInt(),
       colisId: j['colisId'] as String?,
       colisReference: colis?['reference'] as String?,
-      piecesJointes: (j['piecesJointes'] as List? ?? [])
-          .map((p) => p is Map ? '${p['url']}' : '$p')
-          .toList(),
+      piecesJointes: (j['piecesJointes'] as List? ?? []).map((p) => p is Map ? '${p['url']}' : '$p').toList(),
       messages: (j['messages'] as List? ?? [])
           .map((m) => MessageReclamation.fromJson(m as Map<String, dynamic>))
           .toList(),
@@ -159,18 +155,19 @@ class ReclamationsRemoteDataSource {
   /// Filtres appliqués par le backend : [ouvertes] (non clôturées), [statut], [type].
   Future<List<Reclamation>> getReclamations({bool ouvertes = false, String? statut, String? type}) =>
       appelApi(() async {
-        final reclamations = await chargerToutesLesPages(dio, Env.clientReclamations, 'reclamations', parametres: {
-          if (ouvertes) 'ouvertes': 'true',
-          'statut': ?statut,
-          'type': ?type,
-        });
+        final reclamations = await chargerToutesLesPages(
+          dio,
+          Env.clientReclamations,
+          'reclamations',
+          parametres: {if (ouvertes) 'ouvertes': 'true', 'statut': ?statut, 'type': ?type},
+        );
         return reclamations.map(Reclamation.fromJson).toList();
       }, tr('Impossible de charger vos réclamations'));
 
   Future<Reclamation> getReclamation(String id) => appelApi(() async {
-        final res = await dio.get(Env.clientReclamationId(id));
-        return Reclamation.fromJson(_data(res)['reclamation'] as Map<String, dynamic>);
-      }, tr('Impossible de charger la réclamation'));
+    final res = await dio.get(Env.clientReclamationId(id));
+    return Reclamation.fromJson(_data(res)['reclamation'] as Map<String, dynamic>);
+  }, tr('Impossible de charger la réclamation'));
 
   /// Ouvre une réclamation (multipart : pièces jointes facultatives, champ « pieces »).
   /// Renvoie la réclamation créée et le message du backend.
@@ -183,40 +180,39 @@ class ReclamationsRemoteDataSource {
     String? devise,
     String? priorite,
     List<String> piecesPaths = const [],
-  }) =>
-      appelApi(() async {
-        final form = FormData.fromMap({
-          'type': type,
-          'objet': objet.trim(),
-          'description': description.trim(),
-          'colisId': ?colisId,
-          if (montantReclame != null && montantReclame > 0) 'montantReclame': '$montantReclame',
-          'devise': ?devise,
-          'priorite': ?priorite,
-        });
-        for (final chemin in piecesPaths) {
-          form.files.add(MapEntry('pieces', await fichierMultipart(chemin, pdfAccepte: true)));
-        }
-        final res = await dio.post(Env.clientReclamations, data: form);
-        return (
-          reclamation: Reclamation.fromJson(_data(res)['reclamation'] as Map<String, dynamic>),
-          message: messageApi(res),
-        );
-      }, tr('Impossible d\'enregistrer la réclamation'));
+  }) => appelApi(() async {
+    final form = FormData.fromMap({
+      'type': type,
+      'objet': objet.trim(),
+      'description': description.trim(),
+      'colisId': ?colisId,
+      if (montantReclame != null && montantReclame > 0) 'montantReclame': '$montantReclame',
+      'devise': ?devise,
+      'priorite': ?priorite,
+    });
+    for (final chemin in piecesPaths) {
+      form.files.add(MapEntry('pieces', await fichierMultipart(chemin, pdfAccepte: true)));
+    }
+    final res = await dio.post(Env.clientReclamations, data: form);
+    return (
+      reclamation: Reclamation.fromJson(_data(res)['reclamation'] as Map<String, dynamic>),
+      message: messageApi(res),
+    );
+  }, tr('Impossible d\'enregistrer la réclamation'));
 
   /// Renvoie le message du backend.
-  Future<String> repondre(String id, String message, {List<String> piecesPaths = const []}) =>
-      appelApi(() async {
-        final form = FormData.fromMap({'message': message.trim()});
-        for (final chemin in piecesPaths) {
-          form.files.add(MapEntry('pieces', await fichierMultipart(chemin, pdfAccepte: true)));
-        }
-        return messageApi(await dio.post(Env.clientReclamationMessages(id), data: form));
-      }, tr('Envoi du message impossible'));
+  Future<String> repondre(String id, String message, {List<String> piecesPaths = const []}) => appelApi(() async {
+    final form = FormData.fromMap({'message': message.trim()});
+    for (final chemin in piecesPaths) {
+      form.files.add(MapEntry('pieces', await fichierMultipart(chemin, pdfAccepte: true)));
+    }
+    return messageApi(await dio.post(Env.clientReclamationMessages(id), data: form));
+  }, tr('Envoi du message impossible'));
 
   /// Note de satisfaction (1 à 5), une fois la réclamation close.
   /// Renvoie le message du backend.
   Future<String> noter(String id, int note) => appelApi(
-      () async => messageApi(await dio.patch(Env.clientReclamationNote(id), data: {'note': note})),
-      tr('Impossible d\'enregistrer la note'));
+    () async => messageApi(await dio.patch(Env.clientReclamationNote(id), data: {'note': note})),
+    tr('Impossible d\'enregistrer la note'),
+  );
 }

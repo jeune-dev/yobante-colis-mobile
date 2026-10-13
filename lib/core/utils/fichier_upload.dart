@@ -34,9 +34,7 @@ Future<MultipartFile> fichierMultipart(
   final fichier = File(chemin);
   final taille = await fichier.length();
   if (taille > tailleMax) {
-    throw ServerException(
-      message: tr('Fichier trop volumineux (maximum ${tailleMax ~/ (1024 * 1024)} Mo).'),
-    );
+    throw ServerException(message: tr('Fichier trop volumineux (maximum ${tailleMax ~/ (1024 * 1024)} Mo).'));
   }
 
   final entete = await fichier.openRead(0, 8).fold<List<int>>([], (acc, bloc) => acc..addAll(bloc));

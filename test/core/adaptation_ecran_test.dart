@@ -7,19 +7,23 @@ import 'package:yobante_colis/core/widgets/adaptation_ecran.dart';
 Future<(double, double)> _mesurer(WidgetTester tester, double largeur, {double texte = 1}) async {
   late double largeurVue;
   late double texteVu;
-  await tester.pumpWidget(MediaQuery(
-    data: MediaQueryData(size: Size(largeur, 900), textScaler: TextScaler.linear(texte)),
-    child: Directionality(
-      textDirection: TextDirection.ltr,
-      child: AdaptationEcran(
-        child: Builder(builder: (context) {
-          largeurVue = MediaQuery.sizeOf(context).width;
-          texteVu = MediaQuery.textScalerOf(context).scale(1);
-          return const SizedBox.expand();
-        }),
+  await tester.pumpWidget(
+    MediaQuery(
+      data: MediaQueryData(size: Size(largeur, 900), textScaler: TextScaler.linear(texte)),
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: AdaptationEcran(
+          child: Builder(
+            builder: (context) {
+              largeurVue = MediaQuery.sizeOf(context).width;
+              texteVu = MediaQuery.textScalerOf(context).scale(1);
+              return const SizedBox.expand();
+            },
+          ),
+        ),
       ),
     ),
-  ));
+  );
   return (largeurVue, texteVu);
 }
 

@@ -27,9 +27,15 @@ class FactureColis extends Equatable {
   final String? colisReference;
 
   const FactureColis({
-    required this.id, required this.reference, required this.colisId,
-    required this.montantTransport, required this.remise, required this.montantTotal,
-    required this.statut, required this.dateEmission, this.dateLimitePaiement,
+    required this.id,
+    required this.reference,
+    required this.colisId,
+    required this.montantTransport,
+    required this.remise,
+    required this.montantTotal,
+    required this.statut,
+    required this.dateEmission,
+    this.dateLimitePaiement,
     this.devise = 'XOF',
     this.montantPaye = 0,
     this.lienPaiement,

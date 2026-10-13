@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/widgets/ui_kit.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/utils/formatters.dart';
@@ -37,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    if (!validerFormulaire(_formKey)) return;
     final saisie = _emailCtrl.text.trim();
     context.read<AuthBloc>().add(
       LoginRequested(
@@ -60,9 +61,9 @@ class _LoginPageState extends State<LoginPage> {
     context.read<AuthBloc>().add(ResetAuthState());
     showToast(context, tr('Email non confirmé'), state.message, ToastificationType.info);
     // Le code d'origine a pu expirer : le renvoi est proposé immédiatement
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => VerificationEmailPage(email: email, codeEnvoye: false)),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => VerificationEmailPage(email: email, codeEnvoye: false)));
   }
 
   @override
@@ -101,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _contenu(BuildContext context, bool isLoading) {
     return MiseEnPageAuth(
-      titre: tr('Bon retour !'),
+      titre: tr('Se connecter'),
       sousTitre: tr('Connectez-vous pour accéder à vos colis.'),
       enfants: [
         CarteAuth(child: _formulaire(context, isLoading)),
@@ -126,6 +127,7 @@ class _LoginPageState extends State<LoginPage> {
             hintText: tr('Votre email ou numéro'),
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
+            onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
             prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColor.kPrimary, size: 20),
             validator: (v) {
               if (v == null || v.trim().isEmpty) {

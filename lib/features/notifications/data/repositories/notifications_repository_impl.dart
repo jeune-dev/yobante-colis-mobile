@@ -11,31 +11,49 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
 
   @override
   Future<Either<Failure, List<NotificationApp>>> getNotifications({int page = 1, int limit = 20}) async {
-    try { return Right(await remote.getNotifications(page: page, limit: limit)); }
-    on ServerException catch (e) { return Left(ServerFailure(e.message)); }
+    try {
+      return Right(await remote.getNotifications(page: page, limit: limit));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
   }
 
   @override
   Future<Either<Failure, int>> getNonLuesCount() async {
-    try { return Right(await remote.getNonLuesCount()); }
-    on ServerException catch (e) { return Left(ServerFailure(e.message)); }
+    try {
+      return Right(await remote.getNonLuesCount());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
   }
 
   @override
   Future<Either<Failure, void>> marquerLue(String id) async {
-    try { await remote.marquerLue(id); return const Right(null); }
-    on ServerException catch (e) { return Left(ServerFailure(e.message)); }
+    try {
+      await remote.marquerLue(id);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
   }
 
   @override
   Future<Either<Failure, void>> marquerToutesLues() async {
-    try { await remote.marquerToutesLues(); return const Right(null); }
-    on ServerException catch (e) { return Left(ServerFailure(e.message)); }
+    try {
+      await remote.marquerToutesLues();
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
   }
 
   @override
   Future<Either<Failure, void>> supprimer(String id) async {
-    try { await remote.supprimer(id); return const Right(null); }
-    on ServerException catch (e) { return Left(ServerFailure(e.message)); }
+    try {
+      await remote.supprimer(id);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
   }
 }

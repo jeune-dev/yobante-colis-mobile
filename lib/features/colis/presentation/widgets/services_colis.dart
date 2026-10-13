@@ -8,6 +8,7 @@ import '../../../../core/errors/exceptions.dart';
 import '../../../../core/widgets/document_page.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../core/widgets/ui_kit.dart';
+import '../../../../core/widgets/champ_telephone.dart';
 import '../../../../injection_container.dart';
 import '../../../avis/presentation/pages/avis_page.dart';
 import '../../../enlevements/presentation/pages/enlevement_form_page.dart';
@@ -29,9 +30,11 @@ class ServicesColis extends StatelessWidget {
   static const _maxPhotos = 10;
 
   void _document(BuildContext context, String titre, String chemin, String prefixe) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => DocumentPage(titre: titre, chemin: chemin, nomFichier: '$prefixe-${colis.reference}.html'),
-    ));
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DocumentPage(titre: titre, chemin: chemin, nomFichier: '$prefixe-${colis.reference}.html'),
+      ),
+    );
   }
 
   Future<void> _ajouterPhotos(BuildContext context) async {
@@ -39,8 +42,10 @@ class ServicesColis extends StatelessWidget {
     final images = await ImagePicker().pickMultiImage(imageQuality: 75, maxWidth: 1800, limit: restant);
     if (images.isEmpty || !context.mounted) return;
     try {
-      final message = await sl<ColisRemoteDataSource>()
-          .ajouterPhotos(colis.id, images.take(restant).map((i) => i.path).toList());
+      final message = await sl<ColisRemoteDataSource>().ajouterPhotos(
+        colis.id,
+        images.take(restant).map((i) => i.path).toList(),
+      );
       if (context.mounted) showToast(context, tr('Photos ajoutées'), message, ToastificationType.success);
       onRecharger();
     } on ServerException catch (e) {
@@ -67,30 +72,49 @@ class ServicesColis extends StatelessWidget {
 
     final entrees = <Widget>[
       if (valide) ...[
-        _Entree(Icons.qr_code_2, tr('Étiquettes à coller'),
-            () => _document(context, tr('Étiquettes'), Env.clientColisEtiquettes(c.id), 'etiquettes')),
-        _Entree(Icons.receipt_outlined, tr('Bordereau de dépôt'),
-            () => _document(context, tr('Bordereau'), Env.clientColisBordereau(c.id), 'bordereau')),
+        _Entree(
+          Icons.qr_code_2,
+          tr('Étiquettes à coller'),
+          () => _document(context, tr('Étiquettes'), Env.clientColisEtiquettes(c.id), 'etiquettes'),
+        ),
+        _Entree(
+          Icons.receipt_outlined,
+          tr('Bordereau de dépôt'),
+          () => _document(context, tr('Bordereau'), Env.clientColisBordereau(c.id), 'bordereau'),
+        ),
       ],
       if (factureCommerciale)
-        _Entree(Icons.description_outlined, tr('Facture commerciale (douane)'),
-            () => _document(context, tr('Facture commerciale'), Env.clientColisFactureCommerciale(c.id), 'facture-commerciale')),
+        _Entree(
+          Icons.description_outlined,
+          tr('Facture commerciale (douane)'),
+          () => _document(
+            context,
+            tr('Facture commerciale'),
+            Env.clientColisFactureCommerciale(c.id),
+            'facture-commerciale',
+          ),
+        ),
       if (!termine && c.photos.length < _maxPhotos)
         _Entree(Icons.add_a_photo_outlined, tr('Ajouter des photos'), () => _ajouterPhotos(context)),
       if (!termine)
         _Entree(Icons.mic_none_rounded, tr('Message vocal'), () async {
           if (await enregistrerMessageVocal(context, c.id)) onRecharger();
         }),
-      if (!termine) _Entree(Icons.notifications_active_outlined, tr('Alertes de suivi (email, SMS)'), () => _alertes(context)),
+      if (!termine)
+        _Entree(Icons.notifications_active_outlined, tr('Alertes de suivi (email, SMS)'), () => _alertes(context)),
       if (c.statut == 'en_attente' && c.modeDepot != 'point_collecte')
         _Entree(Icons.local_shipping_outlined, tr('Programmer un enlèvement'), () async {
-          final demande = await Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => EnlevementFormPage(colis: c)));
+          final demande = await Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => EnlevementFormPage(colis: c)));
           if (demande != null) onRecharger();
         }),
       if (c.statut == 'livre' || c.statut == 'recupere')
-        _Entree(Icons.star_outline_rounded, tr('Donner mon avis'),
-            () => donnerAvis(context, colisId: c.id, colisReference: c.reference)),
+        _Entree(
+          Icons.star_outline_rounded,
+          tr('Donner mon avis'),
+          () => donnerAvis(context, colisId: c.id, colisReference: c.reference),
+        ),
     ];
     if (entrees.isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -113,13 +137,13 @@ class _Entree extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListTile(
-        contentPadding: EdgeInsets.zero,
-        dense: true,
-        leading: Icon(icone),
-        title: Text(libelle),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
-      );
+    contentPadding: EdgeInsets.zero,
+    dense: true,
+    leading: Icon(icone),
+    title: Text(libelle),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: onTap,
+  );
 }
 
 /// Inscription d'une adresse email ou d'un numéro aux alertes de suivi.
@@ -161,8 +185,12 @@ class _AbonnementSuiviState extends State<_AbonnementSuivi> {
   Future<void> _envoyer() async {
     final saisie = _destination.text.trim();
     if (saisie.isEmpty) {
-      showToast(context, tr('Destination requise'),
-          _canal == 'email' ? tr('Saisissez une adresse email.') : tr('Saisissez un numéro de téléphone.'), ToastificationType.warning);
+      showToast(
+        context,
+        tr('Destination requise'),
+        _canal == 'email' ? tr('Saisissez une adresse email.') : tr('Saisissez un numéro de téléphone.'),
+        ToastificationType.warning,
+      );
       return;
     }
     // Même contrôle que le backend : email valide, ou numéro France / Sénégal
@@ -174,8 +202,12 @@ class _AbonnementSuiviState extends State<_AbonnementSuivi> {
     final destination = _canal == 'email' ? saisie : normaliserTelephone(saisie);
     setState(() => _envoi = true);
     try {
-      final message = await sl<ColisRemoteDataSource>()
-          .abonnerSuivi(widget.colis.id, canal: _canal, destination: destination, profil: _profil);
+      final message = await sl<ColisRemoteDataSource>().abonnerSuivi(
+        widget.colis.id,
+        canal: _canal,
+        destination: destination,
+        profil: _profil,
+      );
       if (!mounted) return;
       showToast(context, tr('Alertes activées'), message, ToastificationType.success);
       Navigator.of(context).pop(true);
@@ -190,49 +222,53 @@ class _AbonnementSuiviState extends State<_AbonnementSuivi> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.viewInsetsOf(context).bottom + 20),
-      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr('Alertes de suivi'), style: titreSection(18)),
-        Text(tr('Chaque étape de l\'expédition sera envoyée à cette adresse.'), style: texteDiscret(13)),
-        const SizedBox(height: 16),
-        SegmentedButton<String>(
-          segments: [
-            ButtonSegment(value: 'email', label: Text(tr('Email')), icon: Icon(Icons.email_outlined)),
-            ButtonSegment(value: 'sms', label: Text('SMS'), icon: Icon(Icons.sms_outlined)),
-          ],
-          selected: {_canal},
-          onSelectionChanged: (s) {
-            _canal = s.first;
-            _profilChoisi(_profil);
-          },
-        ),
-        const SizedBox(height: 12),
-        DropdownButtonFormField<String>(
-          initialValue: _profil,
-          decoration: InputDecoration(labelText: tr('Pour qui ?')),
-          items: [
-            DropdownMenuItem(value: 'destinataire', child: Text(tr('Le destinataire'))),
-            DropdownMenuItem(value: 'expediteur', child: Text(tr('L\'expéditeur'))),
-            DropdownMenuItem(value: 'tiers', child: Text(tr('Une autre personne'))),
-          ],
-          onChanged: (v) => _profilChoisi(v ?? _profil),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _destination,
-          keyboardType: _canal == 'email' ? TextInputType.emailAddress : TextInputType.phone,
-          maxLength: 150,
-          decoration: InputDecoration(
-            labelText: _canal == 'email' ? tr('Adresse email') : tr('Numéro de téléphone'),
-            counterText: '',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(tr('Alertes de suivi'), style: titreSection(18)),
+          Text(tr('Chaque étape de l\'expédition sera envoyée à cette adresse.'), style: texteDiscret(13)),
+          const SizedBox(height: 16),
+          SegmentedButton<String>(
+            segments: [
+              ButtonSegment(value: 'email', label: Text(tr('Email')), icon: Icon(Icons.email_outlined)),
+              ButtonSegment(value: 'sms', label: Text('SMS'), icon: Icon(Icons.sms_outlined)),
+            ],
+            selected: {_canal},
+            onSelectionChanged: (s) {
+              _canal = s.first;
+              _profilChoisi(_profil);
+            },
           ),
-        ),
-        const SizedBox(height: 12),
-        ElevatedButton(
-          onPressed: _envoi ? null : _envoyer,
-          style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-          child: Text(tr('Activer les alertes')),
-        ),
-      ]),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            initialValue: _profil,
+            decoration: InputDecoration(labelText: tr('Pour qui ?')),
+            items: [
+              DropdownMenuItem(value: 'destinataire', child: Text(tr('Le destinataire'))),
+              DropdownMenuItem(value: 'expediteur', child: Text(tr('L\'expéditeur'))),
+              DropdownMenuItem(value: 'tiers', child: Text(tr('Une autre personne'))),
+            ],
+            onChanged: (v) => _profilChoisi(v ?? _profil),
+          ),
+          const SizedBox(height: 12),
+          if (_canal == 'email')
+            TextField(
+              controller: _destination,
+              keyboardType: TextInputType.emailAddress,
+              maxLength: 150,
+              decoration: InputDecoration(labelText: tr('Adresse email'), counterText: ''),
+            )
+          else
+            ChampTelephone(controller: _destination, label: tr('Numéro de téléphone')),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: _envoi ? null : _envoyer,
+            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+            child: Text(tr('Activer les alertes')),
+          ),
+        ],
+      ),
     );
   }
 }

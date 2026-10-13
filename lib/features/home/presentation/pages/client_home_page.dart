@@ -51,9 +51,9 @@ class _ClientHomePageState extends State<ClientHomePage> {
   }
 
   void _selectionner(int i) => setState(() {
-        _visited.add(i);
-        _currentIndex = i;
-      });
+    _visited.add(i);
+    _currentIndex = i;
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -75,10 +75,7 @@ class _ClientHomePageState extends State<ClientHomePage> {
       drawer: const AppDrawer(),
       body: IndexedStack(
         index: _currentIndex,
-        children: List.generate(
-          pages.length,
-          (i) => _visited.contains(i) ? pages[i] : const SizedBox.shrink(),
-        ),
+        children: List.generate(pages.length, (i) => _visited.contains(i) ? pages[i] : const SizedBox.shrink()),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
@@ -86,13 +83,21 @@ class _ClientHomePageState extends State<ClientHomePage> {
         destinations: [
           NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: tr('Accueil')),
           NavigationDestination(
-              icon: Icon(Icons.inventory_2_outlined), selectedIcon: Icon(Icons.inventory_2), label: tr('Mes envois')),
+            icon: Icon(Icons.inventory_2_outlined),
+            selectedIcon: Icon(Icons.inventory_2),
+            label: tr('Mes envois'),
+          ),
           NavigationDestination(icon: Icon(Icons.send_outlined), selectedIcon: Icon(Icons.send), label: tr('Expédier')),
-          NavigationDestination(icon: Icon(Icons.storefront_outlined), selectedIcon: Icon(Icons.storefront), label: tr('Points')),
           NavigationDestination(
-              icon: const PastilleNotifications(child: Icon(Icons.person_outline)),
-              selectedIcon: const PastilleNotifications(child: Icon(Icons.person)),
-              label: tr('Compte')),
+            icon: Icon(Icons.storefront_outlined),
+            selectedIcon: Icon(Icons.storefront),
+            label: tr('Points'),
+          ),
+          NavigationDestination(
+            icon: const PastilleNotifications(child: Icon(Icons.person_outline)),
+            selectedIcon: const PastilleNotifications(child: Icon(Icons.person)),
+            label: tr('Compte'),
+          ),
         ],
       ),
     );

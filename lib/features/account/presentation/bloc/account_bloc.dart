@@ -28,32 +28,19 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   Future<void> _onLoadMe(LoadMe event, Emitter<AccountState> emit) async {
     emit(AccountLoading());
     final result = await getMe();
-    result.fold(
-      (failure) => emit(AccountError(failure.errorMessage)),
-      (user) => emit(AccountLoaded(user)),
-    );
+    result.fold((failure) => emit(AccountError(failure.errorMessage)), (user) => emit(AccountLoaded(user)));
   }
 
-  Future<void> _onModifierInfo(
-    ModifierInfoPersonnellesEvent event,
-    Emitter<AccountState> emit,
-  ) async {
+  Future<void> _onModifierInfo(ModifierInfoPersonnellesEvent event, Emitter<AccountState> emit) async {
     emit(AccountLoading());
-    final result = await modifierInfoPersonnelles(
-      nom: event.nom,
-      prenom: event.prenom,
-      telephone: event.telephone,
-    );
+    final result = await modifierInfoPersonnelles(nom: event.nom, prenom: event.prenom, telephone: event.telephone);
     result.fold(
       (failure) => emit(AccountError(failure.errorMessage)),
       (r) => emit(AccountSuccess(user: r.valeur, message: r.message)),
     );
   }
 
-  Future<void> _onUploadAvatar(
-    UploadAvatarEvent event,
-    Emitter<AccountState> emit,
-  ) async {
+  Future<void> _onUploadAvatar(UploadAvatarEvent event, Emitter<AccountState> emit) async {
     emit(AccountLoading());
     final result = await accountRepository.uploadAvatar(event.filePath);
     result.fold(
@@ -62,15 +49,9 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     );
   }
 
-  Future<void> _onChangePassword(
-    ChangePasswordEvent event,
-    Emitter<AccountState> emit,
-  ) async {
+  Future<void> _onChangePassword(ChangePasswordEvent event, Emitter<AccountState> emit) async {
     emit(AccountLoading());
-    final result = await changePassword(
-      oldPassword: event.oldPassword,
-      newPassword: event.newPassword,
-    );
+    final result = await changePassword(oldPassword: event.oldPassword, newPassword: event.newPassword);
     result.fold(
       (failure) => emit(AccountError(failure.errorMessage)),
       (message) => emit(PasswordChanged(message: message)),

@@ -173,7 +173,16 @@ class _PointDeServicePageState extends State<PointDeServicePage> {
       setState(() => _position = position);
       await _rechercher();
     } catch (e) {
-      if (mounted) setState(() => _erreur = e.toString().replaceFirst('Exception: ', ''));
+      // Nos propres messages (autorisation refusée) sont affichés ; les erreurs du
+      // GPS (service coupé, délai dépassé…) reçoivent un message lisible
+      final texte = e.toString();
+      if (mounted) {
+        setState(
+          () => _erreur = texte.startsWith('Exception: ')
+              ? texte.replaceFirst('Exception: ', '')
+              : tr('Position indisponible. Vérifiez que la localisation est activée.'),
+        );
+      }
     } finally {
       if (mounted) setState(() => _localisation = false);
     }
@@ -359,6 +368,7 @@ class _PointDeServicePageState extends State<PointDeServicePage> {
                   TextField(
                     controller: _codePostalCtrl,
                     keyboardType: TextInputType.number,
+                    onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                     maxLength: 10,
                     textInputAction: TextInputAction.search,
                     onSubmitted: (_) => _rechercher(),

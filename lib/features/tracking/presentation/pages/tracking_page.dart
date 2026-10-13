@@ -16,11 +16,11 @@ class _EvenementSuivi {
   const _EvenementSuivi({required this.code, required this.libelle, this.lieu, this.date});
 
   factory _EvenementSuivi.fromJson(Map<String, dynamic> j) => _EvenementSuivi(
-        code: j['code'] as String? ?? '',
-        libelle: j['libelle'] as String? ?? '',
-        lieu: j['lieu'] as String?,
-        date: j['date'] as String?,
-      );
+    code: j['code'] as String? ?? '',
+    libelle: j['libelle'] as String? ?? '',
+    lieu: j['lieu'] as String?,
+    date: j['date'] as String?,
+  );
 }
 
 class _SuiviPublic {
@@ -42,18 +42,18 @@ class _SuiviPublic {
   });
 
   factory _SuiviPublic.fromJson(Map<String, dynamic> j) => _SuiviPublic(
-        reference: j['reference'] as String,
-        statut: j['statut'] as String? ?? '',
-        statutLibelle: j['statutLibelle'] as String? ?? '',
-        villeOrigine: j['origine']?['ville'] as String?,
-        villeDestination: j['destination']?['ville'] as String?,
-        dateLivraisonEstimee: j['dateLivraisonEstimee'] as String?,
-        historique: (j['historique'] as List? ?? [])
-            .map((e) => _EvenementSuivi.fromJson(e as Map<String, dynamic>))
-            .toList()
-            .reversed
-            .toList(),
-      );
+    reference: j['reference'] as String,
+    statut: j['statut'] as String? ?? '',
+    statutLibelle: j['statutLibelle'] as String? ?? '',
+    villeOrigine: j['origine']?['ville'] as String?,
+    villeDestination: j['destination']?['ville'] as String?,
+    dateLivraisonEstimee: j['dateLivraisonEstimee'] as String?,
+    historique: (j['historique'] as List? ?? [])
+        .map((e) => _EvenementSuivi.fromJson(e as Map<String, dynamic>))
+        .toList()
+        .reversed
+        .toList(),
+  );
 }
 
 /// Page autonome reprenant [TrackingSearch], accessible depuis le tiroir
@@ -80,7 +80,10 @@ class TrackingPage extends StatelessWidget {
 /// ("Track a shipment" en accès libre depuis l'accueil).
 class TrackingSearch extends StatefulWidget {
   final String? referenceInitiale;
-  const TrackingSearch({super.key, this.referenceInitiale});
+
+  /// Version resserrée (bandeau de l'accueil) : barre et marges réduites.
+  final bool compact;
+  const TrackingSearch({super.key, this.referenceInitiale, this.compact = false});
 
   @override
   State<TrackingSearch> createState() => _TrackingSearchState();
@@ -135,6 +138,7 @@ class _TrackingSearchState extends State<TrackingSearch> {
 
   @override
   Widget build(BuildContext context) {
+    final compact = widget.compact;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -142,7 +146,8 @@ class _TrackingSearchState extends State<TrackingSearch> {
         // (le thème des formulaires est neutralisé ici) et bouton bleu marine,
         // bien visible sur le bandeau jaune de l'accueil.
         Container(
-          padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
+          // Compact : même marge à droite qu'au-dessus et au-dessous du bouton (8 px)
+          padding: EdgeInsets.fromLTRB(14, compact ? 4 : 6, compact ? 8 : 6, compact ? 4 : 6),
           decoration: BoxDecoration(
             color: AppColor.kWhite,
             borderRadius: BorderRadius.circular(16),
@@ -175,7 +180,7 @@ class _TrackingSearchState extends State<TrackingSearch> {
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    contentPadding: EdgeInsets.symmetric(vertical: compact ? 10 : 14),
                   ),
                 ),
               ),
@@ -187,32 +192,38 @@ class _TrackingSearchState extends State<TrackingSearch> {
                   foregroundColor: AppColor.kWhite,
                   disabledBackgroundColor: AppColor.kPrimary.withValues(alpha: 0.6),
                   elevation: 0,
-                  minimumSize: const Size(0, 46),
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  // Version compacte (accueil) : bouton proportionné à la barre de recherche
+                  minimumSize: Size(0, compact ? 36 : 46),
+                  tapTargetSize: compact ? MaterialTapTargetSize.shrinkWrap : null,
+                  padding: EdgeInsets.symmetric(horizontal: compact ? 14 : 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(compact ? 10 : 12)),
                 ),
                 child: _chargement
                     ? const SizedBox(
-                        width: 18, height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColor.kWhite))
-                    : Text(tr('Suivre'), style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 15)),
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColor.kWhite),
+                      )
+                    : Text(
+                        tr('Suivre'),
+                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: compact ? 14 : 15),
+                      ),
               ),
             ],
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 8, left: 4),
-          child: Text(tr('Exemple : PNCO2610060001ADI01'),
-              style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kPrimary.withValues(alpha: 0.7))),
+          padding: EdgeInsets.only(top: compact ? 6 : 8, left: 4),
+          child: Text(
+            tr('Exemple : PNCO2610060001ADI01'),
+            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kPrimary.withValues(alpha: 0.7)),
+          ),
         ),
         if (_erreur != null) ...[
           const SizedBox(height: 12),
           Text(_erreur!, style: GoogleFonts.plusJakartaSans(color: AppColor.kErreur, fontSize: 13)),
         ],
-        if (_resultat != null) ...[
-          const SizedBox(height: 16),
-          _ResultatSuivi(suivi: _resultat!),
-        ],
+        if (_resultat != null) ...[const SizedBox(height: 16), _ResultatSuivi(suivi: _resultat!)],
       ],
     );
   }
@@ -226,24 +237,29 @@ class _ResultatSuivi extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColor.kPrimary,
-        borderRadius: BorderRadius.circular(18),
-      ),
+      decoration: BoxDecoration(color: AppColor.kPrimary, borderRadius: BorderRadius.circular(18)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Expanded(
-                child: Text(suivi.reference,
-                    style: GoogleFonts.plusJakartaSans(color: AppColor.kWhite, fontWeight: FontWeight.w700, fontSize: 15)),
+                child: Text(
+                  suivi.reference,
+                  style: GoogleFonts.plusJakartaSans(color: AppColor.kWhite, fontWeight: FontWeight.w700, fontSize: 15),
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: AppColor.kSecondary, borderRadius: BorderRadius.circular(20)),
-                child: Text(tr(suivi.statutLibelle),
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColor.kPrimary)),
+                child: Text(
+                  tr(suivi.statutLibelle),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColor.kPrimary,
+                  ),
+                ),
               ),
             ],
           ),
@@ -262,39 +278,57 @@ class _ResultatSuivi extends StatelessWidget {
           ],
           if (suivi.dateLivraisonEstimee != null) ...[
             const SizedBox(height: 6),
-            Text(tr('Livraison estimée : ${suivi.dateLivraisonEstimee}'),
-                style: GoogleFonts.plusJakartaSans(color: AppColor.kWhite.withValues(alpha: 0.75), fontSize: 12)),
+            Text(
+              tr('Livraison estimée : ${suivi.dateLivraisonEstimee}'),
+              style: GoogleFonts.plusJakartaSans(color: AppColor.kWhite.withValues(alpha: 0.75), fontSize: 12),
+            ),
           ],
           if (suivi.historique.isNotEmpty) ...[
             const SizedBox(height: 16),
             Container(height: 1, color: AppColor.kWhite.withValues(alpha: 0.15)),
             const SizedBox(height: 12),
-            ...suivi.historique.take(5).map((e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.only(top: 4),
-                        width: 8, height: 8,
-                        decoration: BoxDecoration(color: AppColor.kSecondary, shape: BoxShape.circle),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(tr(e.libelle),
-                                style: GoogleFonts.plusJakartaSans(color: AppColor.kWhite, fontWeight: FontWeight.w600, fontSize: 13)),
-                            if (e.lieu != null)
-                              Text(e.lieu!,
-                                  style: GoogleFonts.plusJakartaSans(color: AppColor.kWhite.withValues(alpha: 0.7), fontSize: 11)),
-                          ],
+            ...suivi.historique
+                .take(5)
+                .map(
+                  (e) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(color: AppColor.kSecondary, shape: BoxShape.circle),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                tr(e.libelle),
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppColor.kWhite,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              if (e.lieu != null)
+                                Text(
+                                  e.lieu!,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: AppColor.kWhite.withValues(alpha: 0.7),
+                                    fontSize: 11,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                )),
+                ),
           ],
         ],
       ),

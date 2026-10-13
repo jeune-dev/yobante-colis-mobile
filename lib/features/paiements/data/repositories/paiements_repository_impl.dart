@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failure.dart';
+import '../../../../core/i18n/langue.dart';
 import '../../domain/entities/facture_colis.dart';
 import '../../domain/repositories/paiements_repository.dart';
 import '../datasources/paiements_remote_datasource.dart';
@@ -15,8 +16,8 @@ class PaiementsRepositoryImpl implements PaiementsRepository {
       return Right(await remoteDataSource.getFactures(statut: statut, impayees: impayees));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (_) {
+      return Left(ServerFailure(tr('Une erreur est survenue')));
     }
   }
 
@@ -26,8 +27,8 @@ class PaiementsRepositoryImpl implements PaiementsRepository {
       return Right(await remoteDataSource.getFactureDetail(id));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (_) {
+      return Left(ServerFailure(tr('Une erreur est survenue')));
     }
   }
 }

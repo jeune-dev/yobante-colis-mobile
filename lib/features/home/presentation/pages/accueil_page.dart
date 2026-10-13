@@ -57,8 +57,11 @@ class _AccueilPageState extends State<AccueilPage> {
       } catch (_) {}
     }
     try {
-      final contenu = await _catalogue.getAccueil(codePostal: codePostal);
-      final config = await _catalogue.getConfiguration();
+      // Contenu et configuration indépendants : chargés en même temps
+      final (contenu, config) = await (
+        _catalogue.getAccueil(codePostal: codePostal),
+        _catalogue.getConfiguration(),
+      ).wait;
       if (mounted) {
         setState(() {
           _contenu = contenu;
@@ -131,6 +134,7 @@ class _AccueilPageState extends State<AccueilPage> {
         actions: [
           if (_connecte)
             IconButton(
+              tooltip: tr('Notifications'),
               icon: const PastilleNotifications(child: Icon(Icons.notifications_none_rounded)),
               onPressed: () => _ouvrir(const NotificationsPage()),
             ),
@@ -149,134 +153,192 @@ class _AccueilPageState extends State<AccueilPage> {
       ),
       body: RefreshIndicator(
         onRefresh: _charger,
-        child: ListView(padding: EdgeInsets.zero, children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-            decoration: const BoxDecoration(
-              color: AppColor.kSecondary,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-            ),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(tr('Suivez votre envoi'),
-                  style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w700, color: AppColor.kPrimary)),
-              const SizedBox(height: 4),
-              Text(tr('France ⇄ Sénégal, étape par étape.'),
-                  style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kPrimary.withValues(alpha: 0.75))),
-              const SizedBox(height: 14),
-              const TrackingSearch(),
-            ]),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              // Dernières notifications, visibles dès l'ouverture de l'application
-              if (_connecte) ...[const ApercuNotifications(), const SizedBox(height: 16)],
-              ..._contenu.tournees.map(_banniereTournee),
-              ..._contenu.annonces.where((a) => !a.estPopup).map(_banniereAnnonce),
-              Text(tr('Que souhaitez-vous faire ?'), style: titreSection()),
-              const SizedBox(height: 12),
-              // Hauteur des tuiles suivant la taille du texte (réglage d'accessibilité),
-              // 2 colonnes sur les très petits écrans
-              LayoutBuilder(builder: (context, contraintes) => GridView.count(
-                crossAxisCount: contraintes.maxWidth < 330 ? 2 : 3,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: (contraintes.maxWidth < 330 ? 1.35 : 0.95) /
-                    MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.3),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
+              decoration: const BoxDecoration(
+                color: AppColor.kSecondary,
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _Raccourci(Icons.send_rounded, tr('Expédier'), widget.onExpedier ?? () {}, principal: true),
-                  _Raccourci(Icons.calculate_outlined, tr('Calculer\nun tarif'), () => _ouvrir(const DevisPage())),
-                  _Raccourci(Icons.sell_outlined, tr('Nos tarifs'), () => _ouvrir(const NosTarifsPage())),
-                  _Raccourci(Icons.home_work_outlined, tr('Collecte\nà domicile'), () => _ouvrir(const TourneesCollectePage())),
-                  _Raccourci(Icons.storefront_outlined, tr('Points de\nservice'), () => _ouvrir(const PointDeServicePage())),
-                  _Raccourci(Icons.chat_outlined, tr('WhatsApp'),
-                      () => ouvrirWhatsapp(context, numero: _config?.whatsappContact, message: tr('Bonjour Yobante Colis,'))),
-                ],
-              )),
-              if (_enCours.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                Row(children: [
-                  Expanded(child: Text(tr('Mes envois en cours'), style: titreSection())),
-                ]),
-                const SizedBox(height: 10),
-                ..._enCours.map((c) => _EnvoiEnCours(colis: c)),
-              ],
-              if (_config?.lien('boutique') != null) ...[
-                const SizedBox(height: 24),
-                InkWell(
-                  onTap: () => ouvrirLien(context, _config!.lien('boutique')),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(color: AppColor.kPrimary, borderRadius: BorderRadius.circular(16)),
-                    child: Row(children: [
-                      const Icon(Icons.shopping_bag_outlined, color: AppColor.kSecondary, size: 30),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Text(tr('Découvrez la boutique Yobante'),
-                            style: GoogleFonts.plusJakartaSans(color: AppColor.kWhite, fontWeight: FontWeight.w700)),
-                      ),
-                      const Icon(Icons.open_in_new, color: AppColor.kWhite),
-                    ]),
+                  Text(
+                    tr('Suivez votre envoi'),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700,
+                      color: AppColor.kPrimary,
+                    ),
                   ),
-                ),
-              ],
-              const SizedBox(height: 24),
-            ]),
-          ),
-        ]),
+                  const SizedBox(height: 2),
+                  Text(
+                    tr('France ⇄ Sénégal, étape par étape.'),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12.5,
+                      color: AppColor.kPrimary.withValues(alpha: 0.75),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const TrackingSearch(compact: true),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Dernières notifications, visibles dès l'ouverture de l'application
+                  if (_connecte) ...[const ApercuNotifications(), const SizedBox(height: 16)],
+                  ..._contenu.tournees.map(_banniereTournee),
+                  ..._contenu.annonces.where((a) => !a.estPopup).map(_banniereAnnonce),
+                  Text(tr('Que souhaitez-vous faire ?'), style: titreSection()),
+                  const SizedBox(height: 12),
+                  // Hauteur des tuiles suivant la taille du texte (réglage d'accessibilité),
+                  // 2 colonnes sur les très petits écrans
+                  LayoutBuilder(
+                    builder: (context, contraintes) => GridView.count(
+                      crossAxisCount: contraintes.maxWidth < 330 ? 2 : 3,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      childAspectRatio:
+                          (contraintes.maxWidth < 330 ? 1.6 : 1.25) /
+                          MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.3),
+                      children: [
+                        _Raccourci(Icons.send_rounded, tr('Expédier'), widget.onExpedier ?? () {}, principal: true),
+                        _Raccourci(
+                          Icons.calculate_outlined,
+                          tr('Calculer\nun tarif'),
+                          () => _ouvrir(const DevisPage()),
+                        ),
+                        _Raccourci(Icons.sell_outlined, tr('Nos tarifs'), () => _ouvrir(const NosTarifsPage())),
+                        _Raccourci(
+                          Icons.home_work_outlined,
+                          tr('Collecte\nà domicile'),
+                          () => _ouvrir(const TourneesCollectePage()),
+                        ),
+                        _Raccourci(
+                          Icons.storefront_outlined,
+                          tr('Points de\nservice'),
+                          () => _ouvrir(const PointDeServicePage()),
+                        ),
+                        _Raccourci(
+                          Icons.chat_outlined,
+                          tr('WhatsApp'),
+                          () => ouvrirWhatsapp(
+                            context,
+                            numero: _config?.whatsappContact,
+                            message: tr('Bonjour Yobante Colis,'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_enCours.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [Expanded(child: Text(tr('Mes envois en cours'), style: titreSection()))],
+                    ),
+                    const SizedBox(height: 10),
+                    ..._enCours.map((c) => _EnvoiEnCours(colis: c)),
+                  ],
+                  if (_config?.lien('boutique') != null) ...[
+                    const SizedBox(height: 24),
+                    InkWell(
+                      onTap: () => ouvrirLien(context, _config!.lien('boutique')),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: AppColor.kPrimary, borderRadius: BorderRadius.circular(16)),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.shopping_bag_outlined, color: AppColor.kSecondary, size: 30),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                tr('Découvrez la boutique Yobante'),
+                                style: GoogleFonts.plusJakartaSans(color: AppColor.kWhite, fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                            const Icon(Icons.open_in_new, color: AppColor.kWhite),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _banniereTournee(TourneeCollecte t) => Padding(
-        padding: const EdgeInsets.only(bottom: 14),
-        child: InkWell(
-          onTap: () => _ouvrir(const TourneesCollectePage()),
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: AppColor.kPrimary, borderRadius: BorderRadius.circular(16)),
-            child: Row(children: [
-              const Icon(Icons.local_shipping, color: AppColor.kSecondary, size: 32),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(tr('Prochaine collecte le ${formaterDate(t.dateCollecte)}'),
-                      style: GoogleFonts.plusJakartaSans(color: AppColor.kSecondary, fontWeight: FontWeight.w700)),
+    padding: const EdgeInsets.only(bottom: 14),
+    child: InkWell(
+      onTap: () => _ouvrir(const TourneesCollectePage()),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: AppColor.kPrimary, borderRadius: BorderRadius.circular(16)),
+        child: Row(
+          children: [
+            const Icon(Icons.local_shipping, color: AppColor.kSecondary, size: 32),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tr('Prochaine collecte le ${formaterDate(t.dateCollecte)}'),
+                    style: GoogleFonts.plusJakartaSans(color: AppColor.kSecondary, fontWeight: FontWeight.w700),
+                  ),
                   const SizedBox(height: 2),
-                  Text(t.messageBanniere ?? t.titre,
-                      style: GoogleFonts.plusJakartaSans(color: AppColor.kWhite, fontSize: 12)),
-                ]),
+                  Text(
+                    t.messageBanniere ?? t.titre,
+                    style: GoogleFonts.plusJakartaSans(color: AppColor.kWhite, fontSize: 12),
+                  ),
+                ],
               ),
-              const Icon(Icons.chevron_right, color: AppColor.kWhite),
-            ]),
-          ),
+            ),
+            const Icon(Icons.chevron_right, color: AppColor.kWhite),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _banniereAnnonce(Annonce a) => Padding(
-        padding: const EdgeInsets.only(bottom: 14),
-        child: Bandeau(
-          icone: switch (a.niveau) {
-            'alerte' => Icons.warning_amber_rounded,
-            'succes' => Icons.celebration_outlined,
-            _ => Icons.campaign_outlined,
-          },
-          titre: a.titre,
-          message: a.message,
-          couleur: switch (a.niveau) {
-            'alerte' => AppColor.kAlerte,
-            'succes' => AppColor.kSucces,
-            _ => AppColor.kPrimary,
-          },
-          action: a.lienUrl == null
-              ? null
-              : TextButton(onPressed: () => ouvrirLien(context, a.lienUrl), child: Text(a.lienLibelle ?? tr('En savoir plus'))),
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 14),
+    child: Bandeau(
+      icone: switch (a.niveau) {
+        'alerte' => Icons.warning_amber_rounded,
+        'succes' => Icons.celebration_outlined,
+        _ => Icons.campaign_outlined,
+      },
+      titre: a.titre,
+      message: a.message,
+      couleur: switch (a.niveau) {
+        'alerte' => AppColor.kAlerte,
+        'succes' => AppColor.kSucces,
+        _ => AppColor.kPrimary,
+      },
+      action: a.lienUrl == null
+          ? null
+          : TextButton(
+              onPressed: () => ouvrirLien(context, a.lienUrl),
+              child: Text(a.lienLibelle ?? tr('En savoir plus')),
+            ),
+    ),
+  );
 }
 
 class _Raccourci extends StatelessWidget {
@@ -290,21 +352,29 @@ class _Raccourci extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         decoration: BoxDecoration(
           color: principal ? AppColor.kPrimary : AppColor.kWhite,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
         ),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(icone, color: principal ? AppColor.kSecondary : AppColor.kPrimary, size: 28),
-          const SizedBox(height: 8),
-          Text(libelle,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icone, color: principal ? AppColor.kSecondary : AppColor.kPrimary, size: 24),
+            const SizedBox(height: 6),
+            Text(
+              libelle,
               textAlign: TextAlign.center,
               style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12, fontWeight: FontWeight.w700, color: principal ? AppColor.kWhite : AppColor.kGrayscaleDark100)),
-        ]),
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: principal ? AppColor.kWhite : AppColor.kGrayscaleDark100,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -324,17 +394,25 @@ class _EnvoiEnCours extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(14)),
-          child: Row(children: [
-            const Icon(Icons.inventory_2_outlined, color: AppColor.kPrimary),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(colis.reference, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13)),
-                Text('${colis.villeDepart?.nom ?? '—'} → ${colis.villeArrivee?.nom ?? '—'}', style: texteDiscret()),
-              ]),
-            ),
-            StatutBadge(statut: colis.statut),
-          ]),
+          child: Row(
+            children: [
+              const Icon(Icons.inventory_2_outlined, color: AppColor.kPrimary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      colis.reference,
+                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 13),
+                    ),
+                    Text('${colis.villeDepart?.nom ?? '—'} → ${colis.villeArrivee?.nom ?? '—'}', style: texteDiscret()),
+                  ],
+                ),
+              ),
+              StatutBadge(statut: colis.statut),
+            ],
+          ),
         ),
       ),
     );

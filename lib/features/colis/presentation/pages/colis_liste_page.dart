@@ -89,16 +89,11 @@ class _ColisListeViewState extends State<_ColisListeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.kBackground,
-      appBar: widget.integre
-          ? null
-          : AppBar(
-              leading: const BoutonMenuOuRetour(),
-              title: Text(tr('Envoyés')),
-            ),
+      appBar: widget.integre ? null : AppBar(leading: const BoutonMenuOuRetour(), title: Text(tr('Envoyés'))),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.of(context)
-            .pushNamed(AppRouter.creationColisRoute)
-            .then((created) { if (created == true) _recharger(); }),
+        onPressed: () => Navigator.of(context).pushNamed(AppRouter.creationColisRoute).then((created) {
+          if (created == true) _recharger();
+        }),
         backgroundColor: AppColor.kSecondary,
         foregroundColor: AppColor.kPrimary,
         icon: const Icon(Icons.add),
@@ -114,7 +109,12 @@ class _ColisListeViewState extends State<_ColisListeView> {
             )
           : Column(
               children: [
-                BarreFiltresColis(filtresActifs: _filtrage, onRecherche: _rechercher, onFiltres: _ouvrirFiltres),
+                BarreFiltresColis(
+                  filtresActifs: _filtrage,
+                  reference: _filtres.reference,
+                  onRecherche: _rechercher,
+                  onFiltres: _ouvrirFiltres,
+                ),
                 Expanded(child: _liste()),
               ],
             ),
@@ -123,75 +123,80 @@ class _ColisListeViewState extends State<_ColisListeView> {
 
   Widget _liste() {
     return BlocBuilder<ColisBloc, ColisState>(
-        builder: (context, state) {
-          if (state is ColisLoading) return const ShimmerList();
-          if (state is ColisFailure) {
+      builder: (context, state) {
+        if (state is ColisLoading) return const ShimmerList();
+        if (state is ColisFailure) {
+          return EmptyState(
+            icon: Icons.error_outline,
+            title: tr('Erreur'),
+            subtitle: state.message,
+            actionLabel: tr('Réessayer'),
+            onAction: _recharger,
+          );
+        }
+        if (state is ColisListLoaded) {
+          if (state.colis.isEmpty && _filtrage) {
+            final reference = _filtres.reference?.trim() ?? '';
             return EmptyState(
-              icon: Icons.error_outline,
-              title: tr('Erreur'),
-              subtitle: state.message,
-              actionLabel: tr('Réessayer'),
-              onAction: _recharger,
+              icon: Icons.search_off_rounded,
+              title: tr('Aucun résultat'),
+              // La référence saisie est rappelée : l'utilisateur voit tout de suite ce qui n'a rien donné
+              subtitle: reference.isNotEmpty
+                  ? tr('Aucun envoi ne correspond à la référence « $reference ».')
+                  : tr('Aucune expédition ne correspond à ces critères.'),
+              actionLabel: tr('Effacer les filtres'),
+              onAction: _effacerFiltres,
             );
           }
-          if (state is ColisListLoaded) {
-            if (state.colis.isEmpty && _filtrage) {
-              return EmptyState(
-                icon: Icons.search_off_rounded,
-                title: tr('Aucun résultat'),
-                subtitle: tr('Aucune expédition ne correspond à ces critères.'),
-                actionLabel: tr('Effacer les filtres'),
-                onAction: _effacerFiltres,
-              );
-            }
-            if (state.colis.isEmpty) {
-              return EmptyState(
-                icon: Icons.inventory_2_outlined,
-                title: tr('Aucun colis'),
-                subtitle: tr('Vous n\'avez pas encore de colis enregistré.'),
-                actionLabel: tr('Envoyer un colis'),
-                onAction: () => Navigator.of(context)
-                    .pushNamed(AppRouter.creationColisRoute)
-                    .then((created) { if (created == true) _recharger(); }),
-              );
-            }
-            final hasMore = state.hasMore;
-            final nextPage = state.currentPage + 1;
-            return RefreshIndicator(
-              onRefresh: () async => _recharger(),
-              child: ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemCount: state.colis.length + (hasMore ? 1 : 0),
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (context, i) {
-                  if (i == state.colis.length) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Center(
-                        child: OutlinedButton(
-                          onPressed: () => context.read<ColisBloc>().add(
-                            LoadMoreColis(statut: _filtreStatut, filtres: _filtres, page: nextPage),
-                          ),
-                          child: Text(tr('Charger plus')),
+          if (state.colis.isEmpty) {
+            return EmptyState(
+              icon: Icons.inventory_2_outlined,
+              title: tr('Aucun colis'),
+              subtitle: tr('Vous n\'avez pas encore de colis enregistré.'),
+              actionLabel: tr('Envoyer un colis'),
+              onAction: () => Navigator.of(context).pushNamed(AppRouter.creationColisRoute).then((created) {
+                if (created == true) _recharger();
+              }),
+            );
+          }
+          final hasMore = state.hasMore;
+          final nextPage = state.currentPage + 1;
+          return RefreshIndicator(
+            onRefresh: () async => _recharger(),
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: state.colis.length + (hasMore ? 1 : 0),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (context, i) {
+                if (i == state.colis.length) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Center(
+                      child: OutlinedButton(
+                        onPressed: () => context.read<ColisBloc>().add(
+                          LoadMoreColis(statut: _filtreStatut, filtres: _filtres, page: nextPage),
                         ),
+                        child: Text(tr('Charger plus')),
                       ),
-                    );
-                  }
-                  return RepaintBoundary(
-                    child: CarteColis(
-                      colis: state.colis[i],
-                      onTap: () => Navigator.of(context).pushNamed(
-                        AppRouter.detailColisRoute,
-                        arguments: state.colis[i].id,
-                      ).then((annule) { if (annule == true) _recharger(); }),
                     ),
                   );
-                },
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
-      );
+                }
+                return RepaintBoundary(
+                  child: CarteColis(
+                    colis: state.colis[i],
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(AppRouter.detailColisRoute, arguments: state.colis[i].id)
+                        .then((annule) {
+                          if (annule == true) _recharger();
+                        }),
+                  ),
+                );
+              },
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
   }
 }

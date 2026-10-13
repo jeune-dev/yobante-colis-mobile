@@ -29,7 +29,11 @@ void main() {
       'destinataireTelephone': '+221771234567',
       'paysArrivee': 'SN',
       'villeArrivee': {'id': 'v-dakar', 'nom': 'Dakar', 'pays': 'SN'},
-      'pointRetrait': {'id': 'p1', 'nom': 'Agence Plateau', 'horaires': {'lun': '9h-18h'}},
+      'pointRetrait': {
+        'id': 'p1',
+        'nom': 'Agence Plateau',
+        'horaires': {'lun': '9h-18h'},
+      },
       'nbPieces': 2,
       'poidsReelKg': '12.500',
       'poidsFactureKg': 14,

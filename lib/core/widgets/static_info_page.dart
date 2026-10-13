@@ -20,12 +20,16 @@ class StaticInfoPage extends StatelessWidget {
         children: [
           for (final s in sections) ...[
             if (s.titre != null) ...[
-              Text(s.titre!,
-                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 15, color: AppColor.kPrimary)),
+              Text(
+                s.titre!,
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 15, color: AppColor.kPrimary),
+              ),
               const SizedBox(height: 8),
             ],
-            Text(s.corps,
-                style: GoogleFonts.plusJakartaSans(fontSize: 13, height: 1.6, color: AppColor.kGrayscaleDark100)),
+            Text(
+              s.corps,
+              style: GoogleFonts.plusJakartaSans(fontSize: 13, height: 1.6, color: AppColor.kGrayscaleDark100),
+            ),
             for (final l in s.liens)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
@@ -35,18 +39,23 @@ class StaticInfoPage extends StatelessWidget {
                   child: ConstrainedBox(
                     // Zone tactile d'au moins 44 px de haut.
                     constraints: const BoxConstraints(minHeight: 44),
-                    child: Row(children: [
-                      Icon(l.icone, size: 18, color: AppColor.kPrimary),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(l.libelle,
+                    child: Row(
+                      children: [
+                        Icon(l.icone, size: 18, color: AppColor.kPrimary),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            l.libelle,
                             style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: AppColor.kPrimary,
-                                decoration: TextDecoration.underline)),
-                      ),
-                    ]),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColor.kPrimary,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -61,6 +70,7 @@ class StaticInfoPage extends StatelessWidget {
 class StaticInfoSection {
   final String? titre;
   final String corps;
+
   /// Liens cliquables affichés sous le texte (page web, e-mail, téléphone…).
   final List<LienInfo> liens;
   const StaticInfoSection({this.titre, required this.corps, this.liens = const []});

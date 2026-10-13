@@ -21,10 +21,12 @@ bool ouvrirEntiteNotification(BuildContext context, String? entite, String? enti
   switch (entite) {
     case 'Colis':
       if (id.isEmpty) return false;
-      pousser(_SelonRole(
-        client: (ctx) => _OuvrirRoute(AppRouter.detailColisRoute, id),
-        personnel: (_) => DetailColisTerrainPage(id: id),
-      ));
+      pousser(
+        _SelonRole(
+          client: (ctx) => _OuvrirRoute(AppRouter.detailColisRoute, id),
+          personnel: (_) => DetailColisTerrainPage(id: id),
+        ),
+      );
       return true;
     case 'Facture':
       pousser(const FacturesPage());
@@ -37,10 +39,12 @@ bool ouvrirEntiteNotification(BuildContext context, String? entite, String? enti
         pousser(const EnlevementsPage());
       } else {
         // Coursiers et admins sont aussi notifiés : chacun ouvre la demande dans son espace
-        pousser(_SelonRole(
-          client: (_) => DetailEnlevementPage(id: id),
-          personnel: (_) => DetailEnlevementTerrainPage(id: id),
-        ));
+        pousser(
+          _SelonRole(
+            client: (_) => DetailEnlevementPage(id: id),
+            personnel: (_) => DetailEnlevementTerrainPage(id: id),
+          ),
+        );
       }
       return true;
     case 'TourneeCollecte':

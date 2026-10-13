@@ -131,12 +131,12 @@ class _ComptePersonnelPageState extends State<ComptePersonnelPage> {
   Future<void> _ouvrir(Widget page) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
 
   Widget _entree(IconData icone, String libelle, VoidCallback onTap, {Widget? fin}) => ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-        leading: TuileIcone(icone, taille: 36),
-        title: Text(libelle, style: titreSection(14)),
-        trailing: fin ?? const Icon(Icons.chevron_right, color: AppColor.kGrayscale40),
-        onTap: onTap,
-      );
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+    leading: TuileIcone(icone, taille: 36),
+    title: Text(libelle, style: titreSection(14)),
+    trailing: fin ?? const Icon(Icons.chevron_right, color: AppColor.kGrayscale40),
+    onTap: onTap,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -153,95 +153,137 @@ class _ComptePersonnelPageState extends State<ComptePersonnelPage> {
               color: AppColor.kSecondary,
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
             ),
-            child: Row(children: [
-              // Photo de profil si le compte en a une, initiales sinon
-              AvatarUtilisateur(
-                prenom: u?.prenom,
-                nom: u?.nom,
-                photoUrl: u?.avatarUrl,
-                rayon: 32,
-                bordure: true,
-                fond: AppColor.kPrimary,
-                couleurTexte: AppColor.kSecondary,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(u?.fullName ?? '…',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 19, fontWeight: FontWeight.w800, color: AppColor.kPrimary)),
-                  if (u?.email != null)
-                    Text(u!.email!,
-                        style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kPrimary.withValues(alpha: 0.75))),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(color: AppColor.kPrimary, borderRadius: BorderRadius.circular(20)),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      Icon(
-                        switch (widget.role) {
-                          UserRole.coursier => Icons.delivery_dining_outlined,
-                          UserRole.agentPoint => Icons.storefront_outlined,
-                          _ => Icons.admin_panel_settings_outlined,
-                        },
-                        size: 14,
-                        color: AppColor.kSecondary,
+            child: Row(
+              children: [
+                // Photo de profil si le compte en a une, initiales sinon
+                AvatarUtilisateur(
+                  prenom: u?.prenom,
+                  nom: u?.nom,
+                  photoUrl: u?.avatarUrl,
+                  rayon: 32,
+                  bordure: true,
+                  fond: AppColor.kPrimary,
+                  couleurTexte: AppColor.kSecondary,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        u?.fullName ?? '…',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                          color: AppColor.kPrimary,
+                        ),
                       ),
-                      const SizedBox(width: 6),
-                      Text(widget.role.label,
-                          style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: AppColor.kWhite)),
-                    ]),
+                      if (u?.email != null)
+                        Text(
+                          u!.email!,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            color: AppColor.kPrimary.withValues(alpha: 0.75),
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(color: AppColor.kPrimary, borderRadius: BorderRadius.circular(20)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              switch (widget.role) {
+                                UserRole.coursier => Icons.delivery_dining_outlined,
+                                UserRole.agentPoint => Icons.storefront_outlined,
+                                _ => Icons.admin_panel_settings_outlined,
+                              },
+                              size: 14,
+                              color: AppColor.kSecondary,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              widget.role.label,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppColor.kWhite,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ]),
-              ),
-            ]),
+                ),
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              if (widget.role.isAdmin) ...[
-                Bandeau(
-                  icone: Icons.desktop_windows_outlined,
-                  titre: tr('Back-office web'),
-                  message: tr('La validation des demandes, la planification et les réglages se font sur le back-office web.'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (widget.role.isAdmin) ...[
+                  Bandeau(
+                    icone: Icons.desktop_windows_outlined,
+                    titre: tr('Back-office web'),
+                    message: tr(
+                      'La validation des demandes, la planification et les réglages se font sur le back-office web.',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                Text(tr('Mon espace'), style: titreSection(15)),
+                const SizedBox(height: 10),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColor.kWhite,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: ombreCarte,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Column(
+                      children: [
+                        _entree(
+                          Icons.person_outline,
+                          tr('Mon profil'),
+                          () => _ouvrir(const ProfilPage()).then((_) => _charger()),
+                        ),
+                        const Divider(height: 1, indent: 64),
+                        _entree(
+                          Icons.notifications_none_rounded,
+                          tr('Notifications'),
+                          () => _ouvrir(const NotificationsPage()),
+                          fin: const PastilleNotifications(
+                            child: Icon(Icons.chevron_right, color: AppColor.kGrayscale40),
+                          ),
+                        ),
+                        const Divider(height: 1, indent: 64),
+                        _entree(
+                          Icons.translate,
+                          tr('Langue'),
+                          () => choisirLangue(context),
+                          fin: Text(LangueApp.instance.value.libelle, style: texteDiscret(13)),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 28),
+                OutlinedButton.icon(
+                  onPressed: () => context.read<AuthBloc>().add(const LogoutRequested()),
+                  style: styleBoutonContour(
+                    AppColor.kErreur,
+                  ).copyWith(backgroundColor: const WidgetStatePropertyAll(AppColor.kWhite)),
+                  icon: const Icon(Icons.logout_rounded, size: 20),
+                  label: Text(tr('Se déconnecter')),
+                ),
               ],
-              Text(tr('Mon espace'), style: titreSection(15)),
-              const SizedBox(height: 10),
-              Container(
-                decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(18), boxShadow: ombreCarte),
-                clipBehavior: Clip.antiAlias,
-                child: Material(
-                  color: Colors.transparent,
-                  child: Column(children: [
-                    _entree(Icons.person_outline, tr('Mon profil'), () => _ouvrir(const ProfilPage()).then((_) => _charger())),
-                    const Divider(height: 1, indent: 64),
-                    _entree(
-                      Icons.notifications_none_rounded,
-                      tr('Notifications'),
-                      () => _ouvrir(const NotificationsPage()),
-                      fin: const PastilleNotifications(child: Icon(Icons.chevron_right, color: AppColor.kGrayscale40)),
-                    ),
-                    const Divider(height: 1, indent: 64),
-                    _entree(
-                      Icons.translate,
-                      tr('Langue'),
-                      () => choisirLangue(context),
-                      fin: Text(LangueApp.instance.value.libelle, style: texteDiscret(13)),
-                    ),
-                  ]),
-                ),
-              ),
-              const SizedBox(height: 28),
-              OutlinedButton.icon(
-                onPressed: () => context.read<AuthBloc>().add(const LogoutRequested()),
-                style: styleBoutonContour(AppColor.kErreur).copyWith(
-                  backgroundColor: const WidgetStatePropertyAll(AppColor.kWhite),
-                ),
-                icon: const Icon(Icons.logout_rounded, size: 20),
-                label: Text(tr('Se déconnecter')),
-              ),
-            ]),
+            ),
           ),
         ],
       ),

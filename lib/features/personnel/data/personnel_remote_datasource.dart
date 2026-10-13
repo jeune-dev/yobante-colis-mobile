@@ -42,10 +42,10 @@ class EvenementPossible {
   const EvenementPossible({required this.code, required this.libelle, this.statutInduit});
 
   factory EvenementPossible.fromJson(Map<String, dynamic> j) => EvenementPossible(
-        code: j['code'] as String? ?? '',
-        libelle: j['libelle'] as String? ?? '',
-        statutInduit: j['statutInduit'] as String?,
-      );
+    code: j['code'] as String? ?? '',
+    libelle: j['libelle'] as String? ?? '',
+    statutInduit: j['statutInduit'] as String?,
+  );
 
   /// Remise au destinataire : le code de retrait qu'il a reçu est exigé, s'il en a un.
   bool exigeCodeRetrait(ColisTerrain colis) => colis.aCodeRetrait && (code == 'RETIRE' || code == 'LIVRE');
@@ -62,11 +62,11 @@ class EtapeSuivi {
   const EtapeSuivi({required this.libelle, this.date, this.lieu, this.commentaire});
 
   factory EtapeSuivi.fromJson(Map<String, dynamic> j) => EtapeSuivi(
-        libelle: j['libelle'] as String? ?? j['codeEvenement'] as String? ?? '',
-        date: j['dateEvenement'] as String? ?? j['createdAt'] as String?,
-        lieu: j['lieu'] as String?,
-        commentaire: j['commentaire'] as String?,
-      );
+    libelle: j['libelle'] as String? ?? j['codeEvenement'] as String? ?? '',
+    date: j['dateEvenement'] as String? ?? j['createdAt'] as String?,
+    lieu: j['lieu'] as String?,
+    commentaire: j['commentaire'] as String?,
+  );
 }
 
 /// Facture du colis, pour l'encaissement au comptoir ou à la livraison.
@@ -87,13 +87,13 @@ class FactureTerrain {
   });
 
   factory FactureTerrain.fromJson(Map<String, dynamic> j) => FactureTerrain(
-        id: j['id'] as String? ?? '',
-        reference: j['reference'] as String? ?? '',
-        devise: j['devise'] as String? ?? 'XOF',
-        montantTotal: _dn(j['montantTotal']) ?? 0,
-        montantPaye: _dn(j['montantPaye']) ?? 0,
-        statut: j['statut'] as String? ?? '',
-      );
+    id: j['id'] as String? ?? '',
+    reference: j['reference'] as String? ?? '',
+    devise: j['devise'] as String? ?? 'XOF',
+    montantTotal: _dn(j['montantTotal']) ?? 0,
+    montantPaye: _dn(j['montantPaye']) ?? 0,
+    statut: j['statut'] as String? ?? '',
+  );
 
   double get reste => (montantTotal - montantPaye).clamp(0, double.infinity).toDouble();
   bool get aEncaisser => reste > 0 && const ['en_attente', 'partiellement_payee'].contains(statut);
@@ -105,14 +105,14 @@ class FactureTerrain {
 }
 
 Map<String, String> get kMethodesPaiement => {
-      'especes': tr('Espèces'),
-      'wave': 'Wave',
-      'orange_money': 'Orange Money',
-      'free_money': 'Free Money',
-      'carte': tr('Carte bancaire'),
-      'virement': tr('Virement'),
-      'paypal': 'PayPal',
-    };
+  'especes': tr('Espèces'),
+  'wave': 'Wave',
+  'orange_money': 'Orange Money',
+  'free_money': 'Free Money',
+  'carte': tr('Carte bancaire'),
+  'virement': tr('Virement'),
+  'paypal': 'PayPal',
+};
 
 class ColisTerrain {
   final String id;
@@ -166,36 +166,38 @@ class ColisTerrain {
   });
 
   factory ColisTerrain.fromJson(Map<String, dynamic> j) => ColisTerrain(
-        id: j['id'] as String? ?? '',
-        reference: j['reference'] as String? ?? '',
-        statut: j['statut'] as String? ?? '',
-        expediteurNom: j['expediteurNom'] as String? ?? '',
-        expediteurTelephone: j['expediteurTelephone'] as String?,
-        destinataireNom: j['destinataireNom'] as String? ?? '',
-        destinataireTelephone: j['destinataireTelephone'] as String?,
-        adresseLivraison: j['adresseLivraison'] as String?,
-        villeDepart: _nomVille(j['villeDepart']),
-        villeArrivee: _nomVille(j['villeArrivee']),
-        pointActuel: _nomVille(j['pointActuel']),
-        pointRetrait: _nomVille(j['pointRetrait']),
-        modeLivraison: j['modeLivraison'] as String?,
-        nbPieces: (j['nbPieces'] as num?)?.toInt() ?? 1,
-        poidsKg: _dn(j['poidsVerifieKg']) ?? _dn(j['poidsFactureKg']),
-        description: j['description'] as String?,
-        instructionsLivraison: j['instructionsLivraison'] as String?,
-        fragile: j['fragile'] as bool? ?? false,
-        enRetard: j['enRetard'] as bool? ?? false,
-        aCodeRetrait: j['aCodeRetrait'] as bool? ?? j['codeRetrait'] != null,
-        facture: j['facture'] is Map<String, dynamic> ? FactureTerrain.fromJson(j['facture'] as Map<String, dynamic>) : null,
-        evenementsPossibles: (j['evenementsPossibles'] as List? ?? const [])
-            .map((e) => EvenementPossible.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        historique: (j['historique'] as List? ?? const [])
-            .map((e) => EtapeSuivi.fromJson(e as Map<String, dynamic>))
-            .toList()
-            .reversed
-            .toList(),
-      );
+    id: j['id'] as String? ?? '',
+    reference: j['reference'] as String? ?? '',
+    statut: j['statut'] as String? ?? '',
+    expediteurNom: j['expediteurNom'] as String? ?? '',
+    expediteurTelephone: j['expediteurTelephone'] as String?,
+    destinataireNom: j['destinataireNom'] as String? ?? '',
+    destinataireTelephone: j['destinataireTelephone'] as String?,
+    adresseLivraison: j['adresseLivraison'] as String?,
+    villeDepart: _nomVille(j['villeDepart']),
+    villeArrivee: _nomVille(j['villeArrivee']),
+    pointActuel: _nomVille(j['pointActuel']),
+    pointRetrait: _nomVille(j['pointRetrait']),
+    modeLivraison: j['modeLivraison'] as String?,
+    nbPieces: (j['nbPieces'] as num?)?.toInt() ?? 1,
+    poidsKg: _dn(j['poidsVerifieKg']) ?? _dn(j['poidsFactureKg']),
+    description: j['description'] as String?,
+    instructionsLivraison: j['instructionsLivraison'] as String?,
+    fragile: j['fragile'] as bool? ?? false,
+    enRetard: j['enRetard'] as bool? ?? false,
+    aCodeRetrait: j['aCodeRetrait'] as bool? ?? j['codeRetrait'] != null,
+    facture: j['facture'] is Map<String, dynamic>
+        ? FactureTerrain.fromJson(j['facture'] as Map<String, dynamic>)
+        : null,
+    evenementsPossibles: (j['evenementsPossibles'] as List? ?? const [])
+        .map((e) => EvenementPossible.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    historique: (j['historique'] as List? ?? const [])
+        .map((e) => EtapeSuivi.fromJson(e as Map<String, dynamic>))
+        .toList()
+        .reversed
+        .toList(),
+  );
 }
 
 class PersonnelRemoteDataSource {
@@ -205,62 +207,68 @@ class PersonnelRemoteDataSource {
   // ── Enlèvements ────────────────────────────────────────────────────────────
 
   Future<List<EnlevementTerrain>> getEnlevements() => appelApi(() async {
-        final lignes = await chargerToutesLesPages(dio, Env.personnelEnlevements, 'demandes', maxPages: 5);
-        return lignes.map(EnlevementTerrain.fromJson).toList();
-      }, tr('Impossible de charger les enlèvements'));
+    final lignes = await chargerToutesLesPages(dio, Env.personnelEnlevements, 'demandes', maxPages: 5);
+    return lignes.map(EnlevementTerrain.fromJson).toList();
+  }, tr('Impossible de charger les enlèvements'));
 
   /// Tournée du jour du coursier connecté (enlèvements planifiés ou en cours).
   Future<List<EnlevementTerrain>> getTourneeDuJour() => appelApi(() async {
-        final res = await dio.get(Env.personnelTournee);
-        return (res.data['data']['demandes'] as List? ?? const [])
-            .map((e) => EnlevementTerrain.fromJson(e as Map<String, dynamic>))
-            .toList();
-      }, tr('Impossible de charger la tournée'));
+    final res = await dio.get(Env.personnelTournee);
+    return (res.data['data']['demandes'] as List? ?? const [])
+        .map((e) => EnlevementTerrain.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }, tr('Impossible de charger la tournée'));
 
   Future<EnlevementTerrain> getEnlevement(String id) => appelApi(() async {
-        final res = await dio.get(Env.personnelEnlevementId(id));
-        return EnlevementTerrain.fromJson(res.data['data']['demande'] as Map<String, dynamic>);
-      }, tr('Demande introuvable'));
+    final res = await dio.get(Env.personnelEnlevementId(id));
+    return EnlevementTerrain.fromJson(res.data['data']['demande'] as Map<String, dynamic>);
+  }, tr('Demande introuvable'));
 
   Future<String> demarrerEnlevement(String id) => appelApi(() async {
-        return messageApi(await dio.patch(Env.personnelEnlevementDemarrer(id)), tr('Enlèvement démarré.'));
-      }, tr('Impossible de démarrer l\'enlèvement'));
+    return messageApi(await dio.patch(Env.personnelEnlevementDemarrer(id)), tr('Enlèvement démarré.'));
+  }, tr('Impossible de démarrer l\'enlèvement'));
 
   /// [effectue] : colis récupérés ; sinon échec, avec [motif] obligatoire.
   Future<String> cloturerEnlevement(String id, {required bool effectue, String? motif, String? commentaire}) =>
       appelApi(() async {
-        final res = await dio.patch(Env.personnelEnlevementCloturer(id), data: {
-          'statut': effectue ? 'effectue' : 'echoue',
-          if (!effectue) 'motifEchec': motif?.trim(),
-          if (commentaire != null && commentaire.trim().isNotEmpty) 'commentaire': commentaire.trim(),
-        });
+        final res = await dio.patch(
+          Env.personnelEnlevementCloturer(id),
+          data: {
+            'statut': effectue ? 'effectue' : 'echoue',
+            if (!effectue) 'motifEchec': motif?.trim(),
+            if (commentaire != null && commentaire.trim().isNotEmpty) 'commentaire': commentaire.trim(),
+          },
+        );
         return messageApi(res, tr('Enlèvement clôturé.'));
       }, tr('Impossible de clôturer l\'enlèvement'));
 
   // ── Colis ──────────────────────────────────────────────────────────────────
 
   Future<List<ColisTerrain>> getColis({List<String> statuts = const []}) => appelApi(() async {
-        final res = await dio.get(Env.personnelColis, queryParameters: {
-          if (statuts.length == 1) 'statut': statuts.first,
-          if (statuts.length > 1) 'statut': statuts,
-          'limit': kTaillePageMax,
-          'sortOrder': 'asc',
-        });
-        return (res.data['data']['colis'] as List? ?? const [])
-            .map((e) => ColisTerrain.fromJson(e as Map<String, dynamic>))
-            .toList();
-      }, tr('Impossible de charger les colis'));
+    final res = await dio.get(
+      Env.personnelColis,
+      queryParameters: {
+        if (statuts.length == 1) 'statut': statuts.first,
+        if (statuts.length > 1) 'statut': statuts,
+        'limit': kTaillePageMax,
+        'sortOrder': 'asc',
+      },
+    );
+    return (res.data['data']['colis'] as List? ?? const [])
+        .map((e) => ColisTerrain.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }, tr('Impossible de charger les colis'));
 
   Future<ColisTerrain> getColisDetail(String id) => appelApi(() async {
-        final res = await dio.get(Env.personnelColisId(id));
-        return ColisTerrain.fromJson(res.data['data']['colis'] as Map<String, dynamic>);
-      }, tr('Expédition introuvable'));
+    final res = await dio.get(Env.personnelColisId(id));
+    return ColisTerrain.fromJson(res.data['data']['colis'] as Map<String, dynamic>);
+  }, tr('Expédition introuvable'));
 
   /// Numéro de suivi d'un colis ou d'une de ses pièces ; renvoie l'identifiant du colis.
   Future<String> rechercher(String numero) => appelApi(() async {
-        final res = await dio.get(Env.personnelColisRecherche(numero.trim()));
-        return (res.data['data']['colis'] as Map<String, dynamic>)['id'] as String;
-      }, tr('Aucune expédition ne correspond à ce numéro'));
+    final res = await dio.get(Env.personnelColisRecherche(numero.trim()));
+    return (res.data['data']['colis'] as Map<String, dynamic>)['id'] as String;
+  }, tr('Aucune expédition ne correspond à ce numéro'));
 
   Future<String> enregistrerEvenement(
     String colisId,
@@ -268,25 +276,30 @@ class PersonnelRemoteDataSource {
     String? commentaire,
     String? motif,
     String? codeRetrait,
-  }) =>
-      appelApi(() async {
-        final res = await dio.post(Env.personnelColisEvenement(colisId), data: {
-          'codeEvenement': code,
-          if (commentaire != null && commentaire.trim().isNotEmpty) 'commentaire': commentaire.trim(),
-          if (motif != null && motif.trim().isNotEmpty) 'motif': motif.trim(),
-          if (codeRetrait != null && codeRetrait.trim().isNotEmpty) 'codeRetrait': codeRetrait.trim(),
-        });
-        return messageApi(res, tr('Suivi mis à jour.'));
-      }, tr('Impossible d\'enregistrer l\'événement'));
+  }) => appelApi(() async {
+    final res = await dio.post(
+      Env.personnelColisEvenement(colisId),
+      data: {
+        'codeEvenement': code,
+        if (commentaire != null && commentaire.trim().isNotEmpty) 'commentaire': commentaire.trim(),
+        if (motif != null && motif.trim().isNotEmpty) 'motif': motif.trim(),
+        if (codeRetrait != null && codeRetrait.trim().isNotEmpty) 'codeRetrait': codeRetrait.trim(),
+      },
+    );
+    return messageApi(res, tr('Suivi mis à jour.'));
+  }, tr('Impossible d\'enregistrer l\'événement'));
 
   /// Règlement reçu en main propre ; le backend rattache l'agent à son point.
   Future<String> encaisser(String factureId, {required String methode, required double montant, String? reference}) =>
       appelApi(() async {
-        final res = await dio.post(Env.personnelEncaissement(factureId), data: {
-          'methode': methode,
-          'montant': montant,
-          if (reference != null && reference.trim().isNotEmpty) 'referenceTransaction': reference.trim(),
-        });
+        final res = await dio.post(
+          Env.personnelEncaissement(factureId),
+          data: {
+            'methode': methode,
+            'montant': montant,
+            if (reference != null && reference.trim().isNotEmpty) 'referenceTransaction': reference.trim(),
+          },
+        );
         return messageApi(res, tr('Paiement enregistré.'));
       }, tr('Impossible d\'enregistrer le paiement'));
 }

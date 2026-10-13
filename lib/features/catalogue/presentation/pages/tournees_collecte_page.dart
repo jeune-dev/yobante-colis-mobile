@@ -54,15 +54,17 @@ class _TourneesCollectePageState extends State<TourneesCollectePage> {
       Navigator.of(context).pushNamed(AppRouter.loginRoute);
       return;
     }
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => AssistantExpeditionPage(
-        preremplissage: PreremplissageExpedition(
-          versSenegal: t.pays == 'FR',
-          modeDepot: 'enlevement_domicile',
-          tourneeId: t.id,
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AssistantExpeditionPage(
+          preremplissage: PreremplissageExpedition(
+            versSenegal: t.pays == 'FR',
+            modeDepot: 'enlevement_domicile',
+            tourneeId: t.id,
+          ),
         ),
       ),
-    ));
+    );
   }
 
   @override
@@ -70,45 +72,56 @@ class _TourneesCollectePageState extends State<TourneesCollectePage> {
     return Scaffold(
       backgroundColor: AppColor.kBackground,
       appBar: AppBar(title: Text(tr('Collecte à domicile'))),
-      body: ListView(padding: const EdgeInsets.all(20), children: [
-        Text(tr('Nous passons chez vous'), style: titreSection(18)),
-        const SizedBox(height: 4),
-        Text(tr('Consultez les prochaines tournées de collecte dans votre secteur.'), style: texteDiscret(13)),
-        const SizedBox(height: 16),
-        Row(children: [
-          Expanded(
-            child: TextField(
-              controller: _codePostal,
-              keyboardType: TextInputType.number,
-              onSubmitted: (_) => _rechercher(),
-              decoration: InputDecoration(labelText: tr('Votre code postal'), prefixIcon: Icon(Icons.search)),
-            ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Text(tr('Nous passons chez vous'), style: titreSection(18)),
+          const SizedBox(height: 4),
+          Text(tr('Consultez les prochaines tournées de collecte dans votre secteur.'), style: texteDiscret(13)),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _codePostal,
+                  keyboardType: TextInputType.number,
+                  onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                  onSubmitted: (_) => _rechercher(),
+                  decoration: InputDecoration(labelText: tr('Votre code postal'), prefixIcon: Icon(Icons.search)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(onPressed: _rechercher, child: Text(tr('Filtrer'))),
+            ],
           ),
-          const SizedBox(width: 10),
-          ElevatedButton(onPressed: _rechercher, child: Text(tr('Filtrer'))),
-        ]),
-        const SizedBox(height: 16),
-        FutureBuilder<List<TourneeCollecte>>(
-          future: _tournees,
-          builder: (context, snap) {
-            if (snap.connectionState != ConnectionState.done) {
-              return const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator()));
-            }
-            if (snap.hasError) {
-              final e = snap.error;
-              return Text(e is ServerException ? e.message : tr('Tournées indisponibles'));
-            }
-            final tournees = snap.data!;
-            if (tournees.isEmpty) {
-              return Bandeau(
-                icone: Icons.event_busy_outlined,
-                titre: tr('Aucune tournée ouverte pour le moment'),
-                message: tr('Vous pouvez tout de même demander une collecte en indiquant la date souhaitée lors de votre envoi.'),
-              );
-            }
-            return Column(
-              children: tournees
-                  .map((t) => Padding(
+          const SizedBox(height: 16),
+          FutureBuilder<List<TourneeCollecte>>(
+            future: _tournees,
+            builder: (context, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (snap.hasError) {
+                final e = snap.error;
+                return Text(e is ServerException ? e.message : tr('Tournées indisponibles'));
+              }
+              final tournees = snap.data!;
+              if (tournees.isEmpty) {
+                return Bandeau(
+                  icone: Icons.event_busy_outlined,
+                  titre: tr('Aucune tournée ouverte pour le moment'),
+                  message: tr(
+                    'Vous pouvez tout de même demander une collecte en indiquant la date souhaitée lors de votre envoi.',
+                  ),
+                );
+              }
+              return Column(
+                children: tournees
+                    .map(
+                      (t) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: CarteSection(
                           titre: t.titre,
@@ -121,25 +134,32 @@ class _TourneesCollectePageState extends State<TourneesCollectePage> {
                               LigneInfo(tr('Inscription avant le'), formaterDate(t.dateLimiteInscription)),
                             if (t.placesRestantes != null) LigneInfo(tr('Places restantes'), '${t.placesRestantes}'),
                             if (t.messageBanniere != null)
-                              Text(t.messageBanniere!, style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kPrimary)),
+                              Text(
+                                t.messageBanniere!,
+                                style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kPrimary),
+                              ),
                             const SizedBox(height: 10),
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () => _reserver(t),
                                 style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColor.kSecondary, foregroundColor: AppColor.kPrimary),
+                                  backgroundColor: AppColor.kSecondary,
+                                  foregroundColor: AppColor.kPrimary,
+                                ),
                                 child: Text(tr('Réserver ma collecte')),
                               ),
                             ),
                           ],
                         ),
-                      ))
-                  .toList(),
-            );
-          },
-        ),
-      ]),
+                      ),
+                    )
+                    .toList(),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:toastification/toastification.dart';
+import '../../../../core/widgets/ui_kit.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/theme/app_color.dart';
@@ -39,7 +40,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   void _envoyer() {
     setState(() => _soumis = true);
-    if (!_formKey.currentState!.validate()) return;
+    if (!validerFormulaire(_formKey)) return;
     FocusScope.of(context).unfocus();
     context.read<AuthBloc>().add(ForgotPasswordRequested(email: _email.text.trim()));
   }

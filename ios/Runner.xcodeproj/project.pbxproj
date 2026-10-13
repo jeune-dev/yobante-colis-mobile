@@ -156,6 +156,7 @@
 				1B5C7A302E8F4A1000D0C0A1 /* Firebase (facultatif) */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
+				1B5C7A302E8F4A1000D0C0A2 /* Réseau local (debug uniquement) */,
 			);
 			buildRules = (
 			);
@@ -278,6 +279,22 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# GoogleService-Info.plist n'est pas versionné (.gitignore) : copié s'il est présent,\n# sinon l'application démarre sans Firebase (push et Crashlytics désactivés).\nSOURCE=\"${PROJECT_DIR}/Runner/GoogleService-Info.plist\"\nif [ -f \"$SOURCE\" ]; then\n  cp \"$SOURCE\" \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist\"\nelse\n  echo \"warning: GoogleService-Info.plist absent : notifications push et Crashlytics désactivés\"\nfi\n";
+		};
+		1B5C7A302E8F4A1000D0C0A2 /* Réseau local (debug uniquement) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}",
+			);
+			name = "Réseau local (debug uniquement)";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Autorisations de réseau local (backend lancé sur le Mac, débogueur Flutter) : utiles en\n# développement, retirées des versions Release publiées sur l'App Store.\nif [ \"${CONFIGURATION}\" = \"Release\" ]; then\n  PLIST=\"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n  /usr/libexec/PlistBuddy -c \"Delete :NSAppTransportSecurity:NSAllowsLocalNetworking\" \"$PLIST\" 2>/dev/null || true\n  /usr/libexec/PlistBuddy -c \"Delete :NSLocalNetworkUsageDescription\" \"$PLIST\" 2>/dev/null || true\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

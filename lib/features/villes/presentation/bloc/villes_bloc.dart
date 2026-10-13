@@ -13,10 +13,7 @@ class VillesBloc extends Bloc<VillesEvent, VillesState> {
     on<LoadVilles>((_, emit) async {
       emit(VillesLoading());
       final result = await getVilles();
-      result.fold(
-        (f) => emit(VillesFailure(f.errorMessage)),
-        (v) => emit(VillesLoaded(v)),
-      );
+      result.fold((f) => emit(VillesFailure(f.errorMessage)), (v) => emit(VillesLoaded(v)));
     });
   }
 }

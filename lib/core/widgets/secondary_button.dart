@@ -1,4 +1,4 @@
-﻿import 'package:yobante_colis/core/theme/app_color.dart';
+import 'package:yobante_colis/core/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -32,18 +32,15 @@ class SecondaryButton extends StatefulWidget {
   State<SecondaryButton> createState() => _SecondaryButtonState();
 }
 
-class _SecondaryButtonState extends State<SecondaryButton>
-    with SingleTickerProviderStateMixin {
+class _SecondaryButtonState extends State<SecondaryButton> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final Duration _animationDuration = const Duration(milliseconds: 300);
   final Tween<double> _tween = Tween<double>(begin: 1.0, end: 0.95);
 
   @override
   void initState() {
-    _controller = AnimationController(
-      vsync: this,
-      duration: _animationDuration,
-    )..addListener(() {
+    _controller = AnimationController(vsync: this, duration: _animationDuration)
+      ..addListener(() {
         setState(() {});
       });
     super.initState();
@@ -76,13 +73,7 @@ class _SecondaryButtonState extends State<SecondaryButton>
               widget.onTap!();
             },
       child: ScaleTransition(
-        scale: _tween.animate(
-          CurvedAnimation(
-            parent: _controller,
-            curve: Curves.easeOut,
-            reverseCurve: Curves.easeIn,
-          ),
-        ),
+        scale: _tween.animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut, reverseCurve: Curves.easeIn)),
         child: Container(
           // Hauteur minimale (et non fixe) : le bouton grandit avec la taille du texte
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -97,20 +88,17 @@ class _SecondaryButtonState extends State<SecondaryButton>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (icon != null) ...[
-                icon,
-                const SizedBox(width: 12),
-              ],
+              if (icon != null) ...[icon, const SizedBox(width: 12)],
               Flexible(
                 child: Text(
-                widget.text,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: widget.fontSize ?? 14,
-                  fontWeight: FontWeight.w600,
-                  color: widget.textColor,
+                  widget.text,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: widget.fontSize ?? 14,
+                    fontWeight: FontWeight.w600,
+                    color: widget.textColor,
+                  ),
                 ),
-              ),
               ),
             ],
           ),
@@ -119,4 +107,3 @@ class _SecondaryButtonState extends State<SecondaryButton>
     );
   }
 }
-

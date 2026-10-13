@@ -211,7 +211,10 @@ Future<void> ouvrirLien(BuildContext context, String? url) async {
     return;
   }
   final uri = Uri.tryParse(url);
-  final ok = uri != null && await launchUrl(uri, mode: LaunchMode.externalApplication);
+  // Liens venus du backend (annonces, configuration) : seuls le web, l'email et le
+  // téléphone sont ouverts, jamais un schéma d'application (intent:, file:…)
+  final autorise = uri != null && const {'https', 'http', 'mailto', 'tel', 'sms'}.contains(uri.scheme.toLowerCase());
+  final ok = autorise && await launchUrl(uri, mode: LaunchMode.externalApplication);
   if (!ok && context.mounted) {
     showToast(context, tr('Erreur'), tr('Impossible d\'ouvrir le lien.'), ToastificationType.error);
   }
@@ -242,12 +245,14 @@ class CompteurQuantite extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
+            tooltip: tr('Diminuer'),
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.remove, size: 18),
             onPressed: valeur > 0 ? () => onChanged(valeur - 1) : null,
           ),
           Text('$valeur', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
           IconButton(
+            tooltip: tr('Augmenter'),
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.add, size: 18),
             onPressed: valeur < max ? () => onChanged(valeur + 1) : null,
@@ -294,6 +299,8 @@ class ChampTexte extends StatelessWidget {
         maxLines: maxLines,
         validator: validator,
         onChanged: onChanged,
+        // Toucher ailleurs ferme le clavier (le pavé numérique iOS n'a pas de touche « OK »)
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         inputFormatters: maxLength == null ? null : [LengthLimitingTextInputFormatter(maxLength)],
         decoration: InputDecoration(
           labelText: label,
@@ -301,6 +308,69 @@ class ChampTexte extends StatelessWidget {
           prefixIcon: icone == null ? null : Icon(icone, size: 20, color: AppColor.kPrimary),
         ),
       ),
+    );
+  }
+}
+
+/// Vérifie le formulaire ; en cas d'erreur, fait défiler la page jusqu'au premier
+/// champ fautif pour que l'utilisateur le corrige sans le chercher.
+bool validerFormulaire(GlobalKey<FormState> cle) {
+  final etat = cle.currentState;
+  if (etat == null) return false;
+  if (etat.validate()) return true;
+  final contexte = cle.currentContext;
+  // Messages d'erreur affichés à l'image suivante : on défile une fois la page à jour
+  if (contexte != null) WidgetsBinding.instance.addPostFrameCallback((_) => montrerPremiereErreur(contexte));
+  return false;
+}
+
+/// Fait défiler jusqu'au premier champ en erreur (dans l'ordre de l'écran) sous [contexte].
+void montrerPremiereErreur(BuildContext contexte) {
+  if (!contexte.mounted) return;
+  Element? premier;
+  void visiter(Element e) {
+    if (premier != null) return;
+    if (e is StatefulElement && e.state is FormFieldState && (e.state as FormFieldState).hasError) {
+      premier = e;
+      return;
+    }
+    e.visitChildren(visiter);
+  }
+
+  (contexte as Element).visitChildren(visiter);
+  final cible = premier;
+  if (cible != null) montrerElement(cible);
+}
+
+/// Amène [contexte] à l'écran, dans le tiers haut de la zone visible.
+void montrerElement(BuildContext contexte) {
+  if (!contexte.mounted) return;
+  Scrollable.ensureVisible(
+    contexte,
+    alignment: 0.2,
+    duration: const Duration(milliseconds: 300),
+    curve: Curves.easeOut,
+  );
+}
+
+/// Champs étroits placés côte à côte (longueur × largeur × hauteur) : libellé plus petit
+/// et marges intérieures réduites, pour que le libellé reste lisible en entier.
+class ChampsSerres extends StatelessWidget {
+  final Widget child;
+  const ChampsSerres({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final champs = theme.inputDecorationTheme;
+    return Theme(
+      data: theme.copyWith(
+        inputDecorationTheme: champs.copyWith(
+          labelStyle: (champs.labelStyle ?? const TextStyle()).copyWith(fontSize: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 16),
+        ),
+      ),
+      child: child,
     );
   }
 }

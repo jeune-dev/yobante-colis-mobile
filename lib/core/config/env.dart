@@ -24,52 +24,52 @@ class Env {
   static const Set<String> languesDuCompte = {'fr'};
 
   // ── AUTH ──────────────────────────────────────────────────────────────────
-  static const String authRegister   = '/auth/register';
-  static const String authLogin      = '/auth/login';
-  static const String authLogout     = '/auth/logout';
-  static const String authRefresh    = '/auth/refresh-token';
-  static const String authForgot     = '/auth/forgot-password';
-  static const String authReset      = '/auth/reset-password';
+  static const String authRegister = '/auth/register';
+  static const String authLogin = '/auth/login';
+  static const String authLogout = '/auth/logout';
+  static const String authRefresh = '/auth/refresh-token';
+  static const String authForgot = '/auth/forgot-password';
+  static const String authReset = '/auth/reset-password';
   static const String authChangePass = '/auth/change-password';
   static const String authResendVerification = '/auth/resend-verification';
   static const String authVerifyEmail = '/auth/verify-email';
 
   // ── CLIENT — COLIS ────────────────────────────────────────────────────────
-  static const String clientColis      = '/client/colis';
+  static const String clientColis = '/client/colis';
   static const String clientColisRecus = '/client/colis/recus';
-  static String clientColisId(String id)      => '/client/colis/$id';
-  static String clientColisSuivi(String id)   => '/client/colis/$id/suivi';
+  static String clientColisId(String id) => '/client/colis/$id';
+  static String clientColisSuivi(String id) => '/client/colis/$id/suivi';
   static String clientColisAnnuler(String id) => '/client/colis/$id/annuler';
   static String clientColisAccepter(String id) => '/client/colis/$id/proposition/accepter';
-  static String clientColisRefuser(String id)  => '/client/colis/$id/proposition/refuser';
+  static String clientColisRefuser(String id) => '/client/colis/$id/proposition/refuser';
   static String clientColisEtiquettes(String id) => '/client/colis/$id/etiquettes';
-  static String clientColisBordereau(String id)  => '/client/colis/$id/bordereau';
+  static String clientColisBordereau(String id) => '/client/colis/$id/bordereau';
   static String clientColisFactureCommerciale(String id) => '/client/colis/$id/facture-commerciale';
-  static String clientColisPhotos(String id)     => '/client/colis/$id/photos';
-  static String clientColisVocal(String id)      => '/client/colis/$id/vocal';
+  static String clientColisPhotos(String id) => '/client/colis/$id/photos';
+  static String clientColisVocal(String id) => '/client/colis/$id/vocal';
   static String clientColisAbonnement(String id) => '/client/colis/$id/abonnement-suivi';
 
   // ── PUBLIC — SERVICES / POINTS DE COLLECTE ────────────────────────────────
-  static const String publicServices      = '/public/services';
+  static const String publicServices = '/public/services';
   static const String publicPointsCollecte = '/public/points-collecte';
 
   // ── PUBLIC — CATALOGUE ET ACCUEIL (cahier des charges) ────────────────────
   static const String publicConfiguration = '/public/configuration';
-  static const String publicCategories    = '/public/categories';
-  static const String publicAccueil       = '/public/accueil';
-  static const String publicTournees      = '/public/tournees-collecte';
-  static const String publicTarifs        = '/public/tarifs';
-  static const String publicEmballages    = '/public/emballages';
+  static const String publicCategories = '/public/categories';
+  static const String publicAccueil = '/public/accueil';
+  static const String publicTournees = '/public/tournees-collecte';
+  static const String publicTarifs = '/public/tarifs';
+  static const String publicEmballages = '/public/emballages';
 
   // ── CLIENT — PROFIL ───────────────────────────────────────────────────────
-  static const String clientProfil        = '/client/profil';
-  static const String clientProfilAvatar  = '/client/profil/avatar';
-  static const String clientDeviceToken   = '/client/profil/device-token';
-  static const String clientPreferences   = '/client/profil/preferences';
-  static const String clientParrainage    = '/client/profil/parrainage';
+  static const String clientProfil = '/client/profil';
+  static const String clientProfilAvatar = '/client/profil/avatar';
+  static const String clientDeviceToken = '/client/profil/device-token';
+  static const String clientPreferences = '/client/profil/preferences';
+  static const String clientParrainage = '/client/profil/parrainage';
   static const String clientJustificatifPro = '/client/profil/justificatif-pro';
   // Preuve de possession du numéro : exigée pour consulter les colis reçus
-  static const String clientTelephoneCode     = '/client/profil/telephone/code';
+  static const String clientTelephoneCode = '/client/profil/telephone/code';
   static const String clientTelephoneVerifier = '/client/profil/telephone/verifier';
 
   // ── CLIENT — COMPTE (RGPD) ────────────────────────────────────────────────
@@ -77,27 +77,27 @@ class Env {
   static const String clientCompteExport = '/client/compte/export';
 
   // ── CLIENT — ENLÈVEMENTS À DOMICILE ───────────────────────────────────────
-  static const String clientEnlevements        = '/client/enlevements';
+  static const String clientEnlevements = '/client/enlevements';
   static const String clientEnlevementsCreneaux = '/client/enlevements/creneaux';
-  static String clientEnlevementId(String id)      => '/client/enlevements/$id';
+  static String clientEnlevementId(String id) => '/client/enlevements/$id';
   static String clientEnlevementAnnuler(String id) => '/client/enlevements/$id/annuler';
 
   // ── PERSONNEL — COURSIERS, AGENTS DE POINT, ADMINISTRATEURS ───────────────
   // Le backend restreint chaque liste au périmètre du compte connecté.
   static const String personnelEnlevements = '/admin/enlevements';
-  static const String personnelTournee     = '/admin/enlevements/tournee/aujourdhui';
-  static String personnelEnlevementId(String id)        => '/admin/enlevements/$id';
-  static String personnelEnlevementDemarrer(String id)  => '/admin/enlevements/$id/demarrer';
-  static String personnelEnlevementCloturer(String id)  => '/admin/enlevements/$id/cloturer';
+  static const String personnelTournee = '/admin/enlevements/tournee/aujourdhui';
+  static String personnelEnlevementId(String id) => '/admin/enlevements/$id';
+  static String personnelEnlevementDemarrer(String id) => '/admin/enlevements/$id/demarrer';
+  static String personnelEnlevementCloturer(String id) => '/admin/enlevements/$id/cloturer';
   static const String personnelColis = '/admin/colis';
-  static String personnelColisId(String id)              => '/admin/colis/$id';
-  static String personnelColisRecherche(String numero)   => '/admin/colis/recherche/${Uri.encodeComponent(numero)}';
-  static String personnelColisEvenement(String id)       => '/admin/colis/$id/evenements';
-  static String personnelEncaissement(String factureId)  => '/admin/paiements/factures/$factureId';
+  static String personnelColisId(String id) => '/admin/colis/$id';
+  static String personnelColisRecherche(String numero) => '/admin/colis/recherche/${Uri.encodeComponent(numero)}';
+  static String personnelColisEvenement(String id) => '/admin/colis/$id/evenements';
+  static String personnelEncaissement(String factureId) => '/admin/paiements/factures/$factureId';
 
   // ── CLIENT — CARNET D'ADRESSES ────────────────────────────────────────────
   static const String clientAdresses = '/client/adresses';
-  static String clientAdresseId(String id)     => '/client/adresses/$id';
+  static String clientAdresseId(String id) => '/client/adresses/$id';
   static String clientAdresseDefaut(String id) => '/client/adresses/$id/defaut';
 
   // ── AVIS CLIENTS ──────────────────────────────────────────────────────────
@@ -110,33 +110,33 @@ class Env {
 
   // ── CLIENT — RÉCLAMATIONS (service après-vente) ───────────────────────────
   static const String clientReclamations = '/client/reclamations';
-  static String clientReclamationId(String id)       => '/client/reclamations/$id';
+  static String clientReclamationId(String id) => '/client/reclamations/$id';
   static String clientReclamationMessages(String id) => '/client/reclamations/$id/messages';
-  static String clientReclamationNote(String id)     => '/client/reclamations/$id/note';
+  static String clientReclamationNote(String id) => '/client/reclamations/$id/note';
 
   // ── PUBLIC — VERSION DE L'APPLICATION / FAQ ───────────────────────────────
   static const String appVersion = '/app-version';
-  static const String publicFaq  = '/public/faq';
+  static const String publicFaq = '/public/faq';
   static const String publicDemandesContact = '/public/demandes-contact';
 
   // ── CLIENT — NOTIFICATIONS ────────────────────────────────────────────────
-  static const String clientNotifications   = '/client/notifications';
-  static const String clientNotifNonLues    = '/client/notifications/non-lues';
+  static const String clientNotifications = '/client/notifications';
+  static const String clientNotifNonLues = '/client/notifications/non-lues';
   static const String clientNotifToutesLues = '/client/notifications/toutes-lues';
-  static String clientNotifLue(String id)  => '/client/notifications/$id/lue';
-  static String clientNotifId(String id)   => '/client/notifications/$id';
+  static String clientNotifLue(String id) => '/client/notifications/$id/lue';
+  static String clientNotifId(String id) => '/client/notifications/$id';
 
   // ── CLIENT — PAIEMENTS / FACTURES ─────────────────────────────────────────
-  static const String clientFactures          = '/client/paiements/factures';
-  static String clientFactureId(String id)    => '/client/paiements/factures/$id';
+  static const String clientFactures = '/client/paiements/factures';
+  static String clientFactureId(String id) => '/client/paiements/factures/$id';
   static String clientFactureDocument(String id) => '/client/paiements/factures/$id/document';
-  static const String clientPaiements        = '/client/paiements';
+  static const String clientPaiements = '/client/paiements';
   static const String clientPaiementsEncours = '/client/paiements/encours';
   static const String clientPaiementsMethodes = '/client/paiements/methodes';
 
   // ── PUBLIC — SUIVI / VILLES / DEVIS (aucune authentification requise) ─────
   static String publicSuivi(String reference) => '/public/suivi/${Uri.encodeComponent(reference)}';
   static const String publicVilles = '/public/villes';
-  static const String publicDevis  = '/public/devis';
-  static const String clientDevis  = '/client/colis/devis';
+  static const String publicDevis = '/public/devis';
+  static const String clientDevis = '/client/colis/devis';
 }

@@ -26,8 +26,7 @@ class _FakeColisRepository extends Fake implements ColisRepository {
     FiltresColis filtres = const FiltresColis(),
     int page = 1,
     int limit = 20,
-  }) async =>
-      getColisResult!;
+  }) async => getColisResult!;
 
   @override
   Future<Either<Failure, Map<String, dynamic>>> getColisRecus({
@@ -35,29 +34,23 @@ class _FakeColisRepository extends Fake implements ColisRepository {
     FiltresColis filtres = const FiltresColis(),
     int page = 1,
     int limit = 20,
-  }) async =>
-      getColisRecusResult!;
+  }) async => getColisRecusResult!;
 
   @override
-  Future<Either<Failure, Colis>> getColisDetail(String id) async =>
-      getDetailResult!;
+  Future<Either<Failure, Colis>> getColisDetail(String id) async => getDetailResult!;
 
   @override
-  Future<Either<Failure, AvecMessage<Colis>>> annulerColis(String id,
-          {String? motif}) async =>
-      annulerResult!;
+  Future<Either<Failure, AvecMessage<Colis>>> annulerColis(String id, {String? motif}) async => annulerResult!;
 
   @override
-  Future<Either<Failure, List<SuiviEvenement>>> getSuiviColis(String id) async =>
-      suiviResult!;
+  Future<Either<Failure, List<SuiviEvenement>>> getSuiviColis(String id) async => suiviResult!;
 
   @override
   Future<Either<Failure, ResultatDeclaration>> creerColis(
     DemandeExpedition demande, {
     List<String> photosPaths = const [],
     void Function(int, int)? onSendProgress,
-  }) async =>
-      Left(const ServerFailure('non utilisé'));
+  }) async => Left(const ServerFailure('non utilisé'));
 
   @override
   Future<Either<Failure, ResultatDeclaration>> accepterProposition(String id) async =>
@@ -94,18 +87,17 @@ final _kColis = Colis(
 // ── Helper ────────────────────────────────────────────────────────────────────
 
 ColisBloc _buildBloc(_FakeColisRepository repo) => ColisBloc(
-      getColis: GetColis(repo),
-      getColisRecus: GetColisRecus(repo),
-      getColisDetail: GetColisDetail(repo),
-      creerColis: CreerColis(repo),
-      getSuiviColis: GetSuiviColis(repo),
-      annulerColis: AnnulerColis(repo),
-      repondreProposition: RepondreProposition(repo),
-      modifierColis: ModifierColis(repo),
-    );
+  getColis: GetColis(repo),
+  getColisRecus: GetColisRecus(repo),
+  getColisDetail: GetColisDetail(repo),
+  creerColis: CreerColis(repo),
+  getSuiviColis: GetSuiviColis(repo),
+  annulerColis: AnnulerColis(repo),
+  repondreProposition: RepondreProposition(repo),
+  modifierColis: ModifierColis(repo),
+);
 
-Future<List<ColisState>> _collectStates(
-    ColisBloc bloc, ColisEvent event) async {
+Future<List<ColisState>> _collectStates(ColisBloc bloc, ColisEvent event) async {
   final states = <ColisState>[];
   final sub = bloc.stream.listen(states.add);
   bloc.add(event);
@@ -122,8 +114,7 @@ void main() {
   setUp(() => fakeRepo = _FakeColisRepository());
 
   group('ColisBloc — LoadColis', () {
-    test('succès sans page suivante → ColisListLoaded(hasMore: false)',
-        () async {
+    test('succès sans page suivante → ColisListLoaded(hasMore: false)', () async {
       fakeRepo.getColisResult = Right({
         'colis': [_kColis],
         'pagination': {'page': 1, 'totalPages': 1},
@@ -182,12 +173,14 @@ void main() {
       fakeRepo.getColisResult = Right({'colis': <dynamic>[], 'pagination': null});
       // Override pour capturer le paramètre
       final bloc = ColisBloc(
-        getColis: GetColis(_FakeColisRepositoryWithCapture(
-          onGetColis: (statut, page) {
-            capturedStatut = statut;
-            return Right({'colis': <dynamic>[], 'pagination': null});
-          },
-        )),
+        getColis: GetColis(
+          _FakeColisRepositoryWithCapture(
+            onGetColis: (statut, page) {
+              capturedStatut = statut;
+              return Right({'colis': <dynamic>[], 'pagination': null});
+            },
+          ),
+        ),
         getColisRecus: GetColisRecus(fakeRepo),
         getColisDetail: GetColisDetail(fakeRepo),
         creerColis: CreerColis(fakeRepo),
@@ -282,8 +275,7 @@ void main() {
       fakeRepo.annulerResult = Right((valeur: _kColis, message: 'Expédition annulée.'));
       final bloc = _buildBloc(fakeRepo);
 
-      final states =
-          await _collectStates(bloc, AnnulerColisRequested('c1'));
+      final states = await _collectStates(bloc, AnnulerColisRequested('c1'));
 
       expect(states[0], isA<ColisLoading>());
       expect(states[1], isA<ColisAnnule>());
@@ -310,8 +302,7 @@ void main() {
 
 // ── Repo avec capture pour tester les paramètres ──────────────────────────────
 
-class _FakeColisRepositoryWithCapture extends Fake
-    implements ColisRepository {
+class _FakeColisRepositoryWithCapture extends Fake implements ColisRepository {
   final Either<Failure, Map<String, dynamic>> Function(String?, int) onGetColis;
   _FakeColisRepositoryWithCapture({required this.onGetColis});
 
@@ -321,8 +312,7 @@ class _FakeColisRepositoryWithCapture extends Fake
     FiltresColis filtres = const FiltresColis(),
     int page = 1,
     int limit = 20,
-  }) async =>
-      onGetColis(statut, page);
+  }) async => onGetColis(statut, page);
 
   @override
   Future<Either<Failure, Map<String, dynamic>>> getColisRecus({
@@ -330,29 +320,24 @@ class _FakeColisRepositoryWithCapture extends Fake
     FiltresColis filtres = const FiltresColis(),
     int page = 1,
     int limit = 20,
-  }) async =>
+  }) async => Left(const ServerFailure(''));
+
+  @override
+  Future<Either<Failure, Colis>> getColisDetail(String id) async => Left(const ServerFailure(''));
+
+  @override
+  Future<Either<Failure, AvecMessage<Colis>>> annulerColis(String id, {String? motif}) async =>
       Left(const ServerFailure(''));
 
   @override
-  Future<Either<Failure, Colis>> getColisDetail(String id) async =>
-      Left(const ServerFailure(''));
-
-  @override
-  Future<Either<Failure, AvecMessage<Colis>>> annulerColis(String id,
-          {String? motif}) async =>
-      Left(const ServerFailure(''));
-
-  @override
-  Future<Either<Failure, List<SuiviEvenement>>> getSuiviColis(String id) async =>
-      Left(const ServerFailure(''));
+  Future<Either<Failure, List<SuiviEvenement>>> getSuiviColis(String id) async => Left(const ServerFailure(''));
 
   @override
   Future<Either<Failure, ResultatDeclaration>> creerColis(
     DemandeExpedition demande, {
     List<String> photosPaths = const [],
     void Function(int, int)? onSendProgress,
-  }) async =>
-      Left(const ServerFailure(''));
+  }) async => Left(const ServerFailure(''));
 
   @override
   Future<Either<Failure, ResultatDeclaration>> accepterProposition(String id) async =>

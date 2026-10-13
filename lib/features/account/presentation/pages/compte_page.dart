@@ -94,8 +94,12 @@ class _ComptePageState extends State<ComptePage> {
                       () => _ouvrir(const ProfilPage()).then((_) => _chargerUtilisateur()),
                     ),
                     _Entree(Icons.receipt_long_outlined, tr('Mes factures'), () => _ouvrir(const FacturesPage())),
-                    _Entree(Icons.notifications_none_rounded, tr('Notifications'), () => _ouvrir(const NotificationsPage()),
-                      compteur: true),
+                    _Entree(
+                      Icons.notifications_none_rounded,
+                      tr('Notifications'),
+                      () => _ouvrir(const NotificationsPage()),
+                      compteur: true,
+                    ),
                     _Entree(
                       Icons.local_shipping_outlined,
                       tr('Mes enlèvements'),
@@ -393,7 +397,7 @@ class _Entree extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (compteur) const CompteurNotificationsLigne(),
-        if (valeur != null)
+          if (valeur != null)
             Text(valeur!, style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kGrayscale40)),
           const SizedBox(width: 4),
           const Icon(Icons.chevron_right_rounded, color: AppColor.kGrayscale40),

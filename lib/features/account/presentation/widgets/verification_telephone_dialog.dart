@@ -12,10 +12,10 @@ import '../../../../core/i18n/langue.dart';
 ///
 /// Renvoie le message du backend si le numéro est vérifié, `null` sinon.
 Future<String?> verifierTelephone(BuildContext context) => showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const _VerificationTelephoneDialog(),
-    );
+  context: context,
+  barrierDismissible: false,
+  builder: (_) => const _VerificationTelephoneDialog(),
+);
 
 class _VerificationTelephoneDialog extends StatefulWidget {
   const _VerificationTelephoneDialog();
@@ -53,18 +53,18 @@ class _VerificationTelephoneDialogState extends State<_VerificationTelephoneDial
   }
 
   Future<void> _demanderCode() => _executer(() async {
-        final envoi = await _source.demanderCodeTelephone();
-        if (!mounted) return;
-        // Numéro déjà vérifié côté serveur : rien d'autre à faire
-        if (envoi.dejaVerifie) {
-          Navigator.of(context).pop(envoi.message);
-          return;
-        }
-        setState(() {
-          _codeEnvoye = true;
-          _info = envoi.message;
-        });
-      });
+    final envoi = await _source.demanderCodeTelephone();
+    if (!mounted) return;
+    // Numéro déjà vérifié côté serveur : rien d'autre à faire
+    if (envoi.dejaVerifie) {
+      Navigator.of(context).pop(envoi.message);
+      return;
+    }
+    setState(() {
+      _codeEnvoye = true;
+      _info = envoi.message;
+    });
+  });
 
   Future<void> _verifier() async {
     final code = _code.text.trim();
@@ -89,8 +89,10 @@ class _VerificationTelephoneDialogState extends State<_VerificationTelephoneDial
           Text(
             _codeEnvoye
                 ? (_info ?? tr('Saisissez le code reçu par WhatsApp.'))
-                : tr('Pour voir les colis qui vous sont adressés, confirmez que ce numéro vous appartient. '
-                    'Un code à 6 chiffres vous sera envoyé par WhatsApp.'),
+                : tr(
+                    'Pour voir les colis qui vous sont adressés, confirmez que ce numéro vous appartient. '
+                    'Un code à 6 chiffres vous sera envoyé par WhatsApp.',
+                  ),
             style: texteDiscret(13),
           ),
           if (_codeEnvoye) ...[
@@ -98,6 +100,7 @@ class _VerificationTelephoneDialogState extends State<_VerificationTelephoneDial
             TextField(
               controller: _code,
               keyboardType: TextInputType.number,
+              onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
               maxLength: 6,
               autofocus: true,
               decoration: InputDecoration(labelText: tr('Code de vérification'), counterText: ''),
@@ -108,19 +111,12 @@ class _VerificationTelephoneDialogState extends State<_VerificationTelephoneDial
             const SizedBox(height: 8),
             Text(_erreur!, style: const TextStyle(color: AppColor.kErreur, fontSize: 12)),
           ],
-          if (_envoi) ...[
-            const SizedBox(height: 12),
-            const LinearProgressIndicator(),
-          ],
+          if (_envoi) ...[const SizedBox(height: 12), const LinearProgressIndicator()],
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: _envoi ? null : () => Navigator.of(context).pop(),
-          child: Text(tr('Annuler')),
-        ),
-        if (_codeEnvoye)
-          TextButton(onPressed: _envoi ? null : _demanderCode, child: Text(tr('Renvoyer'))),
+        TextButton(onPressed: _envoi ? null : () => Navigator.of(context).pop(), child: Text(tr('Annuler'))),
+        if (_codeEnvoye) TextButton(onPressed: _envoi ? null : _demanderCode, child: Text(tr('Renvoyer'))),
         ElevatedButton(
           onPressed: _envoi ? null : (_codeEnvoye ? _verifier : _demanderCode),
           child: Text(_codeEnvoye ? tr('Valider') : tr('Recevoir le code')),

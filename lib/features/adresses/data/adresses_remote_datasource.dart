@@ -67,28 +67,28 @@ class AdresseCarnet extends Equatable {
   String get resume => [adresse, quartier, villeNom].whereType<String>().where((e) => e.isNotEmpty).join(', ');
 
   factory AdresseCarnet.fromJson(Map<String, dynamic> j) => AdresseCarnet(
-        id: j['id'] as String? ?? '',
-        libelle: j['libelle'] as String? ?? '',
-        type: j['type'] as String? ?? 'destinataire',
-        nom: j['nom'] as String? ?? '',
-        entreprise: j['entreprise'] as String?,
-        telephone: j['telephone'] as String? ?? '',
-        telephoneSecondaire: j['telephoneSecondaire'] as String?,
-        email: j['email'] as String?,
-        pays: j['pays'] as String? ?? 'SN',
-        villeId: j['villeId'] as String? ?? '',
-        villeNom: (j['ville'] as Map<String, dynamic>?)?['nom'] as String?,
-        adresse: j['adresse'] as String? ?? '',
-        complementAdresse: j['complementAdresse'] as String?,
-        quartier: j['quartier'] as String?,
-        arrondissement: j['arrondissement'] as String?,
-        departement: j['departement'] as String?,
-        pointRepere: j['pointRepere'] as String?,
-        codePostal: j['codePostal'] as String?,
-        instructions: j['instructions'] as String?,
-        pointRetraitPrefereId: j['pointRetraitPrefereId'] as String?,
-        parDefaut: j['parDefaut'] as bool? ?? false,
-      );
+    id: j['id'] as String? ?? '',
+    libelle: j['libelle'] as String? ?? '',
+    type: j['type'] as String? ?? 'destinataire',
+    nom: j['nom'] as String? ?? '',
+    entreprise: j['entreprise'] as String?,
+    telephone: j['telephone'] as String? ?? '',
+    telephoneSecondaire: j['telephoneSecondaire'] as String?,
+    email: j['email'] as String?,
+    pays: j['pays'] as String? ?? 'SN',
+    villeId: j['villeId'] as String? ?? '',
+    villeNom: (j['ville'] as Map<String, dynamic>?)?['nom'] as String?,
+    adresse: j['adresse'] as String? ?? '',
+    complementAdresse: j['complementAdresse'] as String?,
+    quartier: j['quartier'] as String?,
+    arrondissement: j['arrondissement'] as String?,
+    departement: j['departement'] as String?,
+    pointRepere: j['pointRepere'] as String?,
+    codePostal: j['codePostal'] as String?,
+    instructions: j['instructions'] as String?,
+    pointRetraitPrefereId: j['pointRetraitPrefereId'] as String?,
+    parDefaut: j['parDefaut'] as bool? ?? false,
+  );
 
   @override
   List<Object?> get props => [id, parDefaut, libelle];
@@ -98,16 +98,30 @@ class AdressesRemoteDataSource {
   final Dio dio;
   AdressesRemoteDataSource({required this.dio});
 
-  AdresseCarnet _adresse(Response res) =>
-      AdresseCarnet.fromJson(res.data['data']['adresse'] as Map<String, dynamic>);
+  AdresseCarnet _adresse(Response res) => AdresseCarnet.fromJson(res.data['data']['adresse'] as Map<String, dynamic>);
 
   Future<List<AdresseCarnet>> getAdresses({String? type, String? pays, String? search}) => appelApi(() async {
-        final adresses = await chargerToutesLesPages(dio, Env.clientAdresses, 'adresses', parametres: {
-          'type': ?type,
-          'pays': ?pays,
-          if (search != null && search.isNotEmpty) 'search': search,
-        });
-        return adresses.map(AdresseCarnet.fromJson).toList();
+    final adresses = await chargerToutesLesPages(
+      dio,
+      Env.clientAdresses,
+      'adresses',
+      parametres: {'type': ?type, 'pays': ?pays, if (search != null && search.isNotEmpty) 'search': search},
+    );
+    return adresses.map(AdresseCarnet.fromJson).toList();
+  }, tr('Impossible de charger votre carnet d\'adresses'));
+
+  /// Recherche côté serveur (nom, libellé, entreprise, téléphone) : une seule
+  /// page de résultats, rien n'est conservé dans l'application.
+  Future<List<AdresseCarnet>> rechercher(String search, {String? type, String? pays, int limit = 8}) =>
+      appelApi(() async {
+        final res = await dio.get(
+          Env.clientAdresses,
+          // Sans texte : tout le carnet (dans la limite de [limit])
+          queryParameters: {if (search.isNotEmpty) 'search': search, 'type': ?type, 'pays': ?pays, 'limit': limit},
+        );
+        return (res.data['data']['adresses'] as List)
+            .map((e) => AdresseCarnet.fromJson(e as Map<String, dynamic>))
+            .toList();
       }, tr('Impossible de charger votre carnet d\'adresses'));
 
   Future<AdresseCarnet> getAdresse(String id) =>
@@ -119,9 +133,9 @@ class AdressesRemoteDataSource {
   /// pointRetraitPrefereId, parDefaut.
   /// Renvoie l'adresse enregistrée et le message du backend.
   Future<({AdresseCarnet adresse, String message})> creer(Map<String, dynamic> champs) => appelApi(() async {
-        final res = await dio.post(Env.clientAdresses, data: champs);
-        return (adresse: _adresse(res), message: messageApi(res));
-      }, tr('Impossible d\'ajouter l\'adresse'));
+    final res = await dio.post(Env.clientAdresses, data: champs);
+    return (adresse: _adresse(res), message: messageApi(res));
+  }, tr('Impossible d\'ajouter l\'adresse'));
 
   Future<({AdresseCarnet adresse, String message})> modifier(String id, Map<String, dynamic> champs) =>
       appelApi(() async {
@@ -131,10 +145,13 @@ class AdressesRemoteDataSource {
 
   /// Renvoie le message du backend.
   Future<String> definirParDefaut(String id) => appelApi(
-      () async => messageApi(await dio.patch(Env.clientAdresseDefaut(id), data: const {})),
-      tr('Impossible de définir l\'adresse par défaut'));
+    () async => messageApi(await dio.patch(Env.clientAdresseDefaut(id), data: const {})),
+    tr('Impossible de définir l\'adresse par défaut'),
+  );
 
   /// Renvoie le message du backend.
   Future<String> supprimer(String id) => appelApi(
-      () async => messageApi(await dio.delete(Env.clientAdresseId(id))), tr('Impossible de supprimer l\'adresse'));
+    () async => messageApi(await dio.delete(Env.clientAdresseId(id))),
+    tr('Impossible de supprimer l\'adresse'),
+  );
 }

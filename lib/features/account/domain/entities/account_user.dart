@@ -12,8 +12,14 @@ class AccountUser extends Equatable {
   final bool? isActive;
 
   const AccountUser({
-    required this.id, this.nom, this.prenom, this.email,
-    this.telephone, this.role, this.avatarUrl, this.isActive,
+    required this.id,
+    this.nom,
+    this.prenom,
+    this.email,
+    this.telephone,
+    this.role,
+    this.avatarUrl,
+    this.isActive,
   });
 
   String get fullName {

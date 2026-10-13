@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../i18n/langue.dart';
 import '../routes/app_shell_key.dart';
 
 /// Bouton de gauche des pages qui sont aussi des onglets de l'écran principal.
@@ -13,6 +14,7 @@ class BoutonMenuOuRetour extends StatelessWidget {
   Widget build(BuildContext context) {
     if (ModalRoute.of(context)?.canPop ?? false) return const BackButton();
     return IconButton(
+      tooltip: tr('Menu'),
       icon: const Icon(Icons.menu),
       onPressed: () => appShellScaffoldKey.currentState?.openDrawer(),
     );

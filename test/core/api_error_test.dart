@@ -17,10 +17,13 @@ DioException _erreur({int? statut, Object? data, DioExceptionType type = DioExce
 void main() {
   group('messageErreur', () {
     test('les détails de validation priment sur le message générique', () {
-      final e = _erreur(statut: 400, data: {
-        'message': 'Données invalides',
-        'details': ['Poids requis', 'Ville inconnue'],
-      });
+      final e = _erreur(
+        statut: 400,
+        data: {
+          'message': 'Données invalides',
+          'details': ['Poids requis', 'Ville inconnue'],
+        },
+      );
       expect(messageErreur(e), 'Poids requis\nVille inconnue');
     });
 
@@ -93,9 +96,9 @@ void main() {
     test('DioException → ServerException avec message et code', () async {
       await expectLater(
         appelApi(() async => throw _erreur(statut: 403, data: {'message': 'Interdit', 'code': 'ROLE'})),
-        throwsA(isA<ServerException>()
-            .having((e) => e.message, 'message', 'Interdit')
-            .having((e) => e.code, 'code', 'ROLE')),
+        throwsA(
+          isA<ServerException>().having((e) => e.message, 'message', 'Interdit').having((e) => e.code, 'code', 'ROLE'),
+        ),
       );
     });
 

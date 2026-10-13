@@ -13,7 +13,8 @@ import '../../../../core/widgets/ui_kit.dart';
 import '../../../../injection_container.dart';
 import '../../../../core/errors/api_error.dart';
 import '../../../enlevements/data/enlevements_remote_datasource.dart';
-import '../../../enlevements/presentation/pages/enlevements_page.dart' show DetailEnlevementPage, PastilleStatutEnlevement;
+import '../../../enlevements/presentation/pages/enlevements_page.dart'
+    show DetailEnlevementPage, PastilleStatutEnlevement;
 import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../notifications/presentation/widgets/apercu_notifications.dart';
 import '../../data/personnel_remote_datasource.dart';
@@ -39,11 +40,11 @@ const _ouverts = ['demande', 'planifie', 'en_cours'];
 
 /// Couleur du liseré des cartes, selon l'avancement.
 Color _accent(String statut) => switch (statut) {
-      'effectue' => AppColor.kSucces,
-      'echoue' || 'annule' => AppColor.kErreur,
-      'en_cours' => AppColor.kSecondaryDark,
-      _ => AppColor.kPrimary,
-    };
+  'effectue' => AppColor.kSucces,
+  'echoue' || 'annule' => AppColor.kErreur,
+  'en_cours' => AppColor.kSecondaryDark,
+  _ => AppColor.kPrimary,
+};
 
 class _EnlevementsTerrainPageState extends State<EnlevementsTerrainPage> {
   final _source = sl<PersonnelRemoteDataSource>();
@@ -63,10 +64,7 @@ class _EnlevementsTerrainPageState extends State<EnlevementsTerrainPage> {
     // Pas de setState au premier chargement (appelé depuis initState)
     if (_erreur != null) setState(() => _erreur = null);
     try {
-      final resultats = await Future.wait([
-        _source.getEnlevements(),
-        if (_coursier) _source.getTourneeDuJour(),
-      ]);
+      final resultats = await Future.wait([_source.getEnlevements(), if (_coursier) _source.getTourneeDuJour()]);
       if (!mounted) return;
       setState(() {
         _tous = resultats[0];
@@ -87,8 +85,9 @@ class _EnlevementsTerrainPageState extends State<EnlevementsTerrainPage> {
   }
 
   Future<void> _ouvrir(EnlevementTerrain e) async {
-    final change = await Navigator.of(context)
-        .push<bool>(MaterialPageRoute(builder: (_) => DetailEnlevementTerrainPage(id: e.demande.id)));
+    final change = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => DetailEnlevementTerrainPage(id: e.demande.id)));
     if (change == true) _charger();
   }
 
@@ -114,6 +113,7 @@ class _EnlevementsTerrainPageState extends State<EnlevementsTerrainPage> {
         _coursier ? tr('Ma tournée') : tr('Enlèvements'),
         actions: [
           IconButton(
+            tooltip: tr('Notifications'),
             icon: const PastilleNotifications(child: Icon(Icons.notifications_none_rounded, color: AppColor.kWhite)),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsPage())),
           ),
@@ -203,22 +203,24 @@ class _CarteEnlevement extends StatelessWidget {
         ),
       ],
       pied: _ouverts.contains(d.statut)
-          ? Row(children: [
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: () => appeler(context, d.contactTelephone),
-                  icon: const Icon(Icons.call_outlined, size: 18),
-                  label: Text(tr('Appeler')),
+          ? Row(
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () => appeler(context, d.contactTelephone),
+                    icon: const Icon(Icons.call_outlined, size: 18),
+                    label: Text(tr('Appeler')),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: () => ouvrirItineraire(context, adresse),
-                  icon: const Icon(Icons.directions_outlined, size: 18),
-                  label: Text(tr('Itinéraire')),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () => ouvrirItineraire(context, adresse),
+                    icon: const Icon(Icons.directions_outlined, size: 18),
+                    label: Text(tr('Itinéraire')),
+                  ),
                 ),
-              ),
-            ])
+              ],
+            )
           : null,
     );
   }
@@ -330,39 +332,45 @@ class _DetailEnlevementTerrainPageState extends State<DetailEnlevementTerrainPag
       ),
     );
     if (valide != true || !mounted) return;
-    await _executer(() => _source.cloturerEnlevement(
-          widget.id,
-          effectue: effectue,
-          motif: effectue ? null : saisie.text,
-          commentaire: effectue ? saisie.text : null,
-        ));
+    await _executer(
+      () => _source.cloturerEnlevement(
+        widget.id,
+        effectue: effectue,
+        motif: effectue ? null : saisie.text,
+        commentaire: effectue ? saisie.text : null,
+      ),
+    );
   }
 
   Widget? _barre(EnlevementTerrain e) {
     if (e.demarrable) {
-      return BarreActions(children: [
-        FilledButton.icon(
-          onPressed: _envoi ? null : () => _executer(() => _source.demarrerEnlevement(widget.id)),
-          icon: const Icon(Icons.navigation_outlined),
-          label: Text(tr('Je suis en route')),
-          style: styleBoutonPlein(AppColor.kPrimary),
-        ),
-      ]);
+      return BarreActions(
+        children: [
+          FilledButton.icon(
+            onPressed: _envoi ? null : () => _executer(() => _source.demarrerEnlevement(widget.id)),
+            icon: const Icon(Icons.navigation_outlined),
+            label: Text(tr('Je suis en route')),
+            style: styleBoutonPlein(AppColor.kPrimary),
+          ),
+        ],
+      );
     }
     if (e.cloturable) {
-      return BarreActions(children: [
-        OutlinedButton(
-          onPressed: _envoi ? null : () => _cloturer(effectue: false),
-          style: styleBoutonContour(AppColor.kErreur),
-          child: Text(tr('Échec')),
-        ),
-        FilledButton.icon(
-          onPressed: _envoi ? null : () => _cloturer(effectue: true),
-          icon: const Icon(Icons.check_rounded),
-          label: Text(tr('Colis récupérés')),
-          style: styleBoutonPlein(AppColor.kSucces),
-        ),
-      ]);
+      return BarreActions(
+        children: [
+          OutlinedButton(
+            onPressed: _envoi ? null : () => _cloturer(effectue: false),
+            style: styleBoutonContour(AppColor.kErreur),
+            child: Text(tr('Échec')),
+          ),
+          FilledButton.icon(
+            onPressed: _envoi ? null : () => _cloturer(effectue: true),
+            icon: const Icon(Icons.check_rounded),
+            label: Text(tr('Colis récupérés')),
+            style: styleBoutonPlein(AppColor.kSucces),
+          ),
+        ],
+      );
     }
     return null;
   }
@@ -384,28 +392,36 @@ class _DetailEnlevementTerrainPageState extends State<DetailEnlevementTerrainPag
             ? MissionIndisponible(
                 indisponible: _indisponible,
                 message: _indisponible
-                    ? tr('Cet enlèvement ne fait plus partie de vos missions : il a pu être réaffecté, annulé ou supprimé.')
+                    ? tr(
+                        'Cet enlèvement ne fait plus partie de vos missions : il a pu être réaffecté, annulé ou supprimé.',
+                      )
                     : _erreur!,
                 onReessayer: _charger,
               )
             : e == null || d == null
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-                    onRefresh: _charger,
-                    child: ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 24), children: [
-                      HeroDetail(
-                        surTitre: tr('Enlèvement à domicile'),
-                        reference: d.reference,
-                        statut: PastilleStatutEnlevement(statut: d.statut),
-                        contenu: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Row(children: [
-                            const Icon(Icons.event_outlined, color: AppColor.kSecondary, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${formaterDate(d.datePlanifiee ?? d.dateSouhaitee)} · ${d.creneau.replaceAll('-', ' – ')}',
-                              style: titreSection(15).copyWith(color: AppColor.kWhite),
-                            ),
-                          ]),
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                onRefresh: _charger,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  children: [
+                    HeroDetail(
+                      surTitre: tr('Enlèvement à domicile'),
+                      reference: d.reference,
+                      statut: PastilleStatutEnlevement(statut: d.statut),
+                      contenu: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.event_outlined, color: AppColor.kSecondary, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${formaterDate(d.datePlanifiee ?? d.dateSouhaitee)} · ${d.creneau.replaceAll('-', ' – ')}',
+                                style: titreSection(15).copyWith(color: AppColor.kWhite),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 18),
                           EtapesProgression(
                             etapes: [tr('Planifié'), tr('En route'), tr('Récupéré')],
@@ -416,68 +432,79 @@ class _DetailEnlevementTerrainPageState extends State<DetailEnlevementTerrainPag
                               _ => 0,
                             },
                           ),
-                        ]),
+                        ],
                       ),
-                      const SizedBox(height: 14),
-                      CarteContact(
-                        role: tr('Client'),
-                        nom: d.contactNom,
-                        telephone: d.contactTelephone,
-                        adresse: [d.adresse, d.complementAdresse, d.codePostal, d.villeNom]
-                            .whereType<String>()
-                            .where((v) => v.isNotEmpty)
-                            .join(', '),
-                        details: [
-                          if (d.etage != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text(
-                                '${tr('Étage')} ${d.etage}${d.ascenseur == true ? tr(' (ascenseur)') : ''}',
-                                style: titreSection(13).copyWith(color: AppColor.kGrayscale40),
-                              ),
+                    ),
+                    const SizedBox(height: 14),
+                    CarteContact(
+                      role: tr('Client'),
+                      nom: d.contactNom,
+                      telephone: d.contactTelephone,
+                      adresse: [
+                        d.adresse,
+                        d.complementAdresse,
+                        d.codePostal,
+                        d.villeNom,
+                      ].whereType<String>().where((v) => v.isNotEmpty).join(', '),
+                      details: [
+                        if (d.etage != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              '${tr('Étage')} ${d.etage}${d.ascenseur == true ? tr(' (ascenseur)') : ''}',
+                              style: titreSection(13).copyWith(color: AppColor.kGrayscale40),
                             ),
-                          if (d.instructions != null && d.instructions!.isNotEmpty)
-                            Container(
-                              margin: const EdgeInsets.only(top: 10),
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: AppColor.kSecondaryLight,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          ),
+                        if (d.instructions != null && d.instructions!.isNotEmpty)
+                          Container(
+                            margin: const EdgeInsets.only(top: 10),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColor.kSecondaryLight,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 const Icon(Icons.sticky_note_2_outlined, size: 18, color: AppColor.kSecondaryDark),
                                 const SizedBox(width: 8),
                                 Expanded(child: Text(d.instructions!)),
-                              ]),
+                              ],
                             ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      SectionDetail(
-                        titre: tr('Ce qu\'il faut récupérer'),
-                        icone: Icons.inventory_2_outlined,
-                        children: [
-                          InfoIcone(Icons.all_inbox_outlined, tr('Colis'),
-                              '${d.nbColis}${d.poidsEstimeKg != null ? ' · ${d.poidsEstimeKg} kg' : ''}'),
-                          if (d.emballageRequis)
-                            InfoIcone(Icons.add_box_outlined, tr('Emballage'), tr('À prévoir par le coursier')),
-                          if (e.pointDepotNom != null) InfoIcone(Icons.storefront_outlined, tr('Point de dépôt'), e.pointDepotNom!),
-                          if (e.coursierNom != null && e.coursierNom!.isNotEmpty)
-                            InfoIcone(Icons.delivery_dining_outlined, tr('Coursier'), e.coursierNom!),
-                          if (d.motifEchec != null) InfoIcone(Icons.report_outlined, tr('Motif'), d.motifEchec!),
-                          if (d.colisId != null)
-                            OutlinedButton.icon(
-                              onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => DetailColisTerrainPage(id: d.colisId!)),
-                              ),
-                              icon: const Icon(Icons.open_in_new, size: 18),
-                              label: Text(tr('Voir l\'expédition {ref}').replaceAll('{ref}', d.colisReference ?? '')),
-                              style: styleBoutonContour(AppColor.kPrimary),
-                            ),
-                        ],
-                      ),
-                    ]),
-                  ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    SectionDetail(
+                      titre: tr('Ce qu\'il faut récupérer'),
+                      icone: Icons.inventory_2_outlined,
+                      children: [
+                        InfoIcone(
+                          Icons.all_inbox_outlined,
+                          tr('Colis'),
+                          '${d.nbColis}${d.poidsEstimeKg != null ? ' · ${d.poidsEstimeKg} kg' : ''}',
+                        ),
+                        if (d.emballageRequis)
+                          InfoIcone(Icons.add_box_outlined, tr('Emballage'), tr('À prévoir par le coursier')),
+                        if (e.pointDepotNom != null)
+                          InfoIcone(Icons.storefront_outlined, tr('Point de dépôt'), e.pointDepotNom!),
+                        if (e.coursierNom != null && e.coursierNom!.isNotEmpty)
+                          InfoIcone(Icons.delivery_dining_outlined, tr('Coursier'), e.coursierNom!),
+                        if (d.motifEchec != null) InfoIcone(Icons.report_outlined, tr('Motif'), d.motifEchec!),
+                        if (d.colisId != null)
+                          OutlinedButton.icon(
+                            onPressed: () => Navigator.of(
+                              context,
+                            ).push(MaterialPageRoute(builder: (_) => DetailColisTerrainPage(id: d.colisId!))),
+                            icon: const Icon(Icons.open_in_new, size: 18),
+                            label: Text(tr('Voir l\'expédition {ref}').replaceAll('{ref}', d.colisReference ?? '')),
+                            style: styleBoutonContour(AppColor.kPrimary),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
       ),
     );
   }

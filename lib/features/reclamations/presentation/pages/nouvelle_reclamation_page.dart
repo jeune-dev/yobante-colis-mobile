@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:toastification/toastification.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/theme/app_color.dart';
 import '../../../../core/widgets/toast_notif.dart';
@@ -68,10 +69,10 @@ class _NouvelleReclamationPageState extends State<NouvelleReclamationPage> {
   }
 
   Future<void> _envoyer() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!validerFormulaire(_formKey)) return;
     setState(() => _envoi = true);
     try {
-      final montant = double.tryParse(_montant.text.trim().replaceAll(',', '.'));
+      final montant = lireNombre(_montant.text);
       final r = await sl<ReclamationsRemoteDataSource>().ouvrir(
         type: _type,
         objet: _objet.text,
@@ -104,111 +105,137 @@ class _NouvelleReclamationPageState extends State<NouvelleReclamationPage> {
         absorbing: _envoi,
         child: Form(
           key: _formKey,
-          child: ListView(padding: const EdgeInsets.all(20), children: [
-            if (_envoi) const LinearProgressIndicator(),
-            CarteSection(titre: tr('Motif'), icone: Icons.report_problem_outlined, children: [
-              DropdownButtonFormField<String>(
-                initialValue: _type,
-                decoration: InputDecoration(labelText: tr('Type de réclamation')),
-                items: kTypesReclamation.entries
-                    .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
-                    .toList(),
-                onChanged: (v) => setState(() => _type = v ?? _type),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _priorite,
-                decoration: InputDecoration(labelText: tr('Urgence')),
-                items: kPrioritesReclamation.entries
-                    .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
-                    .toList(),
-                onChanged: (v) => setState(() => _priorite = v ?? _priorite),
-              ),
-              const SizedBox(height: 12),
-              if (widget.colis != null)
-                LigneInfo(tr('Expédition'), widget.colis!.reference, fort: true)
-              else
-                DropdownButtonFormField<String?>(
-                  initialValue: _colis?.id,
-                  isExpanded: true,
-                  decoration: InputDecoration(labelText: tr('Expédition concernée (facultatif)')),
-                  items: [
-                    DropdownMenuItem<String?>(value: null, child: Text(tr('Aucune expédition'))),
-                    ..._mesColis.map((c) => DropdownMenuItem<String?>(
-                          value: c.id,
-                          child: Text('${c.reference} · ${c.destinataireNom}', overflow: TextOverflow.ellipsis),
-                        )),
-                  ],
-                  onChanged: (id) => setState(() => _colis = _mesColis.where((c) => c.id == id).firstOrNull),
-                ),
-            ]),
-            const SizedBox(height: 16),
-            CarteSection(titre: tr('Votre demande'), icone: Icons.edit_note, children: [
-              ChampTexte(
-                controller: _objet,
-                label: tr('Objet'),
-                maxLength: 150,
-                validator: texte(requis: true, min: 3, max: 150),
-              ),
-              ChampTexte(
-                controller: _description,
-                label: tr('Décrivez le problème'),
-                maxLines: 5,
-                maxLength: 2000,
-                validator: texte(requis: true, min: 10, max: 2000),
-              ),
-              if (indemnisable)
-                ChampTexte(
-                  controller: _montant,
-                  label: tr('Indemnisation demandée (${_colis?.devise ?? 'EUR'}, facultatif)'),
-                  clavier: const TextInputType.numberWithOptions(decimal: true),
-                  validator: nombre(),
-                ),
-            ]),
-            const SizedBox(height: 16),
-            CarteSection(titre: tr('Photos / justificatifs'), icone: Icons.photo_library_outlined, children: [
-              Text(tr('Jusqu\'à $_maxPieces images (colis abîmé, emballage, facture…).'), style: texteDiscret()),
-              const SizedBox(height: 12),
-              Wrap(spacing: 8, runSpacing: 8, children: [
-                for (var i = 0; i < _pieces.length; i++)
-                  Stack(children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.file(File(_pieces[i]), width: 72, height: 72, fit: BoxFit.cover),
-                    ),
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: InkWell(
-                        onTap: () => setState(() => _pieces.removeAt(i)),
-                        child: const CircleAvatar(radius: 11, backgroundColor: Colors.black54,
-                            child: Icon(Icons.close, size: 14, color: Colors.white)),
-                      ),
-                    ),
-                  ]),
-                if (_pieces.length < _maxPieces)
-                  InkWell(
-                    onTap: _ajouterPiece,
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppColor.kLine),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.add_a_photo_outlined, color: AppColor.kGrayscale40),
-                    ),
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              if (_envoi) const LinearProgressIndicator(),
+              CarteSection(
+                titre: tr('Motif'),
+                icone: Icons.report_problem_outlined,
+                children: [
+                  DropdownButtonFormField<String>(
+                    initialValue: _type,
+                    decoration: InputDecoration(labelText: tr('Type de réclamation')),
+                    items: kTypesReclamation.entries
+                        .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _type = v ?? _type),
                   ),
-              ]),
-            ]),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _envoyer,
-              style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
-              child: Text(tr('Envoyer la réclamation')),
-            ),
-          ]),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: _priorite,
+                    decoration: InputDecoration(labelText: tr('Urgence')),
+                    items: kPrioritesReclamation.entries
+                        .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _priorite = v ?? _priorite),
+                  ),
+                  const SizedBox(height: 12),
+                  if (widget.colis != null)
+                    LigneInfo(tr('Expédition'), widget.colis!.reference, fort: true)
+                  else
+                    DropdownButtonFormField<String?>(
+                      initialValue: _colis?.id,
+                      isExpanded: true,
+                      decoration: InputDecoration(labelText: tr('Expédition concernée (facultatif)')),
+                      items: [
+                        DropdownMenuItem<String?>(value: null, child: Text(tr('Aucune expédition'))),
+                        ..._mesColis.map(
+                          (c) => DropdownMenuItem<String?>(
+                            value: c.id,
+                            child: Text('${c.reference} · ${c.destinataireNom}', overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                      ],
+                      onChanged: (id) => setState(() => _colis = _mesColis.where((c) => c.id == id).firstOrNull),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              CarteSection(
+                titre: tr('Votre demande'),
+                icone: Icons.edit_note,
+                children: [
+                  ChampTexte(
+                    controller: _objet,
+                    label: tr('Objet'),
+                    maxLength: 150,
+                    validator: texte(requis: true, min: 3, max: 150),
+                  ),
+                  ChampTexte(
+                    controller: _description,
+                    label: tr('Décrivez le problème'),
+                    maxLines: 5,
+                    maxLength: 2000,
+                    validator: texte(requis: true, min: 10, max: 2000),
+                  ),
+                  if (indemnisable)
+                    ChampTexte(
+                      controller: _montant,
+                      label: tr('Indemnisation demandée (${_colis?.devise ?? 'EUR'}, facultatif)'),
+                      clavier: const TextInputType.numberWithOptions(decimal: true),
+                      validator: nombre(),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              CarteSection(
+                titre: tr('Photos / justificatifs'),
+                icone: Icons.photo_library_outlined,
+                children: [
+                  Text(tr('Jusqu\'à $_maxPieces images (colis abîmé, emballage, facture…).'), style: texteDiscret()),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (var i = 0; i < _pieces.length; i++)
+                        Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.file(File(_pieces[i]), width: 72, height: 72, fit: BoxFit.cover),
+                            ),
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: InkWell(
+                                onTap: () => setState(() => _pieces.removeAt(i)),
+                                child: const CircleAvatar(
+                                  radius: 11,
+                                  backgroundColor: Colors.black54,
+                                  child: Icon(Icons.close, size: 14, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (_pieces.length < _maxPieces)
+                        InkWell(
+                          onTap: _ajouterPiece,
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: AppColor.kLine),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.add_a_photo_outlined, color: AppColor.kGrayscale40),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _envoyer,
+                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+                child: Text(tr('Envoyer la réclamation')),
+              ),
+            ],
+          ),
         ),
       ),
     );

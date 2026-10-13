@@ -37,15 +37,18 @@ void main() {
           'email': 'j@e.com',
           'telephone': '0600000000',
           'role': 'client',
-          'password': 'SECRET_HASH',        // envoyé par le serveur
-          'mot_de_passe': 'AUTRE_SECRET',   // variante
+          'password': 'SECRET_HASH', // envoyé par le serveur
+          'mot_de_passe': 'AUTRE_SECRET', // variante
         },
       };
 
       final model = UserModel.fromJson(json);
       // L'entité ne doit exposer aucun champ mot de passe
-      expect((model as User).props.any((p) => p.toString().contains('SECRET')), false,
-          reason: 'Le mot de passe ne doit jamais apparaître dans les props Equatable');
+      expect(
+        (model as User).props.any((p) => p.toString().contains('SECRET')),
+        false,
+        reason: 'Le mot de passe ne doit jamais apparaître dans les props Equatable',
+      );
     });
 
     test('AuthResponseModel.fromJson parse accessToken et refreshToken', () {

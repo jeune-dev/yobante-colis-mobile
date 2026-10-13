@@ -52,8 +52,7 @@ class TokenService {
     await secureStorage.delete(key: 'refresh_token');
   }
 
-  Future<String?> getRefreshToken() async =>
-      secureStorage.read(key: 'refresh_token');
+  Future<String?> getRefreshToken() async => secureStorage.read(key: 'refresh_token');
 
   Future<void> setRefreshToken(String? token) async {
     if (token == null || token.isEmpty) {
@@ -71,8 +70,7 @@ class TokenService {
       final exp = payload['exp'];
       if (exp == null) return false;
       final expiryDate = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
-      return DateTime.now()
-          .isAfter(expiryDate.subtract(const Duration(seconds: 30)));
+      return DateTime.now().isAfter(expiryDate.subtract(const Duration(seconds: 30)));
     } catch (_) {
       return true;
     }

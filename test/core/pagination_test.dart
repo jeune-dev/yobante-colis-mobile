@@ -13,7 +13,11 @@ class _BackendPagine implements HttpClientAdapter {
   _BackendPagine(this.totalPages);
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options, Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
     final page = options.queryParameters['page'] as int;
     pagesDemandees.add(page);
     requetes.add(options.queryParameters);
@@ -26,9 +30,13 @@ class _BackendPagine implements HttpClientAdapter {
         'pagination': {'totalPages': totalPages, 'currentPage': page},
       },
     };
-    return ResponseBody.fromString(jsonEncode(corps), 200, headers: {
-      Headers.contentTypeHeader: [Headers.jsonContentType],
-    });
+    return ResponseBody.fromString(
+      jsonEncode(corps),
+      200,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
   }
 
   @override
@@ -40,7 +48,12 @@ void main() {
 
   test('charge toutes les pages et concatène les éléments', () async {
     final backend = _BackendPagine(3);
-    final res = await chargerToutesLesPages(dio(backend), '/client/factures', 'factures', parametres: {'statut': 'payee'});
+    final res = await chargerToutesLesPages(
+      dio(backend),
+      '/client/factures',
+      'factures',
+      parametres: {'statut': 'payee'},
+    );
 
     expect(backend.pagesDemandees, [1, 2, 3]);
     expect(res.map((e) => e['id']), ['p1-a', 'p1-b', 'p2-a', 'p2-b', 'p3-a', 'p3-b']);
@@ -68,11 +81,19 @@ class _ReponseFixe implements HttpClientAdapter {
   _ReponseFixe(this.corps);
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options, Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
     appels++;
-    return ResponseBody.fromString(jsonEncode(corps), 200, headers: {
-      Headers.contentTypeHeader: [Headers.jsonContentType],
-    });
+    return ResponseBody.fromString(
+      jsonEncode(corps),
+      200,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
   }
 
   @override

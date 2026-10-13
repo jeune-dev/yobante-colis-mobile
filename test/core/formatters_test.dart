@@ -48,4 +48,17 @@ void main() {
   test('nettoyerTelephone retire espaces, tirets, points et parenthèses', () {
     expect(nettoyerTelephone(' (+33) 6.12-34 56 78 '), '+33612345678');
   });
+
+  group('lireNombre', () {
+    test('virgule ou point décimal, espaces autour', () {
+      expect(lireNombre('12,5'), 12.5);
+      expect(lireNombre(' 12.5 '), 12.5);
+      expect(lireNombre('300'), 300);
+    });
+
+    test('texte vide ou non numérique : null', () {
+      expect(lireNombre(''), isNull);
+      expect(lireNombre('douze'), isNull);
+    });
+  });
 }

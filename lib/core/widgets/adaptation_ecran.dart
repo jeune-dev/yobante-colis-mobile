@@ -31,7 +31,10 @@ class AdaptationEcran extends StatelessWidget {
     final largeur = mq.size.width;
 
     if (largeur <= largeurMax + 40) {
-      return MediaQuery(data: mq.copyWith(textScaler: texte), child: child);
+      return MediaQuery(
+        data: mq.copyWith(textScaler: texte),
+        child: child,
+      );
     }
 
     // Tablette (ou grand écran) : colonne centrée, fond de l'application autour
@@ -48,8 +51,10 @@ class AdaptationEcran extends StatelessWidget {
               // Les marges latérales ne concernent plus la colonne centrée
               padding: mq.padding.copyWith(left: 0, right: 0),
               viewPadding: mq.viewPadding.copyWith(left: 0, right: 0),
-              viewInsets: mq.viewInsets.copyWith(left: (mq.viewInsets.left - marge).clamp(0, double.infinity),
-                  right: (mq.viewInsets.right - marge).clamp(0, double.infinity)),
+              viewInsets: mq.viewInsets.copyWith(
+                left: (mq.viewInsets.left - marge).clamp(0, double.infinity),
+                right: (mq.viewInsets.right - marge).clamp(0, double.infinity),
+              ),
             ),
             child: ClipRect(child: child),
           ),
@@ -64,9 +69,7 @@ class AdaptationEcran extends StatelessWidget {
     final vue = PlatformDispatcher.instance.views.first;
     final plusPetitCote = vue.physicalSize.shortestSide / vue.devicePixelRatio;
     return SystemChrome.setPreferredOrientations(
-      plusPetitCote >= seuilTablette
-          ? DeviceOrientation.values
-          : const [DeviceOrientation.portraitUp],
+      plusPetitCote >= seuilTablette ? DeviceOrientation.values : const [DeviceOrientation.portraitUp],
     );
   }
 }

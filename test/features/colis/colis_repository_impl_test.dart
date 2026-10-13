@@ -26,38 +26,53 @@ class _FakeColisDataSource extends Fake implements ColisRemoteDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> getColis(
-          {String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) =>
-      _repondre('getColis', {'statut': statut, 'filtres': filtres, 'page': page, 'limit': limit}, {
-        'colis': [colis],
-        'pagination': {'totalPages': 1},
-      });
+  Future<Map<String, dynamic>> getColis({
+    String? statut,
+    FiltresColis filtres = const FiltresColis(),
+    int page = 1,
+    int limit = 20,
+  }) => _repondre(
+    'getColis',
+    {'statut': statut, 'filtres': filtres, 'page': page, 'limit': limit},
+    {
+      'colis': [colis],
+      'pagination': {'totalPages': 1},
+    },
+  );
 
   @override
-  Future<Map<String, dynamic>> getColisRecus(
-          {String? statut, FiltresColis filtres = const FiltresColis(), int page = 1, int limit = 20}) =>
-      _repondre('getColisRecus', {'statut': statut, 'page': page}, {'colis': <ColisModel>[]});
+  Future<Map<String, dynamic>> getColisRecus({
+    String? statut,
+    FiltresColis filtres = const FiltresColis(),
+    int page = 1,
+    int limit = 20,
+  }) => _repondre('getColisRecus', {'statut': statut, 'page': page}, {'colis': <ColisModel>[]});
 
   @override
   Future<ColisModel> getColisDetail(String id) => _repondre('getColisDetail', {'id': id}, colis);
 
   @override
-  Future<ResultatDeclaration> creerColis(DemandeExpedition demande,
-          {List<String> photosPaths = const [], void Function(int, int)? onSendProgress}) =>
-      _repondre('creerColis', {'photos': photosPaths}, ResultatDeclaration(colis: colis, message: 'Créé'));
+  Future<ResultatDeclaration> creerColis(
+    DemandeExpedition demande, {
+    List<String> photosPaths = const [],
+    void Function(int, int)? onSendProgress,
+  }) => _repondre('creerColis', {'photos': photosPaths}, ResultatDeclaration(colis: colis, message: 'Créé'));
 
   @override
-  Future<List<SuiviEvenement>> getSuiviColis(String id) => _repondre('getSuiviColis', {'id': id}, [
-        SuiviEvenement(statut: 'en_attente', libelle: 'Enregistré', date: DateTime(2026)),
-      ]);
+  Future<List<SuiviEvenement>> getSuiviColis(String id) => _repondre(
+    'getSuiviColis',
+    {'id': id},
+    [SuiviEvenement(statut: 'en_attente', libelle: 'Enregistré', date: DateTime(2026))],
+  );
 
   @override
   Future<AvecMessage<ColisModel>> annulerColis(String id, {String? motif}) =>
       _repondre('annulerColis', {'id': id, 'motif': motif}, (valeur: colis, message: 'Annulé'));
 
   @override
-  Future<ResultatDeclaration> accepterProposition(String id) => _repondre(
-      'accepterProposition', {'id': id}, ResultatDeclaration(colis: colis, message: 'Accepté', lienPaiement: 'l'));
+  Future<ResultatDeclaration> accepterProposition(String id) => _repondre('accepterProposition', {
+    'id': id,
+  }, ResultatDeclaration(colis: colis, message: 'Accepté', lienPaiement: 'l'));
 
   @override
   Future<AvecMessage<ColisModel>> refuserProposition(String id, {String? motif}) =>

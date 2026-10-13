@@ -1,4 +1,4 @@
-﻿import 'package:dartz/dartz.dart';
+import 'package:dartz/dartz.dart';
 import 'package:yobante_colis/core/errors/failure.dart';
 import '../entities/account_user.dart';
 import '../repositories/account_repository.dart';
@@ -9,4 +9,3 @@ class GetMe {
 
   Future<Either<Failure, AccountUser>> call() => repository.getMe();
 }
-

@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failure.dart';
+import '../../../../core/i18n/langue.dart';
 import '../../../../core/services/fcm_service.dart';
 import '../../../../core/services/token_service.dart';
 import '../../domain/entities/user.dart';
@@ -24,8 +25,8 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(EmailNonConfirmeFailure(e.message, email: e.email));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (_) {
+      return Left(ServerFailure(tr('Une erreur est survenue')));
     }
   }
 
@@ -44,8 +45,8 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(await _ouvrirSession(await remoteDataSource.verifierEmail(email, code)));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (_) {
+      return Left(ServerFailure(tr('Une erreur est survenue')));
     }
   }
 
@@ -55,8 +56,8 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(await remoteDataSource.renvoyerCodeVerification(email));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (_) {
+      return Left(ServerFailure(tr('Une erreur est survenue')));
     }
   }
 
@@ -97,8 +98,8 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(message);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (_) {
+      return Left(ServerFailure(tr('Une erreur est survenue')));
     }
   }
 
@@ -108,8 +109,8 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(await remoteDataSource.forgotPassword(email));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (_) {
+      return Left(ServerFailure(tr('Une erreur est survenue')));
     }
   }
 
@@ -119,8 +120,8 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(await remoteDataSource.resetPassword(email, code, newPassword));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    } catch (_) {
+      return Left(ServerFailure(tr('Une erreur est survenue')));
     }
   }
 

@@ -62,17 +62,10 @@ class FormateurPrenom extends TextInputFormatter {
   const FormateurPrenom();
 
   @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue ancien,
-    TextEditingValue nouveau,
-  ) {
+  TextEditingValue formatEditUpdate(TextEditingValue ancien, TextEditingValue nouveau) {
     final texte = normaliserPrenom(nouveau.text);
     if (texte == nouveau.text) return nouveau;
-    return TextEditingValue(
-      text: texte,
-      selection: nouveau.selection,
-      composing: TextRange.empty,
-    );
+    return TextEditingValue(text: texte, selection: nouveau.selection, composing: TextRange.empty);
   }
 }
 
@@ -81,16 +74,9 @@ class FormateurNomFamille extends TextInputFormatter {
   const FormateurNomFamille();
 
   @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue ancien,
-    TextEditingValue nouveau,
-  ) {
+  TextEditingValue formatEditUpdate(TextEditingValue ancien, TextEditingValue nouveau) {
     final texte = normaliserNomFamille(nouveau.text);
     if (texte == nouveau.text) return nouveau;
-    return TextEditingValue(
-      text: texte,
-      selection: nouveau.selection,
-      composing: TextRange.empty,
-    );
+    return TextEditingValue(text: texte, selection: nouveau.selection, composing: TextRange.empty);
   }
 }

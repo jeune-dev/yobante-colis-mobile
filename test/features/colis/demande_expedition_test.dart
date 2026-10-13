@@ -97,8 +97,12 @@ void main() {
     test('colis XXL : valeur déclarée seulement si > 0', () {
       const xxl = DemandeExpedition(categorie: 'colis_xxl', villeDepartId: 'a', villeArriveeId: 'b');
       expect(xxl.versFormulaire().containsKey('valeurDeclaree'), isFalse);
-      const xxlValeur =
-          DemandeExpedition(categorie: 'colis_xxl', villeDepartId: 'a', villeArriveeId: 'b', valeurDeclaree: 900);
+      const xxlValeur = DemandeExpedition(
+        categorie: 'colis_xxl',
+        villeDepartId: 'a',
+        villeArriveeId: 'b',
+        valeurDeclaree: 900,
+      );
       expect(xxlValeur.versFormulaire()['valeurDeclaree'], '900.0');
     });
 

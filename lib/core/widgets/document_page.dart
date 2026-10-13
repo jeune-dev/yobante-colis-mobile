@@ -10,6 +10,7 @@ import '../theme/app_color.dart';
 import '../../injection_container.dart';
 import 'empty_state.dart';
 import 'toast_notif.dart';
+import 'ui_kit.dart';
 import '../i18n/langue.dart';
 
 /// Document imprimable renvoyé en HTML par le backend (étiquettes, bordereau,
@@ -55,7 +56,18 @@ class _DocumentPageState extends State<DocumentPage> {
       final html = res.data ?? '';
       final controleur = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.disabled)
-        ..setBackgroundColor(Colors.white);
+        ..setBackgroundColor(Colors.white)
+        // Le document reste affiché : un lien qu'il contient s'ouvre dans le navigateur
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onNavigationRequest: (demande) {
+              final url = demande.url;
+              if (url.startsWith('about:') || url.startsWith('data:')) return NavigationDecision.navigate;
+              if (demande.isMainFrame && mounted) ouvrirLien(context, url);
+              return NavigationDecision.prevent;
+            },
+          ),
+        );
       await controleur.loadHtmlString(html);
       if (!mounted) return;
       setState(() {
@@ -73,8 +85,13 @@ class _DocumentPageState extends State<DocumentPage> {
     try {
       final dossier = await getTemporaryDirectory();
       final fichier = File('${dossier.path}/${widget.nomFichier}');
-      await fichier.writeAsString(html);
-      await SharePlus.instance.share(ShareParams(files: [XFile(fichier.path)], title: widget.titre));
+      try {
+        await fichier.writeAsString(html);
+        await SharePlus.instance.share(ShareParams(files: [XFile(fichier.path)], title: widget.titre));
+      } finally {
+        // Facture, bordereau… : pas de copie laissée sur le téléphone après le partage
+        if (await fichier.exists()) await fichier.delete();
+      }
     } catch (_) {
       if (mounted) {
         showToast(context, tr('Partage impossible'), tr('Réessayez dans un instant.'), ToastificationType.error);
@@ -91,11 +108,7 @@ class _DocumentPageState extends State<DocumentPage> {
         title: Text(widget.titre),
         actions: [
           if (controleur != null)
-            IconButton(
-              tooltip: tr('Partager ou imprimer'),
-              icon: const Icon(Icons.ios_share),
-              onPressed: _partager,
-            ),
+            IconButton(tooltip: tr('Partager ou imprimer'), icon: const Icon(Icons.ios_share), onPressed: _partager),
         ],
       ),
       body: _erreur != null
@@ -107,8 +120,8 @@ class _DocumentPageState extends State<DocumentPage> {
               onAction: _charger,
             )
           : controleur == null
-              ? const Center(child: CircularProgressIndicator())
-              : WebViewWidget(controller: controleur),
+          ? const Center(child: CircularProgressIndicator())
+          : WebViewWidget(controller: controleur),
     );
   }
 }

@@ -36,18 +36,21 @@ class PrisePhotos extends StatelessWidget {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (_) => SafeArea(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          ListTile(
-            leading: const Icon(Icons.photo_camera_outlined),
-            title: Text(tr('Prendre une photo')),
-            onTap: () => Navigator.pop(context, ImageSource.camera),
-          ),
-          ListTile(
-            leading: const Icon(Icons.photo_library_outlined),
-            title: Text(tr('Choisir dans la galerie')),
-            onTap: () => Navigator.pop(context, ImageSource.gallery),
-          ),
-        ]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: Text(tr('Prendre une photo')),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(tr('Choisir dans la galerie')),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
       ),
     );
     if (source == null) return;
@@ -92,62 +95,72 @@ class PrisePhotos extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prises = photos.whereType<String>().length;
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(
-        minimum > 1
-            ? tr('Prenez $minimum photos de votre colis sous des angles différents ($prises/$minimum).')
-            : tr('Ajoutez au moins une photo ($prises/$minimum).'),
-        style: texteDiscret(12),
-      ),
-      const SizedBox(height: 10),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: List.generate(_nbEmplacements, (i) {
-          final chemin = i < photos.length ? photos[i] : null;
-          final libelle = i < libellesAngles.length ? libellesAngles[i] : tr('Photo ${i + 1}');
-          return GestureDetector(
-            onTap: () => _prendre(context, i),
-            child: Stack(children: [
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  color: AppColor.kBackground,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: chemin == null && i < minimum ? AppColor.kSecondary : AppColor.kLine, width: 1.5),
-                  image: chemin == null
-                      ? null
-                      : DecorationImage(image: FileImage(File(chemin)), fit: BoxFit.cover),
-                ),
-                child: chemin != null
-                    ? null
-                    : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        const Icon(Icons.add_a_photo_outlined, color: AppColor.kPrimary),
-                        const SizedBox(height: 4),
-                        Text(libelle,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w600)),
-                      ]),
-              ),
-              if (chemin != null)
-                Positioned(
-                  right: 2,
-                  top: 2,
-                  child: InkWell(
-                    onTap: () => _retirer(i),
-                    child: const CircleAvatar(
-                      radius: 11,
-                      backgroundColor: Colors.black54,
-                      child: Icon(Icons.close, size: 14, color: Colors.white),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          minimum > 1
+              ? tr('Prenez $minimum photos de votre colis sous des angles différents ($prises/$minimum).')
+              : tr('Ajoutez au moins une photo ($prises/$minimum).'),
+          style: texteDiscret(12),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: List.generate(_nbEmplacements, (i) {
+            final chemin = i < photos.length ? photos[i] : null;
+            final libelle = i < libellesAngles.length ? libellesAngles[i] : tr('Photo ${i + 1}');
+            return GestureDetector(
+              onTap: () => _prendre(context, i),
+              child: Stack(
+                children: [
+                  Container(
+                    width: 96,
+                    height: 96,
+                    decoration: BoxDecoration(
+                      color: AppColor.kBackground,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: chemin == null && i < minimum ? AppColor.kSecondary : AppColor.kLine,
+                        width: 1.5,
+                      ),
+                      image: chemin == null ? null : DecorationImage(image: FileImage(File(chemin)), fit: BoxFit.cover),
                     ),
+                    child: chemin != null
+                        ? null
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.add_a_photo_outlined, color: AppColor.kPrimary),
+                              const SizedBox(height: 4),
+                              Text(
+                                libelle,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
                   ),
-                ),
-            ]),
-          );
-        }),
-      ),
-    ]);
+                  if (chemin != null)
+                    Positioned(
+                      right: 2,
+                      top: 2,
+                      child: InkWell(
+                        onTap: () => _retirer(i),
+                        child: const CircleAvatar(
+                          radius: 11,
+                          backgroundColor: Colors.black54,
+                          child: Icon(Icons.close, size: 14, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
+        ),
+      ],
+    );
   }
 }

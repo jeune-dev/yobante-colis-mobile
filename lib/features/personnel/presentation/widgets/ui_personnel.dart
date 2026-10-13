@@ -17,8 +17,9 @@ TextStyle _jakarta(double taille, {FontWeight poids = FontWeight.w600, Color cou
     GoogleFonts.plusJakartaSans(fontSize: taille, fontWeight: poids, color: couleur);
 
 /// Ombre des cartes, identique à celle des cartes d'envoi du client.
-List<BoxShadow> get ombreCarte =>
-    [BoxShadow(color: AppColor.kPrimary.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, 6))];
+List<BoxShadow> get ombreCarte => [
+  BoxShadow(color: AppColor.kPrimary.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, 6)),
+];
 
 /// Prénom du compte connecté, chargé une fois pour toute la session.
 final ValueNotifier<String?> _prenom = ValueNotifier(null);
@@ -64,31 +65,39 @@ class _EnteteEspaceState extends State<EnteteEspace> {
         color: AppColor.kSecondary,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        ValueListenableBuilder<String?>(
-          valueListenable: _prenom,
-          builder: (_, prenom, _) => Text(
-            prenom == null ? tr('Bonjour') : tr('Bonjour {p}').replaceAll('{p}', prenom),
-            style: _jakarta(22, poids: FontWeight.w800, couleur: AppColor.kPrimary),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ValueListenableBuilder<String?>(
+            valueListenable: _prenom,
+            builder: (_, prenom, _) => Text(
+              prenom == null ? tr('Bonjour') : tr('Bonjour {p}').replaceAll('{p}', prenom),
+              style: _jakarta(22, poids: FontWeight.w800, couleur: AppColor.kPrimary),
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          '${widget.role.label} · ${formatDate().format(DateTime.now())}',
-          style: _jakarta(13, poids: FontWeight.w500, couleur: AppColor.kPrimary.withValues(alpha: 0.75)),
-        ),
-        const SizedBox(height: 14),
-        Text(widget.titre, style: _jakarta(15, poids: FontWeight.w700, couleur: AppColor.kPrimary)),
-        if (widget.indicateurs.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          Row(children: [
-            for (var i = 0; i < widget.indicateurs.length; i++) ...[
-              if (i > 0) const SizedBox(width: 10),
-              Expanded(child: _TuileIndicateur(widget.indicateurs[i])),
-            ],
-          ]),
+          const SizedBox(height: 2),
+          Text(
+            '${widget.role.label} · ${formatDate().format(DateTime.now())}',
+            style: _jakarta(13, poids: FontWeight.w500, couleur: AppColor.kPrimary.withValues(alpha: 0.75)),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            widget.titre,
+            style: _jakarta(15, poids: FontWeight.w700, couleur: AppColor.kPrimary),
+          ),
+          if (widget.indicateurs.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                for (var i = 0; i < widget.indicateurs.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 10),
+                  Expanded(child: _TuileIndicateur(widget.indicateurs[i])),
+                ],
+              ],
+            ),
+          ],
         ],
-      ]),
+      ),
     );
   }
 }
@@ -109,17 +118,27 @@ class _TuileIndicateur extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Icon(i.icone, size: 20, color: i.actif ? AppColor.kSecondary : AppColor.kPrimary),
-            const SizedBox(height: 8),
-            Text(i.valeur, style: _jakarta(22, poids: FontWeight.w800, couleur: texte)),
-            Text(
-              i.libelle,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: _jakarta(11, poids: FontWeight.w600, couleur: texte.withValues(alpha: i.actif ? 0.85 : 0.7)),
-            ),
-          ]),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(i.icone, size: 20, color: i.actif ? AppColor.kSecondary : AppColor.kPrimary),
+              const SizedBox(height: 8),
+              Text(
+                i.valeur,
+                style: _jakarta(22, poids: FontWeight.w800, couleur: texte),
+              ),
+              Text(
+                i.libelle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: _jakarta(
+                  11,
+                  poids: FontWeight.w600,
+                  couleur: texte.withValues(alpha: i.actif ? 0.85 : 0.7),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -129,20 +148,23 @@ class _TuileIndicateur extends StatelessWidget {
 /// Barre d'application de l'espace (onglets et détails) : bleu de la marque,
 /// titre et icônes en blanc.
 PreferredSizeWidget barreEspace(String titre, {List<Widget> actions = const []}) => AppBar(
-      backgroundColor: AppColor.kPrimary,
-      foregroundColor: AppColor.kWhite,
-      surfaceTintColor: AppColor.kPrimary,
-      scrolledUnderElevation: 0,
-      iconTheme: const IconThemeData(color: AppColor.kWhite),
-      actionsIconTheme: const IconThemeData(color: AppColor.kWhite),
-      // Logo de la marque sur les onglets ; flèche retour sur les écrans de détail
-      leading: Builder(
-        builder: (context) => (ModalRoute.of(context)?.canPop ?? false) ? const BackButton() : const _LogoBarre(),
-      ),
-      leadingWidth: 56,
-      title: Text(titre, style: _jakarta(17, poids: FontWeight.w800, couleur: AppColor.kWhite)),
-      actions: actions,
-    );
+  backgroundColor: AppColor.kPrimary,
+  foregroundColor: AppColor.kWhite,
+  surfaceTintColor: AppColor.kPrimary,
+  scrolledUnderElevation: 0,
+  iconTheme: const IconThemeData(color: AppColor.kWhite),
+  actionsIconTheme: const IconThemeData(color: AppColor.kWhite),
+  // Logo de la marque sur les onglets ; flèche retour sur les écrans de détail
+  leading: Builder(
+    builder: (context) => (ModalRoute.of(context)?.canPop ?? false) ? const BackButton() : const _LogoBarre(),
+  ),
+  leadingWidth: 56,
+  title: Text(
+    titre,
+    style: _jakarta(17, poids: FontWeight.w800, couleur: AppColor.kWhite),
+  ),
+  actions: actions,
+);
 
 /// Pictogramme Yobante posé directement sur le bleu de la barre : ses parties
 /// bleues passent en blanc, le carré jaune garde sa couleur.
@@ -183,7 +205,13 @@ class FiltresPilules<T> extends StatelessWidget {
   final Map<T, int>? compteurs;
   final T valeur;
   final ValueChanged<T> onChanged;
-  const FiltresPilules({super.key, required this.options, required this.valeur, required this.onChanged, this.compteurs});
+  const FiltresPilules({
+    super.key,
+    required this.options,
+    required this.valeur,
+    required this.onChanged,
+    this.compteurs,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -230,20 +258,29 @@ class _Pilule extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: actif ? AppColor.kPrimary : AppColor.kLine),
           ),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Text(libelle, style: _jakarta(13, poids: FontWeight.w700, couleur: actif ? AppColor.kWhite : AppColor.kPrimary)),
-            if (compteur != null) ...[
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
-                decoration: BoxDecoration(
-                  color: actif ? AppColor.kSecondary : AppColor.kPrimaryLight,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text('$compteur', style: _jakarta(11, poids: FontWeight.w800, couleur: AppColor.kPrimary)),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                libelle,
+                style: _jakarta(13, poids: FontWeight.w700, couleur: actif ? AppColor.kWhite : AppColor.kPrimary),
               ),
+              if (compteur != null) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: actif ? AppColor.kSecondary : AppColor.kPrimaryLight,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '$compteur',
+                    style: _jakarta(11, poids: FontWeight.w800, couleur: AppColor.kPrimary),
+                  ),
+                ),
+              ],
             ],
-          ]),
+          ),
         ),
       ),
     );
@@ -283,44 +320,66 @@ class CarteMission extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Container(
-            decoration: BoxDecoration(border: Border(left: BorderSide(color: accent, width: 4))),
+            decoration: BoxDecoration(
+              border: Border(left: BorderSide(color: accent, width: 4)),
+            ),
             padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                TuileIcone(icone),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(titre,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: _jakarta(14, poids: FontWeight.w700).copyWith(letterSpacing: 0.3)),
-                    if (sousTitre != null) ...[
-                      const SizedBox(height: 2),
-                      Text(sousTitre!, maxLines: 1, overflow: TextOverflow.ellipsis, style: _jakarta(12, couleur: AppColor.kPrimary)),
-                    ],
-                  ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    TuileIcone(icone),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            titre,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: _jakarta(14, poids: FontWeight.w700).copyWith(letterSpacing: 0.3),
+                          ),
+                          if (sousTitre != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              sousTitre!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: _jakarta(12, couleur: AppColor.kPrimary),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    statut,
+                  ],
                 ),
-                const SizedBox(width: 8),
-                statut,
-              ]),
-              if (lignes.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                for (final (ic, texte) in lignes)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Icon(ic, size: 16, color: AppColor.kGrayscale40),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(texte, style: _jakarta(12, poids: FontWeight.w500, couleur: AppColor.kGrayscale40))),
-                    ]),
-                  ),
+                if (lignes.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  for (final (ic, texte) in lignes)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(ic, size: 16, color: AppColor.kGrayscale40),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              texte,
+                              style: _jakarta(12, poids: FontWeight.w500, couleur: AppColor.kGrayscale40),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+                if (pied != null) ...[const Divider(height: 16), pied!],
               ],
-              if (pied != null) ...[
-                const Divider(height: 16),
-                pied!,
-              ],
-            ]),
+            ),
           ),
         ),
       ),
@@ -334,15 +393,21 @@ class TuileIcone extends StatelessWidget {
   final double taille;
   final Color fond;
   final Color couleur;
-  const TuileIcone(this.icone, {super.key, this.taille = 40, this.fond = AppColor.kPrimaryLight, this.couleur = AppColor.kPrimary});
+  const TuileIcone(
+    this.icone, {
+    super.key,
+    this.taille = 40,
+    this.fond = AppColor.kPrimaryLight,
+    this.couleur = AppColor.kPrimary,
+  });
 
   @override
   Widget build(BuildContext context) => Container(
-        width: taille,
-        height: taille,
-        decoration: BoxDecoration(color: fond, borderRadius: BorderRadius.circular(taille * 0.3)),
-        child: Icon(icone, size: taille * 0.5, color: couleur),
-      );
+    width: taille,
+    height: taille,
+    decoration: BoxDecoration(color: fond, borderRadius: BorderRadius.circular(taille * 0.3)),
+    child: Icon(icone, size: taille * 0.5, color: couleur),
+  );
 }
 
 /// Bouton rond d'action rapide (appeler, WhatsApp, itinéraire).
@@ -351,7 +416,13 @@ class ActionRonde extends StatelessWidget {
   final String libelle;
   final VoidCallback onTap;
   final Color couleur;
-  const ActionRonde({super.key, required this.icone, required this.libelle, required this.onTap, this.couleur = AppColor.kPrimary});
+  const ActionRonde({
+    super.key,
+    required this.icone,
+    required this.libelle,
+    required this.onTap,
+    this.couleur = AppColor.kPrimary,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -360,16 +431,19 @@ class ActionRonde extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(color: couleur.withValues(alpha: 0.1), shape: BoxShape.circle),
-            child: Icon(icone, color: couleur, size: 22),
-          ),
-          const SizedBox(height: 4),
-          Text(libelle, style: _jakarta(11, couleur: couleur)),
-        ]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(color: couleur.withValues(alpha: 0.1), shape: BoxShape.circle),
+              child: Icon(icone, color: couleur, size: 22),
+            ),
+            const SizedBox(height: 4),
+            Text(libelle, style: _jakarta(11, couleur: couleur)),
+          ],
+        ),
       ),
     );
   }
@@ -382,10 +456,8 @@ void appeler(BuildContext context, String? telephone) {
 }
 
 /// Ouvre l'itinéraire vers une adresse dans l'application de cartes du téléphone.
-void ouvrirItineraire(BuildContext context, String adresse) => ouvrirLien(
-      context,
-      'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(adresse)}',
-    );
+void ouvrirItineraire(BuildContext context, String adresse) =>
+    ouvrirLien(context, 'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(adresse)}');
 
 /// Carte de contact : personne, téléphone, adresse, et actions rapides.
 class CarteContact extends StatelessWidget {
@@ -394,7 +466,14 @@ class CarteContact extends StatelessWidget {
   final String? telephone;
   final String? adresse;
   final List<Widget> details;
-  const CarteContact({super.key, required this.role, required this.nom, this.telephone, this.adresse, this.details = const []});
+  const CarteContact({
+    super.key,
+    required this.role,
+    required this.nom,
+    this.telephone,
+    this.adresse,
+    this.details = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -402,50 +481,86 @@ class CarteContact extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(18), boxShadow: ombreCarte),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: AppColor.kSecondaryLight,
-            child: Text(
-              nom.trim().isEmpty ? '?' : nom.trim()[0].toUpperCase(),
-              style: _jakarta(17, poids: FontWeight.w800, couleur: AppColor.kSecondaryDark),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(role.toUpperCase(), style: _jakarta(10, poids: FontWeight.w700, couleur: AppColor.kGrayscale40).copyWith(letterSpacing: 0.8)),
-              Text(nom, style: _jakarta(16, poids: FontWeight.w700)),
-              if (telephone != null) Text(telephone!, style: _jakarta(12, poids: FontWeight.w500, couleur: AppColor.kGrayscale40)),
-            ]),
-          ),
-        ]),
-        if (adresse != null && adresse!.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Icon(Icons.place_outlined, size: 18, color: AppColor.kPrimary),
-            const SizedBox(width: 8),
-            Expanded(child: Text(adresse!, style: _jakarta(13, poids: FontWeight.w500))),
-          ]),
-        ],
-        ...details,
-        if (tel != null || adresse != null) ...[
-          const SizedBox(height: 12),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            if (tel != null) ActionRonde(icone: Icons.call_outlined, libelle: tr('Appeler'), onTap: () => ouvrirLien(context, 'tel:$tel')),
-            if (tel != null)
-              ActionRonde(
-                icone: Icons.chat_outlined,
-                libelle: 'WhatsApp',
-                couleur: AppColor.kSucces,
-                onTap: () => ouvrirWhatsapp(context, numero: tel),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: AppColor.kSecondaryLight,
+                child: Text(
+                  nom.trim().isEmpty ? '?' : nom.trim()[0].toUpperCase(),
+                  style: _jakarta(17, poids: FontWeight.w800, couleur: AppColor.kSecondaryDark),
+                ),
               ),
-            if (adresse != null && adresse!.isNotEmpty)
-              ActionRonde(icone: Icons.directions_outlined, libelle: tr('Itinéraire'), onTap: () => ouvrirItineraire(context, adresse!)),
-          ]),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      role.toUpperCase(),
+                      style: _jakarta(
+                        10,
+                        poids: FontWeight.w700,
+                        couleur: AppColor.kGrayscale40,
+                      ).copyWith(letterSpacing: 0.8),
+                    ),
+                    Text(nom, style: _jakarta(16, poids: FontWeight.w700)),
+                    if (telephone != null)
+                      Text(
+                        telephone!,
+                        style: _jakarta(12, poids: FontWeight.w500, couleur: AppColor.kGrayscale40),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (adresse != null && adresse!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.place_outlined, size: 18, color: AppColor.kPrimary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(adresse!, style: _jakarta(13, poids: FontWeight.w500)),
+                ),
+              ],
+            ),
+          ],
+          ...details,
+          if (tel != null || adresse != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                if (tel != null)
+                  ActionRonde(
+                    icone: Icons.call_outlined,
+                    libelle: tr('Appeler'),
+                    onTap: () => ouvrirLien(context, 'tel:$tel'),
+                  ),
+                if (tel != null)
+                  ActionRonde(
+                    icone: Icons.chat_outlined,
+                    libelle: 'WhatsApp',
+                    couleur: AppColor.kSucces,
+                    onTap: () => ouvrirWhatsapp(context, numero: tel),
+                  ),
+                if (adresse != null && adresse!.isNotEmpty)
+                  ActionRonde(
+                    icone: Icons.directions_outlined,
+                    libelle: tr('Itinéraire'),
+                    onTap: () => ouvrirItineraire(context, adresse!),
+                  ),
+              ],
+            ),
+          ],
         ],
-      ]),
+      ),
     );
   }
 }
@@ -462,15 +577,20 @@ class SectionDetail extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(18), boxShadow: ombreCarte),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          TuileIcone(icone, taille: 32),
-          const SizedBox(width: 10),
-          Text(titre, style: _jakarta(15, poids: FontWeight.w700)),
-        ]),
-        const SizedBox(height: 14),
-        ...children,
-      ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              TuileIcone(icone, taille: 32),
+              const SizedBox(width: 10),
+              Text(titre, style: _jakarta(15, poids: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...children,
+        ],
+      ),
     );
   }
 }
@@ -486,16 +606,25 @@ class InfoIcone extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icone, size: 18, color: AppColor.kPrimaryMedium),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(libelle, style: _jakarta(11, poids: FontWeight.w500, couleur: AppColor.kGrayscale40)),
-            Text(valeur, style: _jakarta(14, poids: FontWeight.w700)),
-          ]),
-        ),
-      ]),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icone, size: 18, color: AppColor.kPrimaryMedium),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  libelle,
+                  style: _jakarta(11, poids: FontWeight.w500, couleur: AppColor.kGrayscale40),
+                ),
+                Text(valeur, style: _jakarta(14, poids: FontWeight.w700)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -506,32 +635,59 @@ class HeroDetail extends StatelessWidget {
   final String reference;
   final Widget statut;
   final Widget contenu;
-  const HeroDetail({super.key, required this.surTitre, required this.reference, required this.statut, required this.contenu});
+  const HeroDetail({
+    super.key,
+    required this.surTitre,
+    required this.reference,
+    required this.statut,
+    required this.contenu,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(color: AppColor.kPrimary, borderRadius: BorderRadius.circular(22)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(surTitre.toUpperCase(),
-                  style: _jakarta(10, poids: FontWeight.w700, couleur: AppColor.kSecondary).copyWith(letterSpacing: 1)),
-              const SizedBox(height: 2),
-              Text(reference, style: _jakarta(18, poids: FontWeight.w800, couleur: AppColor.kWhite).copyWith(letterSpacing: 0.4)),
-            ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      surTitre.toUpperCase(),
+                      style: _jakarta(
+                        10,
+                        poids: FontWeight.w700,
+                        couleur: AppColor.kSecondary,
+                      ).copyWith(letterSpacing: 1),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      reference,
+                      style: _jakarta(
+                        18,
+                        poids: FontWeight.w800,
+                        couleur: AppColor.kWhite,
+                      ).copyWith(letterSpacing: 0.4),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(20)),
+                child: statut,
+              ),
+            ],
           ),
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(20)),
-            child: statut,
-          ),
-        ]),
-        const SizedBox(height: 16),
-        contenu,
-      ]),
+          const SizedBox(height: 16),
+          contenu,
+        ],
+      ),
     );
   }
 }
@@ -547,38 +703,54 @@ class EtapesProgression extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final echec = courante < 0;
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      for (var i = 0; i < etapes.length; i++) ...[
-        Expanded(
-          child: Column(children: [
-            Row(children: [
-              Expanded(child: Container(height: 3, color: i == 0 ? Colors.transparent : _couleurTrait(i, echec))),
-              Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: echec ? AppColor.kErreur.withValues(alpha: 0.6) : (i <= courante ? AppColor.kSecondary : AppColor.kPrimaryMedium),
-                  border: i == courante ? Border.all(color: AppColor.kWhite, width: 3) : null,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < etapes.length; i++) ...[
+          Expanded(
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: Container(height: 3, color: i == 0 ? Colors.transparent : _couleurTrait(i, echec))),
+                    Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: echec
+                            ? AppColor.kErreur.withValues(alpha: 0.6)
+                            : (i <= courante ? AppColor.kSecondary : AppColor.kPrimaryMedium),
+                        border: i == courante ? Border.all(color: AppColor.kWhite, width: 3) : null,
+                      ),
+                      child: i < courante && !echec
+                          ? const Icon(Icons.check, size: 13, color: AppColor.kPrimary)
+                          : null,
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 3,
+                        color: i == etapes.length - 1 ? Colors.transparent : _couleurTrait(i + 1, echec),
+                      ),
+                    ),
+                  ],
                 ),
-                child: i < courante && !echec ? const Icon(Icons.check, size: 13, color: AppColor.kPrimary) : null,
-              ),
-              Expanded(
-                child: Container(height: 3, color: i == etapes.length - 1 ? Colors.transparent : _couleurTrait(i + 1, echec)),
-              ),
-            ]),
-            const SizedBox(height: 6),
-            Text(
-              etapes[i],
-              textAlign: TextAlign.center,
-              style: _jakarta(11,
-                  poids: i == courante ? FontWeight.w800 : FontWeight.w600,
-                  couleur: i <= courante && !echec ? AppColor.kWhite : AppColor.kWhite.withValues(alpha: 0.6)),
+                const SizedBox(height: 6),
+                Text(
+                  etapes[i],
+                  textAlign: TextAlign.center,
+                  style: _jakarta(
+                    11,
+                    poids: i == courante ? FontWeight.w800 : FontWeight.w600,
+                    couleur: i <= courante && !echec ? AppColor.kWhite : AppColor.kWhite.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
             ),
-          ]),
-        ),
+          ),
+        ],
       ],
-    ]);
+    );
   }
 
   Color _couleurTrait(int i, bool echec) =>
@@ -592,46 +764,67 @@ class Chronologie extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      for (var i = 0; i < etapes.length; i++)
-        IntrinsicHeight(
-          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            SizedBox(
-              width: 22,
-              child: Column(children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  margin: const EdgeInsets.only(top: 3),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: i == 0 ? AppColor.kSecondary : AppColor.kWhite,
-                    border: Border.all(color: i == 0 ? AppColor.kSecondaryDark : AppColor.kLine, width: 2),
+    return Column(
+      children: [
+        for (var i = 0; i < etapes.length; i++)
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  width: 22,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        margin: const EdgeInsets.only(top: 3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: i == 0 ? AppColor.kSecondary : AppColor.kWhite,
+                          border: Border.all(color: i == 0 ? AppColor.kSecondaryDark : AppColor.kLine, width: 2),
+                        ),
+                      ),
+                      if (i < etapes.length - 1) Expanded(child: Container(width: 2, color: AppColor.kLine)),
+                    ],
                   ),
                 ),
-                if (i < etapes.length - 1) Expanded(child: Container(width: 2, color: AppColor.kLine)),
-              ]),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(etapes[i].$1,
-                      style: _jakarta(13, poids: i == 0 ? FontWeight.w800 : FontWeight.w600,
-                          couleur: i == 0 ? AppColor.kPrimary : AppColor.kGrayscaleDark100)),
-                  Text(etapes[i].$2, style: _jakarta(11, poids: FontWeight.w500, couleur: AppColor.kGrayscale40)),
-                  if (etapes[i].$3 != null && etapes[i].$3!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(etapes[i].$3!, style: _jakarta(12, poids: FontWeight.w500, couleur: AppColor.kGrayscale40)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          etapes[i].$1,
+                          style: _jakarta(
+                            13,
+                            poids: i == 0 ? FontWeight.w800 : FontWeight.w600,
+                            couleur: i == 0 ? AppColor.kPrimary : AppColor.kGrayscaleDark100,
+                          ),
+                        ),
+                        Text(
+                          etapes[i].$2,
+                          style: _jakarta(11, poids: FontWeight.w500, couleur: AppColor.kGrayscale40),
+                        ),
+                        if (etapes[i].$3 != null && etapes[i].$3!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              etapes[i].$3!,
+                              style: _jakarta(12, poids: FontWeight.w500, couleur: AppColor.kGrayscale40),
+                            ),
+                          ),
+                      ],
                     ),
-                ]),
-              ),
+                  ),
+                ),
+              ],
             ),
-          ]),
-        ),
-    ]);
+          ),
+      ],
+    );
   }
 }
 
@@ -645,17 +838,21 @@ class BarreActions extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColor.kWhite,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, -4))],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, -4)),
+        ],
       ),
       child: SafeArea(
         top: false,
         minimum: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        child: Row(children: [
-          for (var i = 0; i < children.length; i++) ...[
-            if (i > 0) const SizedBox(width: 10),
-            Expanded(child: children[i]),
+        child: Row(
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              if (i > 0) const SizedBox(width: 10),
+              Expanded(child: children[i]),
+            ],
           ],
-        ]),
+        ),
       ),
     );
   }
@@ -663,20 +860,20 @@ class BarreActions extends StatelessWidget {
 
 /// Style commun des boutons des barres d'action.
 ButtonStyle styleBoutonPlein(Color fond, {Color texte = AppColor.kWhite}) => FilledButton.styleFrom(
-      backgroundColor: fond,
-      foregroundColor: texte,
-      minimumSize: const Size.fromHeight(52),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      textStyle: _jakarta(14, poids: FontWeight.w700),
-    );
+  backgroundColor: fond,
+  foregroundColor: texte,
+  minimumSize: const Size.fromHeight(52),
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+  textStyle: _jakarta(14, poids: FontWeight.w700),
+);
 
 ButtonStyle styleBoutonContour(Color couleur) => OutlinedButton.styleFrom(
-      foregroundColor: couleur,
-      minimumSize: const Size.fromHeight(52),
-      side: BorderSide(color: couleur.withValues(alpha: 0.5)),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      textStyle: _jakarta(14, poids: FontWeight.w700),
-    );
+  foregroundColor: couleur,
+  minimumSize: const Size.fromHeight(52),
+  side: BorderSide(color: couleur.withValues(alpha: 0.5)),
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+  textStyle: _jakarta(14, poids: FontWeight.w700),
+);
 
 /// Titre de section dans une liste (« Notifications », « Mes missions »).
 class TitreListe extends StatelessWidget {
@@ -684,8 +881,10 @@ class TitreListe extends StatelessWidget {
   const TitreListe(this.texte, {super.key});
 
   @override
-  Widget build(BuildContext context) =>
-      Padding(padding: const EdgeInsets.fromLTRB(20, 20, 20, 10), child: Text(texte, style: titreSection(16)));
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+    child: Text(texte, style: titreSection(16)),
+  );
 }
 
 /// Détail impossible à ouvrir : mission sortie du périmètre (réaffectée,

@@ -28,10 +28,7 @@ class FacturesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<PaiementsBloc>(),
-      child: const _FacturesView(),
-    );
+    return BlocProvider(create: (_) => sl<PaiementsBloc>(), child: const _FacturesView());
   }
 }
 
@@ -50,38 +47,40 @@ class _FacturesViewState extends State<_FacturesView> {
   String _filtre = 'toutes';
 
   static Map<String, String> get _filtres => {
-        'toutes': tr('Toutes'),
-        'impayees': tr('À payer'),
-        'payee': tr('Payées'),
-        'annulee': tr('Annulées'),
-        'remboursee': tr('Remboursées'),
-      };
+    'toutes': tr('Toutes'),
+    'impayees': tr('À payer'),
+    'payee': tr('Payées'),
+    'annulee': tr('Annulées'),
+    'remboursee': tr('Remboursées'),
+  };
 
   LoadFactures get _chargement => switch (_filtre) {
-        'toutes' => const LoadFactures(),
-        'impayees' => const LoadFactures(impayees: true),
-        final statut => LoadFactures(statut: statut),
-      };
+    'toutes' => const LoadFactures(),
+    'impayees' => const LoadFactures(impayees: true),
+    final statut => LoadFactures(statut: statut),
+  };
 
   Widget _barreFiltres() => SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-        child: Row(
-          children: _filtres.entries
-              .map((e) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(e.value),
-                      selected: _filtre == e.key,
-                      onSelected: (_) {
-                        setState(() => _filtre = e.key);
-                        context.read<PaiementsBloc>().add(_chargement);
-                      },
-                    ),
-                  ))
-              .toList(),
-        ),
-      );
+    scrollDirection: Axis.horizontal,
+    padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+    child: Row(
+      children: _filtres.entries
+          .map(
+            (e) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                label: Text(e.value),
+                selected: _filtre == e.key,
+                onSelected: (_) {
+                  setState(() => _filtre = e.key);
+                  context.read<PaiementsBloc>().add(_chargement);
+                },
+              ),
+            ),
+          )
+          .toList(),
+    ),
+  );
 
   @override
   void initState() {
@@ -99,66 +98,77 @@ class _FacturesViewState extends State<_FacturesView> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-      backgroundColor: AppColor.kBackground,
-      appBar: AppBar(
-        title: Text(tr('Mes factures')),
-        bottom: connecte
-            ? TabBar(tabs: [Tab(text: tr('Factures')), Tab(text: tr('Règlements'))])
-            : null,
-      ),
-      body: _isAuth == null
-          ? const Center(child: CircularProgressIndicator())
-          : !_isAuth!
-              ? EmptyState(
-                  icon: Icons.receipt_long_outlined,
-                  title: tr('Aucune facture'),
-                  subtitle: tr('Connectez-vous pour consulter vos factures.'),
-                  actionLabel: tr('Se connecter'),
-                  onAction: () => Navigator.of(context).pushNamed(AppRouter.loginRoute),
+        backgroundColor: AppColor.kBackground,
+        appBar: AppBar(
+          title: Text(tr('Mes factures')),
+          bottom: connecte
+              ? TabBar(
+                  tabs: [
+                    Tab(text: tr('Factures')),
+                    Tab(text: tr('Règlements')),
+                  ],
                 )
-              : TabBarView(children: [
-                  Column(children: [
-                    const _BandeauEncours(),
-                    _barreFiltres(),
-                    Expanded(child: BlocBuilder<PaiementsBloc, PaiementsState>(
-        builder: (context, state) {
-          if (state is PaiementsLoading) return const ShimmerList();
-          if (state is PaiementsFailure) return Center(child: Text(state.message));
-          if (state is FacturesLoaded) {
-            if (state.factures.isEmpty) {
-              return EmptyState(
+              : null,
+        ),
+        body: _isAuth == null
+            ? const Center(child: CircularProgressIndicator())
+            : !_isAuth!
+            ? EmptyState(
                 icon: Icons.receipt_long_outlined,
                 title: tr('Aucune facture'),
-                subtitle: _filtre == 'toutes'
-                    ? tr('Vos factures apparaîtront ici après création d\'un colis.')
-                    : tr('Aucune facture dans cette catégorie.'),
-              );
-            }
-            return RefreshIndicator(
-              onRefresh: () async => context.read<PaiementsBloc>().add(_chargement),
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                itemCount: state.factures.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (_, i) {
-                  final f = state.factures[i];
-                  final (label, color) = _statutInfo(f.statut);
-                  return _CarteFacture(
-                    facture: f,
-                    statut: label,
-                    couleurStatut: color,
-                    dateEmission: _formatDate(f.dateEmission),
-                  );
-                },
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
-      )),
-                  ]),
+                subtitle: tr('Connectez-vous pour consulter vos factures.'),
+                actionLabel: tr('Se connecter'),
+                onAction: () => Navigator.of(context).pushNamed(AppRouter.loginRoute),
+              )
+            : TabBarView(
+                children: [
+                  Column(
+                    children: [
+                      const _BandeauEncours(),
+                      _barreFiltres(),
+                      Expanded(
+                        child: BlocBuilder<PaiementsBloc, PaiementsState>(
+                          builder: (context, state) {
+                            if (state is PaiementsLoading) return const ShimmerList();
+                            if (state is PaiementsFailure) return Center(child: Text(state.message));
+                            if (state is FacturesLoaded) {
+                              if (state.factures.isEmpty) {
+                                return EmptyState(
+                                  icon: Icons.receipt_long_outlined,
+                                  title: tr('Aucune facture'),
+                                  subtitle: _filtre == 'toutes'
+                                      ? tr('Vos factures apparaîtront ici après création d\'un colis.')
+                                      : tr('Aucune facture dans cette catégorie.'),
+                                );
+                              }
+                              return RefreshIndicator(
+                                onRefresh: () async => context.read<PaiementsBloc>().add(_chargement),
+                                child: ListView.separated(
+                                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                                  itemCount: state.factures.length,
+                                  separatorBuilder: (_, _) => const SizedBox(height: 12),
+                                  itemBuilder: (_, i) {
+                                    final f = state.factures[i];
+                                    final (label, color) = _statutInfo(f.statut);
+                                    return _CarteFacture(
+                                      facture: f,
+                                      statut: label,
+                                      couleurStatut: color,
+                                      dateEmission: _formatDate(f.dateEmission),
+                                    );
+                                  },
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                   const _ReglementsView(),
-                ]),
+                ],
+              ),
       ),
     );
   }
@@ -172,11 +182,11 @@ class _FacturesViewState extends State<_FacturesView> {
   }
 
   static (String, Color) _statutInfo(String s) => switch (s) {
-    'payee'               => (tr('Payée'), AppColor.kSucces),
+    'payee' => (tr('Payée'), AppColor.kSucces),
     'partiellement_payee' => (tr('Partiellement payée'), AppColor.kInfo),
-    'annulee'             => (tr('Annulée'), AppColor.kErreur),
-    'remboursee'          => (tr('Remboursée'), Colors.grey),
-    _                     => (tr('À payer'), AppColor.kAlerte),
+    'annulee' => (tr('Annulée'), AppColor.kErreur),
+    'remboursee' => (tr('Remboursée'), Colors.grey),
+    _ => (tr('À payer'), AppColor.kAlerte),
   };
 }
 
@@ -212,113 +222,167 @@ class _CarteFacture extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColor.kWhite,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [BoxShadow(color: AppColor.kPrimary.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, 6))],
+        boxShadow: [
+          BoxShadow(color: AppColor.kPrimary.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, 6)),
+        ],
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(color: AppColor.kPrimaryLight, borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.receipt_long_outlined, size: 20, color: AppColor.kPrimary),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(f.reference,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 14)),
-                const SizedBox(height: 2),
-                Text(
-                  [if (f.colisReference != null) tr('Colis ${f.colisReference}'), tr('Émise le $dateEmission')].join(' · '),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40),
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(color: AppColor.kPrimaryLight, borderRadius: BorderRadius.circular(12)),
+                child: const Icon(Icons.receipt_long_outlined, size: 20, color: AppColor.kPrimary),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      f.reference,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 14),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      [
+                        if (f.colisReference != null) tr('Colis ${f.colisReference}'),
+                        tr('Émise le $dateEmission'),
+                      ].join(' · '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColor.kGrayscale40),
+                    ),
+                  ],
                 ),
-              ]),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(color: couleurStatut.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
-              child: Text(statut,
-                  style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: couleurStatut)),
-            ),
-          ]),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: couleurStatut.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  statut,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: couleurStatut),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           // Total mis en avant, reste à payer à côté
-          Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr('Total TTC'), style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40)),
-                Text(m(f.montantTotal),
-                    style: GoogleFonts.plusJakartaSans(fontSize: 24, fontWeight: FontWeight.w700, color: AppColor.kPrimary)),
-              ]),
-            ),
-            if (f.montantPaye > 0 && f.soldeDu > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(color: AppColor.kSecondaryLight, borderRadius: BorderRadius.circular(10)),
-                child: Text(tr('Reste ${m(f.soldeDu)}'),
-                    style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700, color: AppColor.kAlerte)),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      tr('Total TTC'),
+                      style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40),
+                    ),
+                    Text(
+                      m(f.montantTotal),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: AppColor.kPrimary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-          ]),
+              if (f.montantPaye > 0 && f.soldeDu > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(color: AppColor.kSecondaryLight, borderRadius: BorderRadius.circular(10)),
+                  child: Text(
+                    tr('Reste ${m(f.soldeDu)}'),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColor.kAlerte,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 12),
           // Détail du calcul
           Container(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
             decoration: BoxDecoration(color: AppColor.kBackground, borderRadius: BorderRadius.circular(12)),
-            child: Column(children: [
-              for (final (libelle, valeur, couleur) in lignes)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Row(children: [
-                    Expanded(
-                      child: Text(libelle, style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40)),
+            child: Column(
+              children: [
+                for (final (libelle, valeur, couleur) in lignes)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            libelle,
+                            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: AppColor.kGrayscale40),
+                          ),
+                        ),
+                        Text(
+                          valeur,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: couleur ?? AppColor.kGrayscaleDark100,
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(valeur,
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12, fontWeight: FontWeight.w600, color: couleur ?? AppColor.kGrayscaleDark100)),
-                  ]),
-                ),
-            ]),
+                  ),
+              ],
+            ),
           ),
           const SizedBox(height: 14),
-          Row(children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => DocumentPage(
-                    titre: tr('Facture ${f.reference}'),
-                    chemin: Env.clientFactureDocument(f.id),
-                    nomFichier: 'facture-${f.reference}.html',
-                  ),
-                )),
-                style: OutlinedButton.styleFrom(minimumSize: const Size(0, 44)),
-                icon: const Icon(Icons.description_outlined, size: 18),
-                label: Text(tr('Voir')),
-              ),
-            ),
-            if (f.lienPaiement != null) ...[
-              const SizedBox(width: 10),
+          Row(
+            children: [
               Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => ouvrirLien(context, f.lienPaiement),
-                  icon: const Icon(Icons.lock_outline_rounded, size: 18),
-                  label: Text(tr('Payer')),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(0, 44),
-                    backgroundColor: AppColor.kSecondary,
-                    foregroundColor: AppColor.kPrimary,
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => DocumentPage(
+                        titre: tr('Facture ${f.reference}'),
+                        chemin: Env.clientFactureDocument(f.id),
+                        nomFichier: 'facture-${f.reference}.html',
+                      ),
+                    ),
                   ),
+                  style: OutlinedButton.styleFrom(minimumSize: const Size(0, 44)),
+                  icon: const Icon(Icons.description_outlined, size: 18),
+                  label: Text(tr('Voir')),
                 ),
               ),
+              if (f.lienPaiement != null) ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => ouvrirLien(context, f.lienPaiement),
+                    icon: const Icon(Icons.lock_outline_rounded, size: 18),
+                    label: Text(tr('Payer')),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(0, 44),
+                      backgroundColor: AppColor.kSecondary,
+                      foregroundColor: AppColor.kPrimary,
+                    ),
+                  ),
+                ),
+              ],
             ],
-          ]),
+          ),
         ],
       ),
     );
@@ -397,10 +461,10 @@ class _ReglementsViewState extends State<_ReglementsView> {
   }
 
   static String _pays(String code) => switch (code) {
-        'FR' => tr('Depuis la France'),
-        'SN' => tr('Depuis le Sénégal'),
-        _ => code,
-      };
+    'FR' => tr('Depuis la France'),
+    'SN' => tr('Depuis le Sénégal'),
+    _ => code,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -417,48 +481,68 @@ class _ReglementsViewState extends State<_ReglementsView> {
     if (liste == null) return const ShimmerList();
     return RefreshIndicator(
       onRefresh: _charger,
-      child: ListView(padding: const EdgeInsets.all(16), children: [
-        if (liste.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Text(tr('Aucun règlement enregistré pour le moment.'),
-                textAlign: TextAlign.center, style: texteDiscret(13)),
-          ),
-        for (final r in liste)
-          Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(14)),
-            child: Row(children: [
-              const Icon(Icons.payments_outlined, color: AppColor.kPrimary),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(formaterMontant(r.montant, r.devise),
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
-                  Text([r.methodeLibelle, ?r.factureReference].join(' · '), style: texteDiscret()),
-                  Text(formaterDate(r.date.toIso8601String(), avecHeure: true), style: texteDiscret(11)),
-                ]),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (liste.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                tr('Aucun règlement enregistré pour le moment.'),
+                textAlign: TextAlign.center,
+                style: texteDiscret(13),
               ),
-              Text(r.statutLibelle,
-                  style: GoogleFonts.plusJakartaSans(
+            ),
+          for (final r in liste)
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(color: AppColor.kWhite, borderRadius: BorderRadius.circular(14)),
+              child: Row(
+                children: [
+                  const Icon(Icons.payments_outlined, color: AppColor.kPrimary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          formaterMontant(r.montant, r.devise),
+                          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+                        ),
+                        Text([r.methodeLibelle, ?r.factureReference].join(' · '), style: texteDiscret()),
+                        Text(formaterDate(r.date.toIso8601String(), avecHeure: true), style: texteDiscret(11)),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    r.statutLibelle,
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: switch (r.statut) {
                         'succes' => AppColor.kSucces,
                         'echoue' => AppColor.kErreur,
                         _ => AppColor.kGrayscale40,
-                      })),
-            ]),
-          ),
-        if (_methodes.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          CarteSection(titre: tr('Moyens de paiement acceptés'), icone: Icons.credit_card, children: [
-            for (final pays in _methodes.entries)
-              LigneInfo(_pays(pays.key), pays.value.map((m) => kLibellesMethodePaiement[m] ?? m).join(', ')),
-          ]),
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (_methodes.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            CarteSection(
+              titre: tr('Moyens de paiement acceptés'),
+              icone: Icons.credit_card,
+              children: [
+                for (final pays in _methodes.entries)
+                  LigneInfo(_pays(pays.key), pays.value.map((m) => kLibellesMethodePaiement[m] ?? m).join(', ')),
+              ],
+            ),
+          ],
         ],
-      ]),
+      ),
     );
   }
 }

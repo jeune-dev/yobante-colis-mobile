@@ -7,6 +7,7 @@ import '../../../../core/theme/app_color.dart';
 import '../../../../core/utils/validateurs.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../core/widgets/ui_kit.dart';
+import '../../../../core/widgets/champ_telephone.dart';
 import '../../../../injection_container.dart';
 import '../../../account/data/datasources/account_remote_datasource.dart';
 import '../../data/contact_remote_datasource.dart';
@@ -60,7 +61,7 @@ class _ContactPageState extends State<ContactPage> {
   }
 
   Future<void> _envoyer() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!validerFormulaire(_formKey)) return;
     setState(() => _envoi = true);
     try {
       final message = await sl<ContactRemoteDataSource>().envoyer(
@@ -90,73 +91,88 @@ class _ContactPageState extends State<ContactPage> {
         absorbing: _envoi,
         child: Form(
           key: _formKey,
-          child: ListView(padding: const EdgeInsets.all(20), children: [
-            if (_envoi) const LinearProgressIndicator(),
-            Text(
-              tr('Une question sur nos services ? Écrivez-nous, notre équipe vous répond par email.'),
-              style: texteDiscret(),
-            ),
-            const SizedBox(height: 16),
-            CarteSection(titre: tr('Vos coordonnées'), icone: Icons.person_outline, children: [
-              Row(children: [
-                Expanded(
-                  child: ChampTexte(
-                    controller: _prenom,
-                    label: tr('Prénom'),
-                    maxLength: 80,
-                    validator: texte(requis: true, max: 80),
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              if (_envoi) const LinearProgressIndicator(),
+              Text(
+                tr('Une question sur nos services ? Écrivez-nous, notre équipe vous répond par email.'),
+                style: texteDiscret(),
+              ),
+              const SizedBox(height: 16),
+              CarteSection(
+                titre: tr('Vos coordonnées'),
+                icone: Icons.person_outline,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ChampTexte(
+                          controller: _prenom,
+                          label: tr('Prénom'),
+                          maxLength: 80,
+                          validator: texte(requis: true, max: 80),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ChampTexte(
+                          controller: _nom,
+                          label: tr('Nom'),
+                          maxLength: 80,
+                          validator: texte(requis: true, max: 80),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ChampTexte(
-                    controller: _nom,
-                    label: tr('Nom'),
-                    maxLength: 80,
-                    validator: texte(requis: true, max: 80),
+                  ChampTexte(
+                    controller: _email,
+                    label: tr('Email'),
+                    clavier: TextInputType.emailAddress,
+                    maxLength: 150,
+                    validator: email(),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: ChampTelephone(
+                      controller: _telephone,
+                      label: tr('Téléphone ou WhatsApp (facultatif)'),
+                      validator: (v) =>
+                          v == null || v.trim().isEmpty || RegExp(r'^[0-9+().\s-]{6,30}$').hasMatch(v.trim())
+                          ? null
+                          : tr('Numéro de téléphone invalide'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              CarteSection(
+                titre: tr('Votre message'),
+                icone: Icons.mail_outline,
+                children: [
+                  ChampTexte(controller: _sujet, label: tr('Sujet (facultatif)'), maxLength: 150),
+                  ChampTexte(
+                    controller: _message,
+                    label: tr('Message'),
+                    maxLines: 6,
+                    maxLength: 3000,
+                    validator: texte(requis: true, min: 5, max: 3000),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: _envoi ? null : _envoyer,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.kSecondary,
+                  foregroundColor: AppColor.kPrimary,
+                  minimumSize: const Size.fromHeight(52),
                 ),
-              ]),
-              ChampTexte(
-                controller: _email,
-                label: tr('Email'),
-                clavier: TextInputType.emailAddress,
-                maxLength: 150,
-                validator: email(),
+                icon: const Icon(Icons.send_outlined),
+                label: Text(tr('Envoyer')),
               ),
-              ChampTexte(
-                controller: _telephone,
-                label: tr('Téléphone ou WhatsApp (facultatif)'),
-                clavier: TextInputType.phone,
-                maxLength: 30,
-                validator: (v) => v == null || v.trim().isEmpty || RegExp(r'^[0-9+().\s-]{6,30}$').hasMatch(v.trim())
-                    ? null
-                    : tr('Numéro de téléphone invalide'),
-              ),
-            ]),
-            const SizedBox(height: 16),
-            CarteSection(titre: tr('Votre message'), icone: Icons.mail_outline, children: [
-              ChampTexte(controller: _sujet, label: tr('Sujet (facultatif)'), maxLength: 150),
-              ChampTexte(
-                controller: _message,
-                label: tr('Message'),
-                maxLines: 6,
-                maxLength: 3000,
-                validator: texte(requis: true, min: 5, max: 3000),
-              ),
-            ]),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: _envoi ? null : _envoyer,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.kSecondary,
-                foregroundColor: AppColor.kPrimary,
-                minimumSize: const Size.fromHeight(52),
-              ),
-              icon: const Icon(Icons.send_outlined),
-              label: Text(tr('Envoyer')),
-            ),
-          ]),
+            ],
+          ),
         ),
       ),
     );

@@ -29,4 +29,3 @@ class AuthEventBus {
 
   void dispose() => _logoutController.close();
 }
-
