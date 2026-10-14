@@ -31,6 +31,7 @@ class SelecteurArticles extends StatelessWidget {
     return Column(
       children: articles.map((a) {
         final prix = zoneDakar ? a.prixDakar : a.prixAutresRegions;
+        final equivalent = zoneDakar ? a.prixDakarEquivalent : a.prixAutresRegionsEquivalent;
         final quantite = quantites[a.id] ?? 0;
         return Container(
           margin: const EdgeInsets.only(bottom: 8),
@@ -67,6 +68,8 @@ class SelecteurArticles extends StatelessWidget {
                         color: AppColor.kPrimary,
                       ),
                     ),
+                    if (equivalent != null && a.deviseEquivalente != null)
+                      Text(formaterMontant(equivalent, a.deviseEquivalente), style: texteDiscret(11)),
                   ],
                 ),
               ),

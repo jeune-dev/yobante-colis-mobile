@@ -12,7 +12,10 @@ class CarteOffre extends StatelessWidget {
   final bool selectionnee;
   final VoidCallback? onTap;
   final Widget? action;
-  const CarteOffre({super.key, required this.offre, this.selectionnee = false, this.onTap, this.action});
+
+  /// Pastille mise en avant au-dessus de l'offre (« Meilleur prix », « Plus rapide »…).
+  final String? badge;
+  const CarteOffre({super.key, required this.offre, this.selectionnee = false, this.onTap, this.action, this.badge});
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +34,17 @@ class CarteOffre extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (badge != null) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: AppColor.kSecondary, borderRadius: BorderRadius.circular(20)),
+                child: Text(
+                  badge!,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColor.kPrimaryDark),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
             Row(
               children: [
                 Container(

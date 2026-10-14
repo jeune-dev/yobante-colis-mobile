@@ -6,13 +6,15 @@ import '../../../../core/errors/exceptions.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
+import '../../../../core/widgets/toast_notif.dart';
 import '../../../../core/widgets/ui_kit.dart';
+import 'package:toastification/toastification.dart';
+import 'resultats_devis_page.dart';
 import '../../../../injection_container.dart';
 import '../../../catalogue/data/catalogue_remote_datasource.dart';
 import '../../../catalogue/domain/catalogue_entities.dart';
 import '../../../colis/domain/entities/demande_expedition.dart';
 import '../../../expedition/presentation/pages/assistant_expedition_page.dart';
-import '../../../expedition/presentation/widgets/carte_offre.dart';
 import '../../../expedition/presentation/widgets/choix_categorie.dart';
 import '../../../expedition/presentation/widgets/selecteur_articles.dart';
 import '../../../expedition/presentation/widgets/selecteur_ville.dart';
@@ -61,7 +63,6 @@ class _DevisPageState extends State<DevisPage> {
   bool _villesManquantes = false;
   final _cleVilles = GlobalKey();
   final _cleErreur = GlobalKey();
-  ResultatDevis? _resultat;
 
   String? get _code => _categorie?.code;
 
@@ -189,24 +190,45 @@ class _DevisPageState extends State<DevisPage> {
     setState(() {
       _calcul = true;
       _erreur = null;
-      _resultat = null;
     });
     try {
       final connecte = await isUserAuthenticated();
       final resultat = await _source.devis(besoin.versDevis(), connecte: connecte);
       if (!mounted) return;
-      setState(() {
-        _resultat = resultat;
-        if (resultat.offres.isEmpty) {
-          _erreur = resultat.indisponibles.map((i) => '${i.serviceNom} : ${i.motif}').join('\n');
-        }
-      });
-      if (resultat.offres.isEmpty) _montrer(_cleErreur);
+      if (resultat.offres.isEmpty) {
+        _signaler(resultat.indisponibles.map((i) => '${i.serviceNom} : ${i.motif}').join('\n'));
+        return;
+      }
+      _afficherTarifs(resultat);
     } on ServerException catch (e) {
       if (mounted) _signaler(e.message);
     } finally {
       if (mounted) setState(() => _calcul = false);
     }
+  }
+
+  void _afficherTarifs(ResultatDevis resultat) {
+    final n = resultat.offres.length;
+    showToast(
+      context,
+      tr('Tarifs calculés'),
+      n > 1 ? tr('$n offres disponibles pour votre envoi.') : tr('Une offre disponible pour votre envoi.'),
+      ToastificationType.success,
+    );
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ResultatsDevisPage(
+          resultat: resultat,
+          categorie: _categorie!,
+          villeDepart: _depart!.nom,
+          villeArrivee: _arrivee!.nom,
+          modeDepot: _modeDepot,
+          fragile: _code != 'documents' && _fragile,
+          dangereuse: _code != 'documents' && _dangereuse,
+          onExpedier: _expedier,
+        ),
+      ),
+    );
   }
 
   /// Affiche l'erreur et la fait défiler à l'écran pour qu'elle ne passe pas inaperçue.
@@ -277,7 +299,6 @@ class _DevisPageState extends State<DevisPage> {
                     onDeselectionne: () {
                       setState(() {
                         _categorie = null;
-                        _resultat = null;
                       });
                       _chargerArticles();
                     },
@@ -285,7 +306,6 @@ class _DevisPageState extends State<DevisPage> {
                       setState(() {
                         _categorie = c;
                         _categorieManquante = false;
-                        _resultat = null;
                         if (!c.modesDepot.contains(_modeDepot)) _modeDepot = c.modesDepot.first;
                       });
                       _chargerArticles();
@@ -312,7 +332,6 @@ class _DevisPageState extends State<DevisPage> {
                         _depart = null;
                         _arrivee = null;
                         _villesManquantes = false;
-                        _resultat = null;
                       });
                       _chargerArticles();
                     },
@@ -440,7 +459,7 @@ class _DevisPageState extends State<DevisPage> {
                     ),
                     child: _calcul
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : Text(tr('Comparer les offres')),
+                        : Text(tr('Voir les tarifs')),
                   ),
                   if (_erreur != null) ...[
                     const SizedBox(height: 16),
@@ -450,25 +469,6 @@ class _DevisPageState extends State<DevisPage> {
                       titre: tr('Tarif indisponible'),
                       message: _erreur,
                       couleur: AppColor.kErreur,
-                    ),
-                  ],
-                  if (_resultat != null && _resultat!.offres.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    Text(tr('${_resultat!.offres.length} offre(s) disponible(s)'), style: titreSection()),
-                    if (_resultat!.remiseParrainagePourcent > 0)
-                      Text(
-                        tr('Bonus filleul de ${_resultat!.remiseParrainagePourcent.toStringAsFixed(0)} % inclus.'),
-                        style: GoogleFonts.plusJakartaSans(color: AppColor.kSucces, fontSize: 12),
-                      ),
-                    const SizedBox(height: 12),
-                    ..._resultat!.offres.map(
-                      (o) => CarteOffre(
-                        offre: o,
-                        action: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(onPressed: _expedier, child: Text(tr('Expédier avec cette offre'))),
-                        ),
-                      ),
                     ),
                   ],
                 ],

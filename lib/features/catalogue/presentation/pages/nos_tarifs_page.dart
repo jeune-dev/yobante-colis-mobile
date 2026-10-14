@@ -117,17 +117,21 @@ class _NosTarifsPageState extends State<NosTarifsPage> {
                               ),
                               SizedBox(
                                 width: 78,
-                                child: Text(
-                                  formaterMontant(a.prixDakar, a.devise),
-                                  textAlign: TextAlign.end,
+                                child: _Prix(
+                                  montant: a.prixDakar,
+                                  devise: a.devise,
+                                  equivalent: a.prixDakarEquivalent,
+                                  deviseEquivalente: a.deviseEquivalente,
                                   style: _prix(),
                                 ),
                               ),
                               SizedBox(
                                 width: 90,
-                                child: Text(
-                                  formaterMontant(a.prixAutresRegions, a.devise),
-                                  textAlign: TextAlign.end,
+                                child: _Prix(
+                                  montant: a.prixAutresRegions,
+                                  devise: a.devise,
+                                  equivalent: a.prixAutresRegionsEquivalent,
+                                  deviseEquivalente: a.deviseEquivalente,
                                   style: _prix(),
                                 ),
                               ),
@@ -186,7 +190,12 @@ class _NosTarifsPageState extends State<NosTarifsPage> {
                       runSpacing: 8,
                       children: config.grilleColissimo
                           .map(
-                            (p) => Chip(label: Text(tr('≤ ${p.poidsMaxKg} kg : ${formaterMontant(p.prixHt, 'EUR')}'))),
+                            (p) => Chip(
+                              label: Text(
+                                tr('≤ ${p.poidsMaxKg} kg : ${formaterMontant(p.prixHt, 'EUR')}') +
+                                    (p.prixHtXof != null ? ' · ${formaterMontant(p.prixHtXof, 'XOF')}' : ''),
+                              ),
+                            ),
                           )
                           .toList(),
                     ),
@@ -223,4 +232,40 @@ class _NosTarifsPageState extends State<NosTarifsPage> {
   TextStyle _entete() =>
       GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColor.kGrayscale40);
   TextStyle _prix() => GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w700, color: AppColor.kPrimary);
+}
+
+/// Prix de la grille, avec en dessous son équivalent dans l'autre devise fourni par le backend.
+class _Prix extends StatelessWidget {
+  final double montant;
+  final String devise;
+  final double? equivalent;
+  final String? deviseEquivalente;
+  final TextStyle style;
+  const _Prix({
+    required this.montant,
+    required this.devise,
+    required this.equivalent,
+    required this.deviseEquivalente,
+    required this.style,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerRight,
+          child: Text(formaterMontant(montant, devise), style: style),
+        ),
+        if (equivalent != null && deviseEquivalente != null)
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(formaterMontant(equivalent, deviseEquivalente), style: texteDiscret(11)),
+          ),
+      ],
+    );
+  }
 }

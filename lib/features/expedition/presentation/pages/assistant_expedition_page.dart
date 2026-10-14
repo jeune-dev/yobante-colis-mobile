@@ -11,6 +11,7 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/toast_notif.dart';
 import '../../../../core/widgets/ui_kit.dart';
 import '../../../../core/widgets/champ_telephone.dart';
+import '../../../../core/widgets/selecteur_options.dart';
 import '../../../../injection_container.dart';
 import '../../../account/data/datasources/account_remote_datasource.dart';
 import '../../../catalogue/data/catalogue_remote_datasource.dart';
@@ -27,6 +28,19 @@ import '../widgets/selecteur_ville.dart';
 import 'confirmation_expedition_page.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/utils/validateurs.dart';
+
+/// Pictogramme de chaque type d'emballage dans le sélecteur.
+const Map<String, IconData> _iconesEmballage = {
+  'carton': Icons.inventory_2_outlined,
+  'enveloppe': Icons.mail_outline,
+  'sac': Icons.shopping_bag_outlined,
+  'valise': Icons.luggage_outlined,
+  'barigot': Icons.propane_tank_outlined,
+  'malle': Icons.work_outline,
+  'fut': Icons.oil_barrel_outlined,
+  'palette': Icons.pallet,
+  'autre': Icons.more_horiz,
+};
 
 /// Valeurs de départ de l'assistant, transmises depuis le calculateur de tarif
 /// ou une tournée de collecte.
@@ -1233,13 +1247,13 @@ class _AssistantState extends State<_Assistant> {
             ),
             if (!dimensionsObligatoires) Text(tr('Dimensions facultatives'), style: texteDiscret(11)),
             const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              initialValue: p.typeEmballage,
-              decoration: InputDecoration(labelText: tr('Emballage'), prefixIcon: const Icon(Icons.all_inbox_outlined)),
-              items: kTypesEmballage.entries
-                  .map((e) => DropdownMenuItem(value: e.key, child: Text(tr(e.value))))
-                  .toList(),
-              onChanged: (v) => setState(() => p.typeEmballage = v ?? 'carton'),
+            SelecteurOptions(
+              label: tr('Emballage'),
+              options: kTypesEmballage,
+              valeur: p.typeEmballage,
+              icone: Icons.all_inbox_outlined,
+              icones: _iconesEmballage,
+              onChanged: (v) => setState(() => p.typeEmballage = v),
             ),
           ],
         ),
@@ -1301,13 +1315,11 @@ class _AssistantState extends State<_Assistant> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: DropdownButtonFormField<String>(
-                      initialValue: l.unite,
-                      decoration: InputDecoration(labelText: tr('Unité')),
-                      items: kUnitesDouane.entries
-                          .map((e) => DropdownMenuItem(value: e.key, child: Text(tr(e.value))))
-                          .toList(),
-                      onChanged: (v) => setState(() => l.unite = v ?? 'piece'),
+                    child: SelecteurOptions(
+                      label: tr('Unité'),
+                      options: kUnitesDouane,
+                      valeur: l.unite,
+                      onChanged: (v) => setState(() => l.unite = v),
                     ),
                   ),
                 ),

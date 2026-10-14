@@ -54,6 +54,12 @@ class ArticleTarif extends Equatable {
   final double prixDakar;
   final double prixAutresRegions;
   final String devise;
+
+  /// Prix convertis par le backend dans l'autre devise (EUR <-> FCFA), au taux
+  /// paramétré : affichés sous les prix, jamais recalculés dans l'application.
+  final String? deviseEquivalente;
+  final double? prixDakarEquivalent;
+  final double? prixAutresRegionsEquivalent;
   final bool prixAPartirDe;
   final double? poidsMaxKg;
   final String? photoUrl;
@@ -68,6 +74,9 @@ class ArticleTarif extends Equatable {
     required this.prixDakar,
     required this.prixAutresRegions,
     this.devise = 'EUR',
+    this.deviseEquivalente,
+    this.prixDakarEquivalent,
+    this.prixAutresRegionsEquivalent,
     this.prixAPartirDe = false,
     this.poidsMaxKg,
     this.photoUrl,
@@ -83,6 +92,9 @@ class ArticleTarif extends Equatable {
     prixDakar: _d(j['prixDakar']),
     prixAutresRegions: _d(j['prixAutresRegions']),
     devise: j['devise'] as String? ?? 'EUR',
+    deviseEquivalente: j['deviseEquivalente'] as String?,
+    prixDakarEquivalent: _dn(j['prixDakarEquivalent']),
+    prixAutresRegionsEquivalent: _dn(j['prixAutresRegionsEquivalent']),
     prixAPartirDe: j['prixAPartirDe'] as bool? ?? false,
     poidsMaxKg: _dn(j['poidsMaxKg']),
     photoUrl: j['photoUrl'] as String?,
@@ -274,7 +286,10 @@ class AdresseReception {
 class PalierColissimo {
   final double poidsMaxKg;
   final double prixHt;
-  const PalierColissimo(this.poidsMaxKg, this.prixHt);
+
+  /// Équivalent en FCFA calculé par le backend.
+  final double? prixHtXof;
+  const PalierColissimo(this.poidsMaxKg, this.prixHt, [this.prixHtXof]);
 }
 
 /// Configuration publique : adresses de réception, liens, contact, options.
@@ -329,7 +344,7 @@ class ConfigurationPublique {
       collecteActive: collecte['active'] as bool? ?? true,
       colissimoActive: colissimo['active'] as bool? ?? true,
       grilleColissimo: (colissimo['grille'] as List? ?? [])
-          .map((p) => PalierColissimo(_d(p['poidsMaxKg']), _d(p['prixHt'])))
+          .map((p) => PalierColissimo(_d(p['poidsMaxKg']), _d(p['prixHt']), _dn(p['prixHtXof'])))
           .toList(),
       prixForfaitsTtc: j['prixForfaitsTtc'] as bool? ?? true,
       delaiEtudeHeures: (j['delaiEtudeHeures'] as num?)?.toInt() ?? 24,
