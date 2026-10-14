@@ -84,24 +84,24 @@ class _GrilleOptions extends StatelessWidget {
               child: Text(
                 titre,
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 17,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: AppColor.kGrayscaleDark100,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             // Lignes de 3 tuiles à la hauteur de leur contenu : pas de débordement
             // quand la taille de texte du téléphone est agrandie.
             for (var i = 0; i < entrees.length; i += 3)
               Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: IntrinsicHeight(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       for (var j = i; j < i + 3; j++) ...[
-                        if (j > i) const SizedBox(width: 10),
+                        if (j > i) const SizedBox(width: 8),
                         Expanded(
                           child: j < entrees.length
                               ? _Tuile(
@@ -147,27 +147,27 @@ class _Tuile extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 9),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (icone != null) ...[
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
                         color: choisie ? AppColor.kPrimary : AppColor.kWhite,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(icone, size: 22, color: choisie ? AppColor.kWhite : AppColor.kPrimary),
+                      child: Icon(icone, size: 18, color: choisie ? AppColor.kWhite : AppColor.kPrimary),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 5),
                   ],
                   Text(
                     libelle,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: choisie ? FontWeight.w700 : FontWeight.w500,
                       color: couleur,
                     ),
@@ -176,7 +176,7 @@ class _Tuile extends StatelessWidget {
               ),
             ),
             if (choisie)
-              const Positioned(top: 6, right: 6, child: Icon(Icons.check_circle, size: 16, color: AppColor.kPrimary)),
+              const Positioned(top: 5, right: 5, child: Icon(Icons.check_circle, size: 14, color: AppColor.kPrimary)),
           ],
         ),
       ),
