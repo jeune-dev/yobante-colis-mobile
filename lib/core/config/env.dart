@@ -44,6 +44,7 @@ class Env {
   // ── CLIENT — COLIS ────────────────────────────────────────────────────────
   static const String clientColis = '/client/colis';
   static const String clientColisRecus = '/client/colis/recus';
+  static String clientColisConfirmerRemise(String id) => '/client/colis/recus/$id/confirmer-remise';
   static String clientColisId(String id) => '/client/colis/$id';
   static String clientColisSuivi(String id) => '/client/colis/$id/suivi';
   static String clientColisAnnuler(String id) => '/client/colis/$id/annuler';
@@ -100,6 +101,7 @@ class Env {
   static String personnelColisId(String id) => '/admin/colis/$id';
   static String personnelColisRecherche(String numero) => '/admin/colis/recherche/${Uri.encodeComponent(numero)}';
   static String personnelColisEvenement(String id) => '/admin/colis/$id/evenements';
+  static String personnelColisCodeRemise(String id) => '/admin/colis/$id/code-remise';
   static String personnelEncaissement(String factureId) => '/admin/paiements/factures/$factureId';
 
   // ── CLIENT — CARNET D'ADRESSES ────────────────────────────────────────────

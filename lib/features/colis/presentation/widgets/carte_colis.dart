@@ -15,7 +15,10 @@ class CarteColis extends StatelessWidget {
 
   /// Colis reçu : on affiche l'expéditeur (et non le destinataire), sans montant.
   final bool recu;
-  const CarteColis({super.key, required this.colis, required this.onTap, this.recu = false});
+
+  /// Action affichée sous la carte (confirmer la réception, donner son avis…).
+  final Widget? action;
+  const CarteColis({super.key, required this.colis, required this.onTap, this.recu = false, this.action});
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +126,7 @@ class CarteColis extends StatelessWidget {
                     ],
                   ],
                 ),
+                if (action != null) ...[const SizedBox(height: 12), action!],
               ],
             ),
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:toastification/toastification.dart';
 import '../../../../core/config/user_role.dart';
+import '../../../../core/constants/statuts_remise.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/theme/app_color.dart';
@@ -19,6 +20,7 @@ import '../../../colis/presentation/widgets/statut_badge.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../notifications/presentation/widgets/apercu_notifications.dart';
 import '../../data/personnel_remote_datasource.dart';
+import '../widgets/code_remise.dart';
 import '../widgets/ui_personnel.dart';
 
 /// Regroupements de statuts proposés à chaque rôle, dans l'ordre de son travail
@@ -507,9 +509,16 @@ class _DetailColisTerrainPageState extends State<DetailColisTerrainPage> {
       ),
     );
     if (evenement == null || !mounted) return;
+    if (_estRemise(evenement)) return _remettre(evenement);
+    await _enregistrer(evenement);
+  }
+
+  Future<void> _enregistrer(EvenementPossible evenement, {String? commentaire}) async {
+    final c = _c;
+    if (c == null) return;
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => _DialogueEvenement(colis: c, evenement: evenement),
+      builder: (_) => _DialogueEvenement(colis: c, evenement: evenement, commentaireInitial: commentaire),
     );
     if (ok == true && mounted) {
       _change = true;
@@ -517,15 +526,94 @@ class _DetailColisTerrainPageState extends State<DetailColisTerrainPage> {
     }
   }
 
-  Future<void> _encaisser(FactureTerrain f) async {
+  static bool _estRemise(EvenementPossible e) => e.code == 'RETIRE' || e.code == 'LIVRE';
+
+  /// Retrait au point ou livraison à la porte, selon où en est le colis.
+  static EvenementPossible? _evenementRemise(ColisTerrain c) {
+    final attendu = c.statut == 'en_livraison' ? 'LIVRE' : 'RETIRE';
+    final remises = c.evenementsPossibles.where(_estRemise);
+    return remises.where((e) => e.code == attendu).firstOrNull ?? remises.firstOrNull;
+  }
+
+  /// La remise est l'action principale dès qu'elle est possible, avec ou sans compte.
+  bool _peutRemettre(ColisTerrain c) => kStatutsRemise.contains(c.statut) && c.evenementsPossibles.any(_estRemise);
+
+  bool _remiseParApplication(ColisTerrain c) => c.destinataireACompte && _peutRemettre(c);
+
+  /// Remise au destinataire : rappel du reste à payer, puis confirmation dans
+  /// son application s'il a un compte, sinon saisie classique (code de retrait).
+  Future<void> _remettre([EvenementPossible? choisi]) async {
+    var c = _c;
+    if (c == null || !await _paiementVerifie(c) || !mounted) return;
+    // Après un encaissement, la fiche rechargée fait foi
+    c = _c;
+    final evenement = choisi ?? (c == null ? null : _evenementRemise(c));
+    if (c == null || evenement == null) return;
+    if (!_remiseParApplication(c)) return _enregistrer(evenement);
+    final issue = await remiseParApplication(context, c);
+    if (!mounted) return;
+    switch (issue) {
+      case IssueRemise.confirmee:
+        _change = true;
+        showToast(
+          context,
+          tr('Colis remis'),
+          tr('Le destinataire a confirmé la réception.'),
+          ToastificationType.success,
+        );
+        _charger();
+      case IssueRemise.statutChange:
+        _change = true;
+        _charger();
+      case IssueRemise.sansApplication:
+        // Trace dans l'historique : la remise n'a pas été confirmée par le destinataire
+        await _enregistrer(evenement, commentaire: tr('Remis sans confirmation dans l\'application.'));
+      case null:
+        break;
+    }
+  }
+
+  /// Un reste à payer est signalé avant la remise. Le serveur refuse la remise
+  /// tant qu'il n'est pas encaissé, sauf paiement différé : on ne propose alors
+  /// de passer outre que s'il ne l'a pas précisé. Après encaissement, la remise
+  /// reprend si la facture est soldée.
+  Future<bool> _paiementVerifie(ColisTerrain c) async {
+    final f = c.facture;
+    if (f == null || !f.aEncaisser || c.reglementAvantRemise == false) return true;
+    final exige = c.reglementAvantRemise == true;
+    final choix = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr('Reste à payer')),
+        content: Text(
+          tr(
+            'Il reste ${formaterMontant(f.reste, f.devise)} à encaisser sur ce colis. Encaissez avant de le remettre.',
+          ),
+        ),
+        actions: [
+          if (exige)
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(tr('Annuler')))
+          else
+            TextButton(onPressed: () => Navigator.of(ctx).pop('remettre'), child: Text(tr('Remettre quand même'))),
+          FilledButton(onPressed: () => Navigator.of(ctx).pop('encaisser'), child: Text(tr('Encaisser'))),
+        ],
+      ),
+    );
+    if (choix == 'remettre') return true;
+    if (choix != 'encaisser' || !mounted || !await _encaisser(f)) return false;
+    return _c?.facture?.aEncaisser == false;
+  }
+
+  /// Renvoie `true` une fois l'encaissement enregistré et la fiche rechargée.
+  Future<bool> _encaisser(FactureTerrain f) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => _DialogueEncaissement(facture: f),
     );
-    if (ok == true && mounted) {
-      _change = true;
-      _charger();
-    }
+    if (ok != true || !mounted) return false;
+    _change = true;
+    await _charger();
+    return mounted;
   }
 
   Widget _puce(IconData icone, String texte, {Color fond = AppColor.kPrimaryDark, Color couleur = AppColor.kWhite}) =>
@@ -572,12 +660,27 @@ class _DetailColisTerrainPageState extends State<DetailColisTerrainPage> {
             ? null
             : BarreActions(
                 children: [
-                  FilledButton.icon(
-                    onPressed: _mettreAJour,
-                    icon: const Icon(Icons.update),
-                    label: Text(tr('Mettre à jour le suivi')),
-                    style: styleBoutonPlein(AppColor.kPrimary),
-                  ),
+                  if (_peutRemettre(c))
+                    OutlinedButton.icon(
+                      onPressed: _mettreAJour,
+                      icon: const Icon(Icons.update),
+                      label: Text(tr('Suivi')),
+                      style: styleBoutonContour(AppColor.kPrimary),
+                    )
+                  else
+                    FilledButton.icon(
+                      onPressed: _mettreAJour,
+                      icon: const Icon(Icons.update),
+                      label: Text(tr('Mettre à jour le suivi')),
+                      style: styleBoutonPlein(AppColor.kPrimary),
+                    ),
+                  if (_peutRemettre(c))
+                    FilledButton.icon(
+                      onPressed: () => _remettre(),
+                      icon: Icon(c.destinataireACompte ? Icons.phonelink_lock_outlined : Icons.how_to_reg_outlined),
+                      label: Text(tr('Remettre le colis')),
+                      style: styleBoutonPlein(AppColor.kPrimary),
+                    ),
                 ],
               ),
         body: _erreur != null
@@ -778,7 +881,8 @@ class _DetailColisTerrainPageState extends State<DetailColisTerrainPage> {
 class _DialogueEvenement extends StatefulWidget {
   final ColisTerrain colis;
   final EvenementPossible evenement;
-  const _DialogueEvenement({required this.colis, required this.evenement});
+  final String? commentaireInitial;
+  const _DialogueEvenement({required this.colis, required this.evenement, this.commentaireInitial});
 
   @override
   State<_DialogueEvenement> createState() => _DialogueEvenementState();
@@ -787,7 +891,7 @@ class _DialogueEvenement extends StatefulWidget {
 class _DialogueEvenementState extends State<_DialogueEvenement> {
   final _code = TextEditingController();
   final _motif = TextEditingController();
-  final _commentaire = TextEditingController();
+  late final _commentaire = TextEditingController(text: widget.commentaireInitial);
   bool _envoi = false;
   String? _erreur;
 

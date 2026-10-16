@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/constants/statuts_remise.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/services/auth_status.dart';
 import '../../../../core/theme/app_color.dart';
@@ -14,6 +15,9 @@ import '../bloc/colis_state.dart';
 import '../../domain/entities/filtres_colis.dart';
 import '../widgets/filtres_colis_widgets.dart';
 import '../widgets/carte_colis.dart';
+import '../widgets/confirmer_remise.dart';
+import '../../../avis/presentation/pages/avis_page.dart';
+import '../../domain/entities/colis.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 
@@ -60,6 +64,9 @@ class _RecusViewState extends State<_RecusView> {
   String? _statut;
   FiltresColis _filtres = const FiltresColis();
 
+  /// Avis déposés depuis l'affichage de la liste (avant son prochain chargement).
+  final _evalues = <String>{};
+
   bool get isAuth => widget.isAuth;
   bool get integre => widget.integre;
   bool get _filtrage => _statut != null || _filtres.actif;
@@ -74,6 +81,37 @@ class _RecusViewState extends State<_RecusView> {
       _filtres = choix.filtres;
     });
     context.read<ColisBloc>().add(_chargement);
+  }
+
+  /// Remise à confirmer au guichet ou à la porte, puis avis une fois le colis reçu.
+  Widget? _action(BuildContext context, Colis c) {
+    if (kStatutsRemise.contains(c.statut)) {
+      Future<void> confirmer() async {
+        if (await confirmerRemise(context, c) && context.mounted) {
+          context.read<ColisBloc>().add(_chargement);
+        }
+      }
+
+      final label = Text(tr('Confirmer la réception'));
+      const icone = Icon(Icons.pin_outlined, size: 18);
+      // Au point de retrait, le colis attend : action principale. En livraison,
+      // le coursier peut être encore loin : simple rappel, sans insister.
+      return c.statut == 'disponible_retrait'
+          ? FilledButton.icon(onPressed: confirmer, icon: icone, label: label)
+          : OutlinedButton.icon(onPressed: confirmer, icon: icone, label: label);
+    }
+    if (kStatutsRemis.contains(c.statut) && !c.avisDonne && !_evalues.contains(c.id)) {
+      return OutlinedButton.icon(
+        onPressed: () async {
+          if (await donnerAvis(context, colisId: c.id, colisReference: c.reference) && mounted) {
+            setState(() => _evalues.add(c.id));
+          }
+        },
+        icon: const Icon(Icons.star_outline_rounded, size: 18),
+        label: Text(tr('Donner mon avis')),
+      );
+    }
+    return null;
   }
 
   @override
@@ -174,6 +212,7 @@ class _RecusViewState extends State<_RecusView> {
                   child: CarteColis(
                     recu: true,
                     colis: state.colis[i],
+                    action: _action(context, state.colis[i]),
                     // Le détail complet est réservé à l'expéditeur : le destinataire
                     // suit son colis par le suivi public (numéro de suivi)
                     onTap: () => Navigator.of(

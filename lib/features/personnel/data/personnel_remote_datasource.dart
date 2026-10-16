@@ -144,6 +144,13 @@ class ColisTerrain {
   final bool fragile;
   final bool enRetard;
   final bool aCodeRetrait;
+
+  /// Le destinataire a un compte : il confirme lui-même la remise dans son application.
+  final bool destinataireACompte;
+
+  /// Le solde doit être encaissé avant la remise (faux en paiement différé) ;
+  /// `null` si le serveur ne le précise pas.
+  final bool? reglementAvantRemise;
   final FactureTerrain? facture;
   final List<EvenementPossible> evenementsPossibles;
   final List<EtapeSuivi> historique;
@@ -169,6 +176,8 @@ class ColisTerrain {
     this.fragile = false,
     this.enRetard = false,
     this.aCodeRetrait = false,
+    this.destinataireACompte = false,
+    this.reglementAvantRemise,
     this.facture,
     this.evenementsPossibles = const [],
     this.historique = const [],
@@ -195,6 +204,8 @@ class ColisTerrain {
     fragile: j['fragile'] as bool? ?? false,
     enRetard: j['enRetard'] as bool? ?? false,
     aCodeRetrait: j['aCodeRetrait'] as bool? ?? j['codeRetrait'] != null,
+    destinataireACompte: j['destinataireACompte'] as bool? ?? false,
+    reglementAvantRemise: j['reglementAvantRemise'] as bool?,
     facture: j['facture'] is Map<String, dynamic>
         ? FactureTerrain.fromJson(j['facture'] as Map<String, dynamic>)
         : null,
@@ -278,6 +289,18 @@ class PersonnelRemoteDataSource {
     final res = await dio.get(Env.personnelColisRecherche(numero.trim()));
     return (res.data['data']['colis'] as Map<String, dynamic>)['id'] as String;
   }, tr('Aucune expédition ne correspond à ce numéro'));
+
+  /// Code à usage unique à montrer au destinataire, qui le saisit dans son application.
+  Future<({String code, DateTime expireLe})> genererCodeRemise(String colisId) => appelApi(() async {
+    final res = await dio.post(Env.personnelColisCodeRemise(colisId));
+    final d = res.data['data'] as Map<String, dynamic>;
+    return (
+      code: d['code'] as String,
+      expireLe:
+          DateTime.tryParse(d['expireLe'] as String? ?? '')?.toLocal() ??
+          DateTime.now().add(const Duration(minutes: 10)),
+    );
+  }, tr('Impossible d\'afficher le code de remise'));
 
   Future<String> enregistrerEvenement(
     String colisId,

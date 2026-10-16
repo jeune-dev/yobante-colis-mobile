@@ -48,6 +48,10 @@ abstract class ColisRemoteDataSource {
   /// Dépose (ou remplace) le message vocal décrivant la demande (fichier m4a).
   Future<String> deposerVocal(String id, String cheminAudio);
 
+  /// Le destinataire saisit le code affiché par l'agent à la remise du colis.
+  /// Renvoie le message du backend.
+  Future<String> confirmerRemise(String id, String code);
+
   /// Inscrit une adresse email ou un numéro aux alertes de suivi.
   Future<String> abonnerSuivi(
     String id, {
@@ -169,6 +173,12 @@ class ColisRemoteDataSourceImpl implements ColisRemoteDataSource {
     final res = await dio.post(Env.clientColisPhotos(id), data: form);
     return messageApi(res);
   }, tr('Envoi des photos impossible'));
+
+  @override
+  Future<String> confirmerRemise(String id, String code) => appelApi(() async {
+    final res = await dio.post(Env.clientColisConfirmerRemise(id), data: {'code': code.trim()});
+    return messageApi(res, tr('Réception confirmée.'));
+  }, tr('Impossible de confirmer la réception'));
 
   @override
   Future<String> deposerVocal(String id, String cheminAudio) => appelApi(() async {

@@ -193,6 +193,9 @@ class Colis extends Equatable {
   final String? annuleMotif;
   final String? motifIncident;
   final bool enRetard;
+
+  /// Colis reçu : le destinataire connecté a déjà déposé son avis.
+  final bool avisDonne;
   final DateTime createdAt;
 
   // ── Cahier des charges : catégorie et parcours ─────────────────────────────
@@ -282,6 +285,7 @@ class Colis extends Equatable {
     this.annuleMotif,
     this.motifIncident,
     this.enRetard = false,
+    this.avisDonne = false,
     required this.createdAt,
     this.categorie = 'colis_moyen',
     this.typeDocument,
