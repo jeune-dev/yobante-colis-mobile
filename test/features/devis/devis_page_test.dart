@@ -54,7 +54,7 @@ void main() {
   }
 
   Future<void> comparer(WidgetTester tester) async {
-    await tester.tap(find.text('Comparer les offres'));
+    await tester.tap(find.text('Voir les tarifs'));
     await tester.pumpAndSettle();
   }
 
