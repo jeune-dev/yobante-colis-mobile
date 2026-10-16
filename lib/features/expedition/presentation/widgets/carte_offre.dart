@@ -40,7 +40,11 @@ class CarteOffre extends StatelessWidget {
                 decoration: BoxDecoration(color: AppColor.kSecondary, borderRadius: BorderRadius.circular(20)),
                 child: Text(
                   badge!,
-                  style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w700, color: AppColor.kPrimaryDark),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColor.kPrimaryDark,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
