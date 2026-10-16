@@ -113,7 +113,7 @@ class _FormulaireAvisState extends State<_FormulaireAvis> {
             onPressed: _envoi ? null : _envoyer,
             style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
             child: _envoi
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColor.kWhite))
                 : Text(tr('Publier mon avis')),
           ),
         ],
@@ -280,10 +280,13 @@ class _AvisPublicsState extends State<_AvisPublics> {
                     ChoiceChip(
                       label: Text('$n/5 (${s.repartition[n] ?? 0})'),
                       selected: _filtre == n,
-                      onSelected: (_) {
-                        setState(() => _filtre = n);
-                        _charger();
-                      },
+                      // Aucun avis publié avec cette note : rien à filtrer
+                      onSelected: (s.repartition[n] ?? 0) == 0 && _filtre != n
+                          ? null
+                          : (_) {
+                              setState(() => _filtre = n);
+                              _charger();
+                            },
                     ),
                 ],
               ),
@@ -293,7 +296,11 @@ class _AvisPublicsState extends State<_AvisPublics> {
           if (_avis.isEmpty)
             Padding(
               padding: const EdgeInsets.all(24),
-              child: Text(tr('Aucun avis pour le moment.'), textAlign: TextAlign.center, style: texteDiscret(13)),
+              child: Text(
+                tr('Aucun avis publié pour le moment. Les avis apparaissent ici une fois vérifiés par notre équipe.'),
+                textAlign: TextAlign.center,
+                style: texteDiscret(13),
+              ),
             ),
           for (final a in _avis) _CarteAvis(avis: a),
           if (_page < _totalPages)

@@ -374,7 +374,8 @@ const Map<String, String> traductionsEn = {
   'Tous les avis': 'All reviews',
   'Mes avis': 'My reviews',
   'Tous': 'All',
-  'Aucun avis pour le moment.': 'No reviews yet.',
+  'Aucun avis publié pour le moment. Les avis apparaissent ici une fois vérifiés par notre équipe.':
+      'No published reviews yet. Reviews appear here once checked by our team.',
   'Voir plus d\'avis': 'See more reviews',
   'Supprimé': 'Deleted',
   'Votre avis a été supprimé.': 'Your review has been deleted.',
