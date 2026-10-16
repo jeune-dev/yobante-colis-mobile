@@ -382,6 +382,18 @@ const Map<String, String> traductionsEn = {
   'Donner mon avis': 'Leave a review',
   'Aucun avis': 'No reviews',
   'Partagez votre expérience : elle aide les autres clients.': 'Share your experience: it helps other customers.',
+  'Partagez votre expérience sur un colis livré que vous avez envoyé ou reçu : elle aide les autres clients.':
+      'Share your experience with a delivered parcel you sent or received: it helps other customers.',
+  'Impossible de charger vos expéditions': 'Unable to load your shipments',
+  'Quelle expédition évaluer ?': 'Which shipment would you like to review?',
+  'Les avis portent sur un colis livré que vous avez envoyé ou reçu.':
+      'Reviews are about a delivered parcel you sent or received.',
+  'Aucune expédition à évaluer. Vous pourrez donner votre avis dès qu\'un colis que vous avez envoyé ou reçu sera livré.':
+      'No shipment to review. You can leave a review as soon as a parcel you sent or received is delivered.',
+  'Colis reçu': 'Parcel received',
+  'Colis envoyé': 'Parcel sent',
+  'Colis reçu de {}': 'Parcel received from {}',
+  'Colis envoyé à {}': 'Parcel sent to {}',
   'Réponse de Yobante Colis : {}': 'Reply from Yobante Colis: {}',
   'Impossible de calculer le tarif': 'Unable to calculate the rate',
   'de {} à {}': 'from {} to {}',
@@ -590,7 +602,8 @@ const Map<String, String> traductionsEn = {
   'Tarifs calculés': 'Rates calculated',
   '{} offres disponibles pour votre envoi.': '{} offers available for your shipment.',
   'Une offre disponible pour votre envoi.': 'One offer available for your shipment.',
-  "Choisissez l'offre qui vous convient pour expédier votre colis.": 'Choose the offer that suits you to send your parcel.',
+  "Choisissez l'offre qui vous convient pour expédier votre colis.":
+      'Choose the offer that suits you to send your parcel.',
   'Meilleur prix': 'Best price',
   'Plus rapide': 'Fastest',
   'Modifier ma simulation': 'Edit my quote',

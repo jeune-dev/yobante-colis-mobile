@@ -110,6 +110,7 @@ class Env {
   // ── AVIS CLIENTS ──────────────────────────────────────────────────────────
   static const String publicAvis = '/public/avis';
   static const String clientAvis = '/client/avis';
+  static const String clientAvisAEvaluer = '/client/avis/a-evaluer';
   static String clientAvisId(String id) => '/client/avis/$id';
 
   // ── MESURE D'AUDIENCE ─────────────────────────────────────────────────────

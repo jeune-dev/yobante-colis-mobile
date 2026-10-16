@@ -5,7 +5,8 @@ import '../../../core/errors/api_error.dart';
 import '../../../core/i18n/langue.dart';
 
 /// Avis clients : avis publiés (`GET /public/avis`) et avis du client connecté
-/// (`/client/avis`), publiés après modération.
+/// (`/client/avis`), publiés après modération. Un avis porte toujours sur une
+/// expédition livrée que le client a envoyée ou reçue.
 
 Map<String, String> get kStatutsAvis => {
   'en_attente': tr('En attente de vérification'),
@@ -58,6 +59,31 @@ class Avis extends Equatable {
   List<Object?> get props => [id, statut];
 }
 
+/// Expédition terminée, envoyée ou reçue par le client, qu'il n'a pas encore évaluée.
+class ExpeditionAEvaluer {
+  final String id;
+  final String reference;
+  final bool reception;
+  final String? correspondant;
+  final DateTime? date;
+
+  const ExpeditionAEvaluer({
+    required this.id,
+    required this.reference,
+    this.reception = false,
+    this.correspondant,
+    this.date,
+  });
+
+  factory ExpeditionAEvaluer.fromJson(Map<String, dynamic> j) => ExpeditionAEvaluer(
+    id: j['id'] as String? ?? '',
+    reference: j['reference'] as String? ?? '',
+    reception: j['role'] == 'reception',
+    correspondant: j['correspondant'] as String?,
+    date: DateTime.tryParse(j['date'] as String? ?? ''),
+  );
+}
+
 class SyntheseAvis {
   final int total;
   final double noteMoyenne;
@@ -98,8 +124,16 @@ class AvisRemoteDataSource {
     return (res.data['data']['avis'] as List? ?? []).map((a) => Avis.fromJson(a as Map<String, dynamic>)).toList();
   }, tr('Impossible de charger vos avis'));
 
-  /// Dépose un avis (un seul par expédition). Renvoie le message du backend.
-  Future<String> deposer({required int note, String? titre, String? commentaire, String? colisId}) =>
+  Future<List<ExpeditionAEvaluer>> getAEvaluer() => appelApi(() async {
+    final res = await dio.get(Env.clientAvisAEvaluer);
+    return (res.data['data']['colis'] as List? ?? [])
+        .map((c) => ExpeditionAEvaluer.fromJson(c as Map<String, dynamic>))
+        .toList();
+  }, tr('Impossible de charger vos expéditions'));
+
+  /// Dépose un avis sur une expédition livrée (un seul par expédition).
+  /// Renvoie le message du backend.
+  Future<String> deposer({required int note, String? titre, String? commentaire, required String colisId}) =>
       appelApi(() async {
         final res = await dio.post(
           Env.clientAvis,
@@ -107,7 +141,7 @@ class AvisRemoteDataSource {
             'note': note,
             if (titre != null && titre.trim().isNotEmpty) 'titre': titre.trim(),
             if (commentaire != null && commentaire.trim().isNotEmpty) 'commentaire': commentaire.trim(),
-            'colisId': ?colisId,
+            'colisId': colisId,
           },
         );
         return messageApi(res);

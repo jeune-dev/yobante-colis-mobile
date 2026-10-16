@@ -13,9 +13,9 @@ import '../../../../injection_container.dart';
 import '../../data/avis_remote_datasource.dart';
 import '../../../../core/i18n/langue.dart';
 
-/// Formulaire de dépôt d'un avis (après livraison si [colisId] est fourni).
+/// Formulaire de dépôt d'un avis sur une expédition livrée, envoyée ou reçue.
 /// Renvoie `true` si l'avis a été enregistré.
-Future<bool> donnerAvis(BuildContext context, {String? colisId, String? colisReference}) async {
+Future<bool> donnerAvis(BuildContext context, {required String colisId, String? colisReference}) async {
   final ok = await showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
@@ -25,10 +25,120 @@ Future<bool> donnerAvis(BuildContext context, {String? colisId, String? colisRef
   return ok == true;
 }
 
+/// Choix de l'expédition à évaluer, puis formulaire d'avis. Sans expédition
+/// livrée (envoyée ou reçue) non encore évaluée, aucun avis n'est possible.
+Future<bool> choisirExpeditionAEvaluer(BuildContext context) async {
+  final choix = await showModalBottomSheet<ExpeditionAEvaluer>(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    builder: (_) => const _ChoixExpedition(),
+  );
+  if (choix == null || !context.mounted) return false;
+  return donnerAvis(context, colisId: choix.id, colisReference: choix.reference);
+}
+
+class _ChoixExpedition extends StatefulWidget {
+  const _ChoixExpedition();
+
+  @override
+  State<_ChoixExpedition> createState() => _ChoixExpeditionState();
+}
+
+class _ChoixExpeditionState extends State<_ChoixExpedition> {
+  List<ExpeditionAEvaluer>? _liste;
+  String? _erreur;
+
+  @override
+  void initState() {
+    super.initState();
+    sl<AvisRemoteDataSource>()
+        .getAEvaluer()
+        .then((l) {
+          if (mounted) setState(() => _liste = l);
+        })
+        .catchError((Object e) {
+          if (mounted) setState(() => _erreur = e is ServerException ? e.message : tr('Erreur'));
+        });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final liste = _liste;
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.7),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(tr('Quelle expédition évaluer ?'), style: titreSection(18)),
+              Text(tr('Les avis portent sur un colis livré que vous avez envoyé ou reçu.'), style: texteDiscret(13)),
+              const SizedBox(height: 12),
+              if (_erreur != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    _erreur!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: AppColor.kErreur),
+                  ),
+                )
+              else if (liste == null)
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (liste.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    tr(
+                      'Aucune expédition à évaluer. Vous pourrez donner votre avis dès qu\'un colis que vous avez envoyé ou reçu sera livré.',
+                    ),
+                    textAlign: TextAlign.center,
+                    style: texteDiscret(13),
+                  ),
+                )
+              else
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final e in liste)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(
+                            e.reception ? Icons.move_to_inbox_outlined : Icons.outbox_outlined,
+                            color: AppColor.kPrimary,
+                          ),
+                          title: Text(e.reference),
+                          subtitle: Text(switch ((e.reception, e.correspondant ?? '')) {
+                            (true, '') => tr('Colis reçu'),
+                            (false, '') => tr('Colis envoyé'),
+                            (true, final nom) => tr('Colis reçu de $nom'),
+                            (false, final nom) => tr('Colis envoyé à $nom'),
+                          }),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => Navigator.of(context).pop(e),
+                        ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _FormulaireAvis extends StatefulWidget {
-  final String? colisId;
+  final String colisId;
   final String? colisReference;
-  const _FormulaireAvis({this.colisId, this.colisReference});
+  const _FormulaireAvis({required this.colisId, this.colisReference});
 
   @override
   State<_FormulaireAvis> createState() => _FormulaireAvisState();
@@ -113,7 +223,11 @@ class _FormulaireAvisState extends State<_FormulaireAvis> {
             onPressed: _envoi ? null : _envoyer,
             style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
             child: _envoi
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColor.kWhite))
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColor.kWhite),
+                  )
                 : Text(tr('Publier mon avis')),
           ),
         ],
@@ -362,7 +476,7 @@ class _MesAvisState extends State<_MesAvis> {
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          if (await donnerAvis(context)) _charger();
+          if (await choisirExpeditionAEvaluer(context)) _charger();
         },
         icon: const Icon(Icons.rate_review_outlined),
         label: Text(tr('Donner mon avis')),
@@ -371,7 +485,9 @@ class _MesAvisState extends State<_MesAvis> {
           ? EmptyState(
               icon: Icons.rate_review_outlined,
               title: tr('Aucun avis'),
-              subtitle: tr('Partagez votre expérience : elle aide les autres clients.'),
+              subtitle: tr(
+                'Partagez votre expérience sur un colis livré que vous avez envoyé ou reçu : elle aide les autres clients.',
+              ),
             )
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
