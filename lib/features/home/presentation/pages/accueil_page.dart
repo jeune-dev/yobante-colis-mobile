@@ -23,7 +23,6 @@ import '../../../tracking/presentation/pages/tracking_page.dart';
 import '../../../../core/i18n/langue.dart';
 import '../../../../core/widgets/bouton_menu_ou_retour.dart';
 import '../../../../core/widgets/pastille_notifications.dart';
-import '../../../notifications/presentation/widgets/apercu_notifications.dart';
 
 /// Onglet d'accueil façon DHL : suivi en accès libre, messages de
 /// l'administrateur (annonces, prochaine collecte), raccourcis et envois en cours.
@@ -160,7 +159,7 @@ class _AccueilPageState extends State<AccueilPage> {
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               decoration: const BoxDecoration(
                 color: AppColor.kSecondary,
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+                borderRadius: BorderRadius.all(Radius.circular(24)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,7 +191,6 @@ class _AccueilPageState extends State<AccueilPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Dernières notifications, visibles dès l'ouverture de l'application
-                  if (_connecte) ...[const ApercuNotifications(), const SizedBox(height: 16)],
                   ..._contenu.tournees.map(_banniereTournee),
                   ..._contenu.annonces.where((a) => !a.estPopup).map(_banniereAnnonce),
                   Text(tr('Que souhaitez-vous faire ?'), style: titreSection()),
@@ -230,11 +228,7 @@ class _AccueilPageState extends State<AccueilPage> {
                         _Raccourci(
                           Icons.chat_outlined,
                           tr('WhatsApp'),
-                          () => ouvrirWhatsapp(
-                            context,
-                            numero: _config?.whatsappContact,
-                            message: tr('Bonjour Yobante Colis,'),
-                          ),
+                          () => ouvrirWhatsappSupport(context, numero: _config?.whatsappContact),
                         ),
                       ],
                     ),

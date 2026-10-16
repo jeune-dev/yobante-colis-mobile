@@ -148,7 +148,7 @@ class _ComptePageState extends State<ComptePage> {
                   _Entree(
                     Icons.chat_outlined,
                     tr('Nous écrire sur WhatsApp'),
-                    () => ouvrirWhatsapp(context, numero: _whatsapp, message: tr('Bonjour Yobante Colis,')),
+                    () => ouvrirWhatsappSupport(context, numero: _whatsapp),
                   ),
                 ]),
                 if (connecte) ...[
@@ -188,70 +188,50 @@ class _EnteteProfil extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Stack(
-          children: [
-            // Carré jaune du pictogramme, en filigrane
-            Positioned(
-              right: -22,
-              top: -22,
-              child: Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: AppColor.kSecondary.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              AvatarUtilisateur(prenom: u?.prenom, nom: u?.nom, photoUrl: photo, rayon: 28, bordure: true),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      u?.fullName ?? tr('Mon compte'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColor.kWhite,
+                      ),
+                    ),
+                    if ((u?.email ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        u!.email!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.plusJakartaSans(fontSize: 13, color: AppColor.kWhite.withValues(alpha: 0.8)),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Text(
+                      tr('Voir mon profil'),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColor.kSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(18),
-              child: Row(
-                children: [
-                  AvatarUtilisateur(prenom: u?.prenom, nom: u?.nom, photoUrl: photo, rayon: 28, bordure: true),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          u?.fullName ?? tr('Mon compte'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: AppColor.kWhite,
-                          ),
-                        ),
-                        if ((u?.email ?? '').isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            u!.email!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              color: AppColor.kWhite.withValues(alpha: 0.8),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 8),
-                        Text(
-                          tr('Voir mon profil'),
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppColor.kSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right_rounded, color: AppColor.kWhite),
-                ],
-              ),
-            ),
-          ],
+              const Icon(Icons.chevron_right_rounded, color: AppColor.kWhite),
+            ],
+          ),
         ),
       ),
     );

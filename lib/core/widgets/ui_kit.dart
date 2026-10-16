@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../config/env.dart';
 import '../theme/app_color.dart';
 import 'toast_notif.dart';
 import '../i18n/langue.dart';
@@ -220,11 +221,22 @@ Future<void> ouvrirLien(BuildContext context, String? url) async {
   }
 }
 
-/// Ouvre une conversation WhatsApp avec le service client (ou un partage si [numero] est vide).
+/// Ouvre une conversation WhatsApp avec [numero] (ou un partage si [numero] est vide).
 Future<void> ouvrirWhatsapp(BuildContext context, {String? numero, String? message}) {
-  final chiffres = (numero ?? '').replaceAll(RegExp(r'[^\d]'), '');
+  var chiffres = (numero ?? '').replaceAll(RegExp(r'[^\d]'), '');
+  // wa.me exige le format international sans « 00 » ni « + »
+  if (chiffres.startsWith('00')) chiffres = chiffres.substring(2);
+  // Numéro sénégalais saisi sans indicatif (77 123 45 67)
+  if (chiffres.length == 9 && chiffres.startsWith('7')) chiffres = '221$chiffres';
   final texte = message == null ? '' : '?text=${Uri.encodeComponent(message)}';
   return ouvrirLien(context, 'https://wa.me/$chiffres$texte');
+}
+
+/// Ouvre la discussion WhatsApp avec le service client ; [numero] vient de la configuration.
+Future<void> ouvrirWhatsappSupport(BuildContext context, {String? numero}) {
+  final contact = (numero ?? '').trim().isEmpty ? Env.whatsappSupport : numero!;
+  if (contact.trim().isEmpty) return ouvrirLien(context, null);
+  return ouvrirWhatsapp(context, numero: contact, message: tr('Bonjour Yobante Colis,'));
 }
 
 /// Sélecteur de quantité compact (− n +).

@@ -16,6 +16,7 @@ import '../../features/notifications/presentation/pages/notifications_page.dart'
 import '../../features/paiements/presentation/pages/factures_page.dart';
 import '../../features/points_collecte/presentation/pages/point_de_service_page.dart';
 import '../../features/tracking/presentation/pages/tracking_page.dart';
+import '../config/env.dart';
 import '../routes/app_router.dart';
 import '../services/auth_status.dart';
 import '../theme/app_color.dart';
@@ -143,11 +144,7 @@ class AppDrawer extends StatelessWidget {
                             (_) => const ConfigurationPublique(),
                           );
                           if (context.mounted) {
-                            ouvrirWhatsapp(
-                              context,
-                              numero: config.whatsappContact,
-                              message: tr('Bonjour Yobante Colis,'),
-                            );
+                            ouvrirWhatsappSupport(context, numero: config.whatsappContact);
                           }
                         },
                       ),
@@ -420,14 +417,15 @@ class _Footer extends StatelessWidget {
 
 // Coordonnées publiques du support (identiques aux pages yobanterek.com).
 const _emailSupport = 'ballabeye.dev04@gmail.com';
-const _telephoneSupport = '+221 77 307 16 39';
 const _urlConfidentialite = 'https://yobanterek.com/regle-confidentialite';
 const _urlSuppressionCompte = 'https://yobanterek.com/suppression-compte';
 
 List<LienInfo> get _liensContact => [
   LienInfo(_emailSupport, 'mailto:$_emailSupport', icone: Icons.mail_outline_rounded),
-  LienInfo(_telephoneSupport, 'tel:+221773071639', icone: Icons.phone_outlined),
-  LienInfo(tr('WhatsApp'), 'https://wa.me/221773071639', icone: Icons.chat_outlined),
+  if (Env.telephoneSupport.isNotEmpty)
+    LienInfo(Env.telephoneSupport, 'tel:${Env.telephoneSupport.replaceAll(' ', '')}', icone: Icons.phone_outlined),
+  if (Env.whatsappSupport.isNotEmpty)
+    LienInfo(tr('WhatsApp'), 'https://wa.me/${Env.whatsappSupport}', icone: Icons.chat_outlined),
 ];
 
 List<StaticInfoSection> get _legal => [

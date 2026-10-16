@@ -13,6 +13,13 @@ class Env {
     return v.isNotEmpty ? v : apiProduction;
   }
 
+  /// Numéro WhatsApp du service client (`--dart-define=WHATSAPP_SUPPORT=…`, format international),
+  /// utilisé quand la configuration du backend n'en fournit pas.
+  static const String whatsappSupport = String.fromEnvironment('WHATSAPP_SUPPORT');
+
+  /// Téléphone du service client (`--dart-define=TELEPHONE_SUPPORT=…`), affiché dans « Nous contacter ».
+  static const String telephoneSupport = String.fromEnvironment('TELEPHONE_SUPPORT');
+
   /// Vrai quand l'application vise un autre backend que la production (développement local).
   static bool get estBackendLocal => baseUrl != apiProduction;
 
