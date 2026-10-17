@@ -47,8 +47,16 @@ class _ApercuNotificationsState extends State<ApercuNotifications> {
 
   void _ouvrir(NotificationApp n) {
     if (!n.isRead) {
-      sl<NotificationsRepository>().marquerLue(n.id);
-      CompteurNotifications.instance.notificationLue();
+      // Elle et les autres notifications du même objet passent en lues
+      final liste = _liste;
+      if (liste != null) {
+        final (maj, lues) = NotificationApp.ouvrir(liste, n);
+        setState(() => _liste = maj);
+        CompteurNotifications.instance.notificationLue(lues);
+      } else {
+        CompteurNotifications.instance.notificationLue();
+      }
+      sl<NotificationsRepository>().marquerLue(n.id).then((_) => CompteurNotifications.instance.rafraichir());
     }
     if (!ouvrirEntiteNotification(context, n.entite, n.entiteId)) _toutVoir();
   }

@@ -66,9 +66,9 @@ class CompteurNotifications extends ValueNotifier<int> with WidgetsBindingObserv
     rafraichir();
   }
 
-  /// Une notification non lue vient d'être ouverte ou supprimée.
-  void notificationLue() {
-    if (value > 0) value = value - 1;
+  /// Une notification non lue (ou [nombre]) vient d'être ouverte ou supprimée.
+  void notificationLue([int nombre = 1]) {
+    value = value - nombre < 0 ? 0 : value - nombre;
   }
 
   /// Toutes les notifications ont été marquées comme lues.

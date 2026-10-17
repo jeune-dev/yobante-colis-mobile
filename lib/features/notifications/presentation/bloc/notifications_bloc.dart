@@ -97,8 +97,19 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
 
   Future<void> _onMarquerLue(MarquerLue event, Emitter<NotificationsState> emit) async {
-    // Ouverture d'une notification non lue : -1 tout de suite sur les pastilles
-    CompteurNotifications.instance.notificationLue();
+    // Ouverture : elle et les autres notifications du même objet passent en lues
+    // tout de suite (liste et pastilles), puis recalage sur le serveur
+    final courant = state;
+    final ouverte = courant is NotificationsLoaded
+        ? courant.notifications.where((n) => n.id == event.id).firstOrNull
+        : null;
+    if (courant is NotificationsLoaded && ouverte != null) {
+      final (liste, lues) = NotificationApp.ouvrir(courant.notifications, ouverte);
+      CompteurNotifications.instance.notificationLue(lues);
+      emit(NotificationsLoaded(notifications: liste, nonLues: courant.nonLues - lues < 0 ? 0 : courant.nonLues - lues));
+    } else {
+      CompteurNotifications.instance.notificationLue();
+    }
     await repo.marquerLue(event.id);
     add(const LoadNotifications());
   }
